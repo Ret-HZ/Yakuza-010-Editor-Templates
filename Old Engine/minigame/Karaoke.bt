@@ -1,0 +1,91 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: Yakuza 0/Kiwami Karaoke File
+//   Authors: Capitán Retraso
+//   Version: 1.00
+//   Purpose: Parsing KARA files
+//  Category: File Format
+// File Mask: *.bin
+//  ID Bytes: 4B 41 52 41
+//   History 
+//   1.00     2020-12-05  Capitán Retraso - Start
+//------------------------------------------------
+
+BigEndian();
+
+struct HEADER {
+    char magic[0x4] <name="Magic">;
+    uint32 endianess_identifier <name="Endianess ID", format=hex>;
+    uint32 version <name="Version">;
+    byte padding[0x4] <name="Padding">;
+} header <name="Header", bgcolor=cLtGray>;
+
+
+struct MAIN_TABLE {
+    uchar line_num <name="Number of lines">;
+    uchar unknown_0x11 <name="Unknown", comment="Always 0x18 (24)">;
+    byte padding_1[0xE] <name="Padding">;
+    uint32 unknown_0x20 <name="Unknown">;
+    uint32 unknown_0x24 <name="Unknown">;
+    uint32 successful_notes_cutscene <name="Successful notes for cutscene">;
+    uint32 unknown_0x2C <name="Unknown">;
+    uint32 unknown_0x30 <name="Unknown">;
+    uint32 unknown_0x34 <name="Unknown">;
+    uint32 unknown_0x38 <name="Unknown">;
+    uint32 unknown_0x3C <name="Unknown">;
+    float unknown_0x40 <name="Unknown">;
+    float unknown_0x44 <name="Unknown">;
+    float unknown_0x48 <name="Unknown">;
+    uint32 difficulty_cheering <name="Difficulty (cheering)">;
+    uint32 unknown_0x3C <name="Unknown">;
+    float time_window_great_score <name="Time window for 'great' note score">;
+    float time_window_good_score <name="Time window for 'good' note score">;
+    byte padding_2[0x4] <name="Padding">;
+} main_table <name="Main Table", bgcolor=cLtYellow>;
+
+
+struct LINE_SETTINGS {
+    FSeek(pointer_to_line_settings);
+    uint32 line_length <name="Amount of notes the line can fit (?)", comment="Speed will change accordingly">;
+    uint32 line_start_time <name="Line start time", comment="In milliseconds">;
+    uint32 line_end_time <name="Line end time", comment="In milliseconds">;
+};
+
+
+struct NOTES {
+    enum NOTE_TYPE { NORMAL = 0, RAPID_PRESS = 1, HOLD = 2 } note_type <name="Note type">;
+    float note_position_inline <name="Note position inline", comment="How far the note is position in the line. Ranges from 0 to 1">;
+    float unknown_1 <name="Unknown">;
+    enum NOTE_BUTTON { CROSS = 0, CIRCLE = 1, SQUARE = 2, TRIANGLE = 3, LEFT_ARROW = 4, RIGHT_ARROW = 5, BLACK_CIRCLE = 7} note_button <name="Note button">;
+    uint32 unknown_2 <name="Unknown">;
+    ushort audio_container_name <name="Audio container name (hex)", format=hex>;
+    ushort audio_cue_id <name="Audio cue ID">;
+    float unknown_3 <name="Unknown">;
+};
+
+
+struct LINE {
+    uint32 line_height <name="Line height", comment="0 being the highest and 3 the lowest">;
+    uint32 pointer_to_note_section <name="Pointer to Note section">;
+    uint32 notes_num <name="Number of notes">;
+    local int currentptr = FTell();
+    FSeek(pointer_to_note_section);
+    NOTES notes[notes_num] <name="Notes", bgcolor=0xff56c0>;
+    FSeek(currentptr);
+    uint32 pointer_to_line_settings <name="Pointer to line settings">;
+    currentptr = FTell();
+    LINE_SETTINGS line_settings <name="Line Settings", bgcolor=cLtGreen>;
+    FSeek(currentptr);
+    uint32 unknown_0x10 <name="Unknown">;
+    uint32 pointer_to_texture_name <name="Pointer to texture name">;
+    currentptr = FTell();
+    local int texture_size = ReadStringLength(pointer_to_texture_name);
+    FSeek(pointer_to_texture_name);
+    char texture_name[texture_size] <name="Texture name", bgcolor=0x3ba0ff>;
+    FSeek(currentptr);
+    uint32 texture_length <name="Texture length (?)", comment="2 numbers higher than line_height">;
+    uint32 time_for_line_spawn <name="Time for line spawn", comment="In milliseconds">;
+    uint32 time_for_line_despawn <name="Time for line despawn", comment="In milliseconds">;
+    uint32 line_page <name="Line Page", comment="The page (group) of the line">;
+} line[main_table.line_num] <name="Line", optimize=false, bgcolor=cLtBlue>;
