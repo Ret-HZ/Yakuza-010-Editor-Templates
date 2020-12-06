@@ -1,0 +1,212 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: common_file_list.dat
+//   Authors: Capitán Retraso
+//   Version: 1.00
+//   Purpose: Parse SCFL files
+//  Category: File Format
+// File Mask: *.dat
+//  ID Bytes: 53 43 46 4C
+//   History
+//   1.00     2020-12-06  Capitán Retraso - Start 
+//------------------------------------------------
+
+LittleEndian();
+
+struct HEADER {
+    char magic[0x4] <name="Magic">;
+    uint32 endianess_identifier <name="Endianess ID", format=hex>;
+    uint32 version <name="Version">;
+    byte padding[0x4] <name="Padding">;
+} header <name="Header", bgcolor=cLtGray>;
+
+
+struct ENTRY {
+    uint32 unknown <name="Unknown">;
+    char file_path[0x2C] <name="Path">;
+    if (header.version == 2){
+        FSkip(0x50);
+    }
+};
+
+
+struct LIST_ENTRIES (uint32 num){
+    local uint32 currentptr = FTell();
+    FSeek(ptr+0x10);
+    ENTRY entry[num] <name="Entry", optimize=false, open=true>;
+    FSeek(currentptr);
+};
+
+
+struct MDCM {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of .gmd files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x80c200>;
+    };
+};
+
+
+struct DECL {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of .gct files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0xc29100>;
+    };
+};
+
+
+struct TXAL {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x00c28e>;
+    };
+};
+
+
+struct MDSY {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of background .gmd files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x0091c2>;
+    };
+};
+
+
+struct OCCL {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of .ocl files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x005ac2>;
+    };
+};
+
+
+struct MDSM {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ShadowMap .gmd files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x8a8a8a>;
+    };
+};
+
+
+struct MDAE {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x1e0060>;
+    };
+};
+
+
+struct MDAM {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x32a87f>;
+    };
+};
+
+
+struct MDMR {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x95a832>;
+    };
+};
+
+
+struct MDTR {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0xa86d32>;
+    };
+};
+
+
+struct MDSW {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of .swt files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0xa83242>;
+    };
+};
+
+
+struct PACL {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of sct.par files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0xdb1499>;
+    };
+};
+
+
+struct PAAT {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of *_tex.par files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x9914db>;
+    };
+};
+
+
+struct MGDS {
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x1450db>;
+    };
+};
+
+
+struct MGDM{
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x143cdb>;
+    };
+};
+
+
+struct MAIN_TABLE {
+    uchar revision <name="Revision">;
+    FSkip(1);
+    uchar table_version <name="Version">;
+    FSkip(1);
+    MDCM mdcm <name="MDCM (.gmd files)", comment="Models">;
+    DECL decl <name="DECL (.gct files)", comment="Collisions">;
+    TXAL txal <name="TXAL (?? files)", comment="Unknown">;
+    MDSY mdsy <name="MDSY (.gmd files)", comment="Background Models">;
+    OCCL occl <name="OCCL (.ocl files)", comment="Unknown">;
+    MDSM mdsm <name="MDSM (.gmd files)", comment="ShadowMap Models (_sdm suffix)">;
+    MDAE mdae <name="MDAE (?? files)", comment="Unknown">;
+    MDAM mdam <name="MDAM (?? files)", comment="Unknown">;
+    MDMR mdmr <name="MDMR (?? files)", comment="Unknown">;
+    MDTR mdtr <name="MDTR (?? files)", comment="Unknown">;
+    MDSW mdsw <name="MDSW (.swt files)", comment="Unknown">;
+    PACL pacl <name="PACL (sct.par files)", comment="sct.par (This file is needed for the map to load)">;
+    PAAT paat <name="PAAT (.par files)", comment="Texture .par files">;
+    MGDS mgds <name="MGDS (?? files)", comment="Unknown">;
+    MGDM mgdm <name="MGDM (?? files)", comment="Unknown">;
+} main_table <name="Main Table", bgcolor=cLtYellow>;
