@@ -1,0 +1,18 @@
+// Enums for names
+enum<uint32> HitboxLocations
+{
+	LeftFoot_Knee = 81952,
+	RightFoot_Knee = 40976,
+	LeftHand = 4104,
+	RightHand = 2052,
+	Head = 1538,
+	LeftElbow = 5128,
+	RightElbow = 2564,
+	Center_Maybe = 5126,
+	Chest = 138956,
+	LeftShoulder = 136394,
+	RightShoulder = 133830,
+    MiddleWeapon_Maybe = 262144,
+	HurtsSelf_and_Enemies = 254192,
+    Weapon = 40,
+};
