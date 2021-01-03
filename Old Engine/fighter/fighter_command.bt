@@ -1,0 +1,85 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: fighter_command.cfc
+//   Authors: Capitán Retraso
+//   Version: 0.0.1
+//   Purpose: Map the fighter_command.cfc from Old Engine games
+// File Mask: *.cfc
+//  ID Bytes: 43 46 43 49
+//   History
+//   0.0.1     2020-12-27  Capitán Retraso - Start
+//------------------------------------------------
+
+BigEndian();
+BitfieldRightToLeft();
+
+struct HEADER {
+    char magic[0x4] <name="Magic">;
+    uint32 endianess_identifier <name="Endianess ID", format=hex>;
+    uint32 version <name="Version">;
+    uint32 file_size <name="File Size">;
+} header <name="Header", bgcolor=cLtGray>;
+
+
+struct MOVE {
+    uint32 move_ptr <name="Pointer to Move Info">;
+    local int move_table_ptr = FTell(); //Move table
+
+    FSeek(move_ptr);
+    uint32 type_string_ptr <name="Pointer to move type">;
+    local uint32 currentptr = FTell();
+    FSeek(type_string_ptr);
+    char type_string[] <name="Type">;
+    FSeek(currentptr);
+    int32 bitmask <name="Flags", comment="Unknown", format=binary>;
+    uint32 move_string_ptr <name="Pointer to move name">;
+    currentptr = FTell();
+    FSeek(move_string_ptr);
+    char move_string[] <name="Move">;
+    FSeek(currentptr);
+    uint32 unknown1_ptr <comment="Unknown">;
+    uint32 unknown2_ptr <comment="Unknown">;
+    FSeek(move_table_ptr);
+};
+
+
+struct ACTOR {
+    uint32 actor_string_ptr <name="Pointer to actor name">;
+    local uint32 currentptr = FTell();
+    FSeek(actor_string_ptr);
+    char actor_string[] <name="Actor">;
+    FSeek(currentptr);
+    uint32 moveset_string_ptr <name="Pointer to moveset name">;
+    currentptr = FTell();
+    FSeek(moveset_string_ptr);
+    char moveset_string[] <name="Moveset">;
+    FSeek(currentptr);
+    uint32 moves_num <name="Number of moves">;
+    uint32 move_table_ptr <name="Pointer to Move table">;
+    currentptr = FTell();
+    FSeek(move_table_ptr);
+    MOVE move[moves_num] <name="Move", optimize=false, bgcolor=0x80c200>;
+    FSeek(currentptr);
+    uint32 moves_num <name="Number of weapon movesets">;
+    uint32 move_table_ptr <name="Pointer to weapon moveset table">;
+};
+
+
+struct ENTRY {
+    uint32 actor_table_ptr <name="Pointer to Actor table">;
+    local int currentptr = FTell(); //Return to this position at the end of the struct to avoid a crash
+    FSeek(actor_table_ptr);
+    ACTOR actor_table <name="Actor Table", bgcolor=cLtBlue, open=true>;
+    FSeek(currentptr);
+};
+
+
+struct MAIN_TABLE {
+    FSeek(header.file_size - 0x8);
+    uint32 main_table_entry_num <name="Number of entries">;
+    uint32 main_table_ptr <name="Pointer to main table">;
+    FSeek(main_table_ptr);
+    ENTRY entry[main_table_entry_num] <name="Entry", optimize=false>;
+} main_table <name="Main Table", bgcolor=cLtYellow>;
+
