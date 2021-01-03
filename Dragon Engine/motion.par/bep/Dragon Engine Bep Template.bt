@@ -1,0 +1,765 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: Yakuza Dragon Engine beps
+//   Authors: HeartlessSeph
+//   Version: 1.00
+//   Purpose: Parses bep files for easier editing
+//   History
+//   1.00    28/12/2020  HeartlessSeph - started this
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+#include "DEYakuza_bepenums.bt"
+
+LittleEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+
+struct File{
+	struct FileHeader{
+		char filetype[4];		
+	}fileheader<name="File Header">;
+	
+	FSkip(0xC); //Skips first lock
+	struct startlock{
+		byte lockarea[0x20];
+	}startlocked<bgcolor=cRed, name="Section Lock">;
+	
+	
+	for( j = 0; j < FileSize(); j++ ){
+		uint32 typecheck<hidden=true>;
+	//Checks for type. Is property if it's equal to 0. Is visual if not equal to 0.
+		if (typecheck == 0){
+			FSkip(0x1C);
+			uint32 typecheck1<hidden=true>;
+			uint32 typecheck2<hidden=true>;
+			if (typecheck1+typecheck2 == 129){
+				FSkip(0x78);
+			}
+			else{
+				FSkip(-8);
+			}
+			
+			
+	//Hitbox Structure		
+			if (typecheck1+typecheck2 == 5046332){
+				struct Hitbox{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float hitboxspawnframe<name="Hitbox Spawn Time">;
+					float hitboxdespawnframe<name="Hitbox Lifetime">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					int32 damage<name="Damage">;
+					uint32 knockback<name="Knockback Force">;
+					HitboxLocations hitboxloc<name="Hitbox Location">;
+					uint32 moveffect<name="Move Effect">;
+				}hitbox<bgcolor=cBlue, name="Hitbox">;
+			}
+	//Hitbox Structure
+
+
+	//Camera Structure		
+			if (typecheck1+typecheck2 == 5767228){
+				struct Camera{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float camshakestart<name="Camera Shake Start Time">;
+					float unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					float shakeamt<name="Shake Amount">;
+					float shakespd<name="Shake Speed">;
+					uint32 unk;
+				}camera<bgcolor=cBlue, name="Camera">;
+			}
+	//Camera Structure
+
+
+	//Follow-Up Structure		
+			if (typecheck1+typecheck2 == 4849712){
+				struct Followup{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float followupstart<name="Follow-Up Time Window Start">;
+					float followuplen<name="Follow-Up Time Window Length">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 structnum<name="Struct Number">;
+				}followup<bgcolor=cBlue, name="Follow Up">;
+			}
+	//Follow-Up Structure
+
+
+	//Control Lock Structure		
+			if (typecheck1+typecheck2 == 4915248){
+				struct ControlLock{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float controllockstart<name="Control Lock Start">;
+					float controllockdur<name="Control Lock Duration">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 structnum<name="Struct Number">;
+				}controllock<bgcolor=cBlue, name="Control Lock">;
+			}
+	//Control Lock Structure
+
+
+	//Audio Structure		
+			if (typecheck1+typecheck2 == 1704012){
+				struct Audio{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float audiostart<name="Audio Start">;
+					float audioplay<name="Audio Play Time">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint16 soundcue<name="Sound Cue ID">;
+					uint16 soundcontainer<name="Sound Container ID">;
+					uint32 unk;
+					float unk;
+					float unk;
+					float unk;
+					float unk;
+					uint32 unk;
+				}audio<bgcolor=cBlue, name="Audio">;
+			}
+	//Audio Structure
+
+
+	//Controller Rumble Structure		
+			if (typecheck1+typecheck2 == 4456564){
+				struct Controlrumble{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float rumblestart<name="Rumble Start">;
+					float rumbleduration<name="Rumble Duration">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 padding2[8];
+					uint32 unk2[8];
+					uint32 unk;
+				}controlrumble<bgcolor=cBlue, name="Controller Rumble">;
+			}
+	//Controller Rumble Structure
+
+
+	//Collateral Damage Throw Hitbox Structure		
+			if (typecheck1+typecheck2 == 6357052){
+				struct Collateraldamage{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float hitboxspawnframec<name="Hitbox Spawn Time">;
+					float hitboxdespawnframec<name="Hitbox Lifetime">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					int32 damage<name="Damage">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+				}collateraldamage<bgcolor=cBlue, name="Collateral Damage Throw Hitbox">;
+			}
+	//Collateral Damage Throw Hitbox Structure
+
+
+	//Charge Structure		
+			if (typecheck1+typecheck2 == 13500464){
+				struct Charge{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float chargestart<name="Charge Start?">;
+					float chargeend<name="Charge End?">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+				}charge<bgcolor=cBlue, name="Charge">;
+			}
+	//Charge Structure
+
+
+	//Hyperarmor Type 1 Structure		
+			if (typecheck1+typecheck2 == 1638448){
+				struct Hyperarmor1{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float armor1start<name="Hyperarmor Start">;
+					float armor1dur<name="Hyperarmor Duration">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 effecttype<name="Effect Type">;
+				}hyperarmor1<bgcolor=cBlue, name="Hyper Armor Type 1">;
+			}
+	//Hyperarmor Type 1 Structure
+
+
+	//Hyperarmor Type 2 Structure		
+			if (typecheck1+typecheck2 == 8388660){
+				struct Hyperarmor2{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float armor2start<name="Hyperarmor Start">;
+					float armor2dur<name="Hyperarmor Duration">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 effecttype<name="Effect Type">;
+					uint32 padding;
+				}hyperarmor2<bgcolor=cBlue, name="Hyperarmor Type 2">;
+			}
+	//Hyperarmor Type 2 Structure
+
+
+	//EX Mode Screen Flash Structure		
+			if (typecheck1+typecheck2 == 655844){
+				struct EXScreenFlash{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float flashstart<name="Flash Start">;
+					float flashdur<name="Flash Length">;
+					uint32 unk[12];
+					uint32 colorred<name="Color (Red)">;
+					uint32 colorgre<name="Color (Green)">;
+					uint32 colorblu<name="Color (Blue)">;
+				}exscreenflash<bgcolor=cBlue, name="EX Mode Screen Flash">;
+			}
+	//EX Mode Screen Flash Structure
+
+
+	//Game Speed Structure		
+			if (typecheck1+typecheck2 == 6226108){
+				struct Gamespeed{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float speedstart<name="Speed Change Start">;
+					float speedend<name="Speed Change End">;
+					uint32 unk[6];
+					float speedm[32]<name="Speed">;
+				}gamespeed<bgcolor=cBlue, name="Game Speed">;
+			}
+	//Game Speed Structure
+
+
+	//Projectile Structure		
+			if (typecheck1+typecheck2 == 9961520){
+				struct Projectile{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float projectilestart<name="Projectile Spawn Time">;
+					float projectiledur<name="Projectile Lifetime">;
+					uint32 unk[7];
+				}projectile<bgcolor=cBlue, name="Projectile">;
+			}
+	//Projectile Structure
+	
+	
+	//Unk Property (Defining header: 0C 00 50 00 24 00 00 00)		
+			if (typecheck1+typecheck2 == 5242928){
+				struct Unkproperty1{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 unk[11];
+				}unkproperty1<bgcolor=cBlue, name="Unknown Property (0C00500024000000)">;
+			}
+	//Unk Property (Defining header: 0C 00 50 00 24 00 00 00)
+	
+	
+	//Unk Property (Defining header: 0C 00 6E 00 38 00 00 00)		
+			if (typecheck1+typecheck2 == 7209028){
+				struct Unkproperty2{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 unk[16];
+				}unkproperty2<bgcolor=cBlue, name="Unknown Property (0C006E0038000000)">;
+			}
+	//Unk Property (Defining header: 0C 00 6E 00 38 00 00 00)
+	
+	
+	//Unk Property (Defining header: 0C 00 57 00 24 00 00 00)		
+			if (typecheck1+typecheck2 == 5701680){
+				struct Unkproperty3{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 unk[11];
+				}unkproperty3<bgcolor=cBlue, name="Unknown Property (0C00570024000000)">;
+			}
+	//Unk Property (Defining header: 0C 00 57 00 24 00 00 00)
+	
+	
+	//Unk Property (Defining header: 0C 00 68 00 60 00 00 00)		
+			if (typecheck1+typecheck2 == 6815852){
+				struct Unkproperty4{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 unk[26];
+				}unkproperty4<bgcolor=cBlue, name="Unknown Property (0C00680060000000)">;
+			}
+	//Unk Property (Defining header: 0C 00 68 00 60 00 00 00)
+	
+	
+	//Unk Property (Defining header: 0C 00 5D 00 24 00 00 00)		
+			if (typecheck1+typecheck2 == 6094896){
+				struct Unkproperty5{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 unk[11];
+				}unkproperty5<bgcolor=cBlue, name="Unknown Property (0C005D0024000000)">;
+			}
+	//Unk Property (Defining header: 0C 00 5D 00 24 00 00 00)
+	
+	
+	//Turnbased Hitbox Struct		
+			if (typecheck1+typecheck2 == 4849732){
+				struct Turnbasehitbox{
+					uint32 structheader1;
+					uint32 structheader2;
+					uint32 padding;
+					uint32 unk;
+					uint32 controllertype<name="Controller Type?">;
+					float hitboxspawnframe<name="Hitbox Spawn Time">;
+					float hitboxdespawnframe<name="Hitbox Lifetime">;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					uint32 unk;
+					int32 damage<name="Damage">;
+					uint32 knockback<name="Knockback Force">;
+					uint32 hitboxloc<name="Hitbox Location">;
+					uint32 moveffect<name="Move Effect">;
+				}turnbasehitbox<bgcolor=cBlue, name="Turnbased Hitbox">;
+			}
+	//Turnbased Hitbox Struct
+
+			struct Lock{
+				byte lockarea[0x20];
+			}lock<bgcolor=cRed, name="Section Lock">;
+			
+		}
+		
+	//END OF PROPERTY CHECKING	
+		
+		
+	//START OF VISUAL STRUCTURES
+		else{
+			FSkip(-4);
+			uint32 heatcheck1<hidden=true>;
+			uint32 heatcheck2<hidden=true>;
+	//Type 9 Particle does not define bone name at the beginning so it needs to be determined first.
+			if (heatcheck1+heatcheck2 == 17301556){
+				struct particle9Heat{
+					uint32 unk;
+					uint32 padding;
+					uint32 controllertype<name="Controller Type?">;
+					float p9activetime<name="Activation Time">;
+					float p9activedur<name="Active Time">;
+					uint32 padding;
+					uint32 unk;
+					uint32 padding;
+					uint32 particlestyle<name="Particle Style">;
+				}particle9heat<bgcolor=cBlue, name="Type 9 Emitter (Heat Particle)">;
+			}
+			
+			else{
+				FSkip(0x18);
+				uint32 typecheck1<hidden=true>;
+				uint32 typecheck2<hidden=true>;
+				FSkip(-0x28);
+				
+				
+	//Type 1 Emitter (Particle) Structure		
+				if (typecheck1+typecheck2 == 1900712){
+					struct Emitter1{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk;
+						uint32 unk;
+						uint32 particleunk;
+						float activatetime<name="Activation Time">;
+						float activedur<name="Active Time">;
+						struct unkstruct{
+							uint32 unk[20];
+						}Unkstruct;
+						float layer0red<name="Layer 0 Color (Red)">;
+						float layer0green<name="Layer 0 Color (Green)">;
+						float layer0blue<name="Layer 0 Color (Blue)">;
+						float layer0bright<name="Layer 0 Brightness">;
+						float layer1red<name="Layer 1 Color (Red)">;
+						float layer1green<name="Layer 1 Color (Green)">;
+						float layer1blue<name="Layer 1 Color (Blue)">;
+						float layer1bright<name="Layer 1 Brightness">;
+						float lifetime<name="Lifetime">;
+						uint32 unk;
+						float speed<name="Speed">;
+						uint32 unk;
+						float scatterspeed<name="Scatter Speed">;
+						uint32 unk;
+						float gravity<name="Gravity">;
+						float verticalscatter<name="Vertical Scatter">;
+					}emitter1<bgcolor=cBlue, name="Emitter Type 1 - Particle">;
+				}
+	//Type 1 Emitter (Particle) Structure
+			}
+			
+
+	//Type 2 Emitter (Effect) Structure		
+				if (typecheck1+typecheck2 == 1245452){
+					struct Emitter2{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float spawntime<name="Effect Spawn Time">;
+						float efflifetime<name="Effect Lifetime">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 effID<name="Effect ID">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float effamntvert<name="Effect Amount (Vertical)">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float effamnthori<name="Effect Amount (Horizontal)">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float unkfloat;
+						uint32 unk;
+						uint32 unk;
+						float effxco<name="Effect X Coordinate">;
+						uint32 unk;
+						float unkfloat;
+						float effwidth<name="Effect Width">;
+						float effheight<name="Effect Height">;
+						float effdepth<name="Effect Depth">;
+						uint32 unk;
+						uint32 unk;
+						uint32 effopacity<name="Effect Opacity">;
+						uint32 unk;
+						float effAnimSpeed<name="Effect Animation Speed">;
+						float efflightinten<name="Effect Lighting Intensity">;
+						float unkfloat;
+						float unkfloat;
+						uint32 unk2[11];
+						float unkfloat;
+						float unkfloat;
+						float unkfloat;
+						float unkfloat;
+						uint32 unk;
+						char EffName[32]<name="Effect Name">;
+						uint32 unk;
+						uint32 unk;
+					}emitter2<bgcolor=cBlue, name="Emitter Type 2 - Effect">;				
+				}
+	//Type 2 Emitter (Effect) Structure
+
+
+
+	//Type 3 Emitter (Surface 1) Structure		
+				if (typecheck1+typecheck2 == 2031952){
+					struct Emitter3{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float surfacestart<name="Surface Start">;
+						float surfacelifetime<name="Surface Lifetime">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 mask<name="Mask?">;
+						uint32 unk;
+						uint32 unk;
+						float unk;
+						float opacity<name="Opacity of bone area?">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float unk;
+						float unk;
+						float animbright1<name="First part of animation brightness?">;
+						float animbright2<name="First part of animation brightness?">;
+						float animbright3<name="First part of animation brightness?">;
+					}emitter3<bgcolor=cBlue, name="Emitter Type 3 - Surface 1">;				
+				}
+	//Type 3 Emitter (Surface 1) Structure
+
+
+
+	//Type 4 Emitter (Surface 2) Structure		
+				if (typecheck1+typecheck2 == 2031848){
+					struct Emitter4{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float surfacestart<name="Surface Start">;
+						float surfacelifetime<name="Surface Lifetime">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float fadeout<name="Fade out Time (In Seconds)">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float unk;
+						uint32 unk;
+						float layer2red<name="Layer 2 Color (Red)">;
+						float layer2green<name="Layer 2 Color (Green)">;
+						float layer2blue<name="Layer 2 Color (Blue)">;
+						float layer1red<name="Layer 1 Color (Red)">;
+						float layer1green<name="Layer 1 Color (Green)">;
+						float layer1blue<name="Layer 1 Color (Blue)">;
+						float layer1surfaceamnt<name="Layer 1 Surface Amount">;
+						float layer1maskred<name="Layer 1 Mask Color (Red)">;
+						float layer1maskgreen<name="Layer 1 Mask Color (Green)">;
+						float layer1maskblue<name="Layer 1 Mask Color (Blue)">;
+						float layer0red<name="Layer 0 Color (Red)">;
+						float layer0green<name="Layer 0 Color (Green)">;
+						float layer0blue<name="Layer 0 Color (Blue)">;
+						float layer0surfaceamnt<name="Layer 0 Surface Amount">;
+						float unk;
+						uint32 unk2[12];
+						float layeranimspd<name="Layer Animation Speed">;
+						uint32 unk;
+						uint32 unk;
+					}emitter4<bgcolor=cBlue, name="Emitter Type 4 - Surface 2">;				
+				}
+	//Type 4 Emitter (Surface 2) Structure
+
+
+
+	//Type 5 Emitter (Surface 3) Structure		
+				if (typecheck1+typecheck2 == 2031860){
+					struct Emitter5{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float surfacestart<name="Surface Start">;
+						float surfacelifetime<name="Surface Lifetime">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float fadeout<name="Fade out Time (In Seconds)">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						char incexcbone<name="Include/Exclude Bone">;
+						char inexbonename[11]<name="Included/Excluded Bone Name">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float layer1red<name="Layer 1 Color (Red)">;
+						float layer1green<name="Layer 1 Color (Green)">;
+						float layer1blue<name="Layer 1 Color (Blue)">;
+						float layer1brightness<name="Layer 1 Brightness">;
+						float layer1maskred<name="Layer 1 Mask Color (Red)">;
+						float layer1maskgreen<name="Layer 1 Mask Color (Green)">;
+						float layer1maskblue<name="Layer 1 Mask Color (Blue)">;
+						float layer0red<name="Layer 0 Color (Red)">;
+						float layer0green<name="Layer 0 Color (Green)">;
+						float layer0blue<name="Layer 0 Color (Blue)">;
+						float layer0brightness<name="Layer 0 Brightness">;
+						float unk;
+						uint32 unk2[14];
+						float layeranimspd<name="Layer Animation Speed">;
+					}emitter5<bgcolor=cBlue, name="Emitter Type 5 - Surface 3">;				
+				}
+	//Type 5 Emitter (Surface 3) Structure
+
+
+
+	//Type 6 Emitter (Surface 4) Structure		
+				if (typecheck1+typecheck2 == 2031728){
+					struct Emitter6{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float surfacestart<name="Surface Start">;
+						float surfacelifetime<name="Surface Lifetime">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unkcolor;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float fadeout<name="Fade Out Time">;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						uint32 unk;
+						float animp1alpha<name="Animation Part 1 Alpha">;
+						float animp2alpha<name="Animation Part 2 Alpha">;
+						char incexcbone<name="Include/Exclude Bone">;
+						char inexbonename[11]<name="Included/Excluded Bone Name">;
+					}emitter6<bgcolor=cBlue, name="Emitter Type 6 - Surface 4">;				
+				}
+	//Type 6 Emitter (Surface 4) Structure
+	
+	
+	//Unknown Visual Property (Defining Header: 0C 00 15 00 50 00 00 00)
+				if (typecheck1+typecheck2 == 1376348){
+					struct UnkVisual1{
+						uint16 bonechecksum;
+						char bonename[30];
+						uint32 structheader1;
+						uint32 structheader2;
+						uint32 unk[70];
+					}unkvisual1<bgcolor=cBlue, name="Unknown Visual (0C00150050000000)">;				
+				}
+	//Unknown Visual Property (Defining Header: 0C 00 15 00 50 00 00 00)
+		
+		
+		
+		
+		
+		
+		
+		struct Lock2{
+			byte lockarea[0x20];
+		}lock2<bgcolor=cRed, name="Section Lock">;	
+		}
+	j = FTell()+32;
+	}
+}file;

@@ -1,0 +1,110 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: fighter_command.cfc
+//   Authors: HeartlessSeph
+//   Version: 1.00
+//   Purpose: Kiwami 2 Fighter Command Mapping
+//   History
+//   1.00    06/01/2020  HeartlessSeph - started this
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+LittleEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int k<hidden=true>;
+local int textending;
+local int dataarraystart<hidden=true>;
+local int dataarrayblocks<hidden=true>;
+
+struct File{
+
+	struct FileHeader{
+		uint32 filetype<name="Filetype">;
+		uint16 Endianess<name = "Endianess ID">;
+		uint16 unk;
+		uint32 FileVersion<name="File Version">;
+		uint32 filesize<name="Filesize">;
+	}fileheader<name = "File Header">;
+
+	struct TextData{
+		for( j = 0; j < 99999; j++ )
+		struct Text{
+			ubyte textendcheck<hidden=true>;
+			if (textendcheck == 204)
+			{
+				j = 99999;;
+				FSkip(-1);
+			}
+			else
+			{
+				FSkip(-1);
+				char StringValue[];
+			}
+		}text<read = GetString,name="String">;
+        textending = FTell()+3;
+	}textdata<name="String Data">;
+	
+	k = 4 - (FTell() % 4);
+	for( j = 0; j < k; j++ )
+	FSkip(1);
+	dataarraystart = FTell();
+	dataarrayblocks = ((fileheader.filesize) - dataarraystart) / 8;
+
+	FSeek(fileheader.filesize);
+	FSkip(-8);
+	
+	struct CommandSetTable{
+		uint32 numstyletypes<name="Number of Command Sets">;
+		i = FTell();
+		FSkip(-12);
+		uint32 commandtablestart<name="Pointer to Start of Table">;
+		FSeek(commandtablestart);
+		
+		for( j = 0; j < numstyletypes; j++ ){
+		struct CommandSetBlock{
+			uint32 pointer;
+			uint32 padding;
+			if (pointer > textending)
+			{
+				h = FTell();
+				FSeek(pointer);
+				uint32 pointer2;
+				FSkip(-4);
+				char pointerval[]<name="Return 1 (For Reference, Don't Edit)">;
+				if (pointer2 < fileheader.filesize){
+					FSeek(pointer2);
+					uint32 pointer3;
+					FSkip(-4);
+					char pointerval2[]<name="Return 2 (For Reference, Don't Edit)">;
+					if (pointer3 < fileheader.filesize){
+						FSeek(pointer3);
+						char pointerval3[]<name="Return 3 (For Reference, Don't Edit)">;
+					}
+				}
+				FSeek(h);
+			}
+		}commandsetblock<name="Command Set Block", read = GetCommandSet>;
+		}
+		FSeek(i);
+	}commandsettable<name="Command Set Table">;
+
+	FSeek(h);
+}file<name="Fighter_Command.cfc">;
+
+
+
+string GetString(Text& j)
+{
+    return j.StringValue;
+}
+
+string GetCommandSet(CommandSetBlock& j)
+{
+    return j.pointerval2;
+}
