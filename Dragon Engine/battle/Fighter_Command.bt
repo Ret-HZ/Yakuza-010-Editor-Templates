@@ -18,6 +18,7 @@ local int h<hidden=true>;
 local int i<hidden=true>;
 local int j<hidden=true>;
 local int k<hidden=true>;
+local int currentpos;
 local int textending;
 local int dataarraystart<hidden=true>;
 local int dataarrayblocks<hidden=true>;
@@ -68,27 +69,63 @@ struct File{
 		
 		for( j = 0; j < numstyletypes; j++ ){
 		struct CommandSetBlock{
-			uint32 pointer;
-			uint32 padding;
+			uint32 pointer<name="Command Set Pointer">;
+			FSkip(4);
 			if (pointer > textending)
 			{
 				h = FTell();
 				FSeek(pointer);
-				uint32 pointer2;
+				uint32 pointer2<name="Command Set Location", hidden=true>;
 				FSkip(-4);
-				char pointerval[]<name="Return 1 (For Reference, Don't Edit)">;
+				char pointerval[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
 				if (pointer2 < fileheader.filesize){
 					FSeek(pointer2);
-					uint32 pointer3;
+					uint32 pointer3<hidden=true>;
 					FSkip(-4);
-					char pointerval2[]<name="Return 2 (For Reference, Don't Edit)">;
-					if (pointer3 < fileheader.filesize){
-						FSeek(pointer3);
-						char pointerval3[]<name="Return 3 (For Reference, Don't Edit)">;
-					}
+					char pointerval2[]<name="Command Set Name">;
+					FSeek(pointer);
 				}
-				FSeek(h);
 			}
+			uint32 movesetnamepointer<name="Pointer to Moveset Name">;
+			FSkip(4);
+			uint32 commandID<name="Command Set ID">;
+			FSkip(4);
+			uint32 movetablepointer<name="Pointer to Move Table">;
+			FSkip(4);
+			uint32 weplistpointer<name="Pointer to Weapon List", comment= "Points to Current Command Set if number of weapon command sets is 0.">;
+			FSkip(4);
+			uint16 nummoves<name="Number of Moves">;
+			uint16 numwepcommandsets<name="Number of Weapon Command Sets">;
+			FSeek(movetablepointer);
+			struct MovesetMovelist{
+				for( k = 0; k < nummoves; k++ )
+				struct MoveStruct{
+					uint32 movepointer<name="Move Pointer">;
+					FSkip(4);
+					currentpos = FTell();
+					FSeek(movepointer);
+					uint32 movelocation<name="Move Location">;
+					FSeek(movelocation);
+					char MoveName[]<name="Move Name">;
+					FSeek(currentpos);
+				}movestruct<name="Move",read=GetMove>;
+			}movesetmovelist<name="List of Moves">;
+			FSeek(weplistpointer);
+			struct WeaponMovesetList{
+				for( k = 0; k < numwepcommandsets; k++ )
+				struct WeaponMovesetStruct{
+					uint32 wepsetpointer1<name="Weapon Command Set Pointer">;
+					FSkip(4);
+					currentpos = FTell();
+					FSeek(wepsetpointer1);
+					uint32 wepsetpointer2<name="Weapon Command Set Pointer">;
+					FSeek(wepsetpointer2);
+					uint16 unk<name="Unknown uint16",comment="Always equal to 01 00">;
+					uint16 wepsetcommandid<name="Command Set ID",comment="You can find the value in the command set for the referenced weapon">;
+					FSeek(currentpos);
+				}weaponmovesetstruct<name="Weapon Moveset">;
+			}weaponmovesetlist<name="List of Weapon Movesets">;
+			FSeek(h);
 		}commandsetblock<name="Command Set Block", read = GetCommandSet>;
 		}
 		FSeek(i);
@@ -107,4 +144,9 @@ string GetString(Text& j)
 string GetCommandSet(CommandSetBlock& j)
 {
     return j.pointerval2;
+}
+
+string GetMove(MoveStruct& k)
+{
+    return k.MoveName;
 }
