@@ -18,7 +18,12 @@ local int h<hidden=true>;
 local int i<hidden=true>;
 local int j<hidden=true>;
 local int k<hidden=true>;
+local int l<hidden=true>;
+local int m<hidden=true>;
 local int currentpos;
+local int currentpos2;
+local int currentpos3;
+local int currentpos4;
 local int textending;
 local int dataarraystart<hidden=true>;
 local int dataarrayblocks<hidden=true>;
@@ -106,7 +111,70 @@ struct File{
 					FSeek(movepointer);
 					uint32 movelocation<name="Move Location">;
 					FSeek(movelocation);
-					char MoveName[]<name="Move Name">;
+					char MoveName[]<name="Move Name",hidden=true>;
+					FSeek(movepointer);
+					struct MovePropertiesStruct{
+						uint32 MoveNamePointer<name="Pointer to Move Name">;
+						FSkip(4);
+						uint32 MoveAnimationTablePointer<name="Pointer to Move Animation Table",comment="Points straight to move animation if anim table is equal to 0">;
+						FSkip(4);
+						uint32 MoveFollowUpListPointer<name="Pointer to Follow-Up List">;
+						FSkip(4);
+						uint32 unkPointerbegin<name="Pointer to beginning of Move?">;
+						FSkip(4);
+						uint16 NumMoveFollowUp<name="Amount of Follow Ups">;
+						ubyte AnimTableBoolean<name="Number of Animation Tables?">;
+						ubyte unk<comment="Could be move type?">;
+						FSeek(MoveFollowUpListPointer);
+						for( l = 0; l < NumMoveFollowUp; l++ )
+						struct MoveFollowUpStruct{
+							uint32 MoveFollowUpPointer<name="Pointer to Move Follow Up">;
+							FSkip(4);
+							currentpos2 = FTell();
+							FSeek(MoveFollowUpPointer);
+							uint16 nummovesetfollowupprops<name="Number of Follow up Properties?">;
+							uint16 movetofollowupto<name="IDx of Move to Follow up to",comment="The array number of the move that will be followed into">;
+							FSkip(4);
+							uint32 movesetfollowupproplist<name="Follow up Property List?">;
+							FSeek(movesetfollowupproplist);
+							for( m = 0; m < nummovesetfollowupprops; m++ )
+							struct MoveFollowUpProperties{
+								uint32 movefollowuppropertypointer<name="Pointer to move follow-up property">;
+								FSkip(4);
+								currentpos3 = FTell();
+								FSeek(movefollowuppropertypointer);
+								uint32 unk;
+								FSkip(4);
+								uint32 unk;
+								FSeek(currentpos3);
+							}movefollowupproperties<name="Move Follow Up Property">;
+							FSeek(currentpos2);
+						}movefollowupstruct<name="Move Follow Ups">;							
+						for( l = 0; l < AnimTableBoolean; l++ ){
+							currentpos2 = FTell();
+							FSeek(MoveAnimationTablePointer);
+							uint32 animationtablepointer;
+							FSkip(5);
+							ubyte numberofanims;
+							FSeek(animationtablepointer);
+							for( m = 0; m < numberofanims; m++ )
+							struct AnimationTableStruct{
+								uint32 AnimationPointer<name="Pointer to Animation Name">;
+								FSkip(4);
+								currentpos3 = FTell();
+								FSeek(AnimationPointer);
+								uint32 pointertoanim<name="Pointer to Animation Used">;
+								uint32 unk<comment="Might be padding but including just in case">;
+								ubyte unk;
+								ubyte unk;
+								ubyte unk;
+								ubyte unk;
+								uint32 unk;
+								FSeek(currentpos3);
+							}animationtablestruct<name="Animation Table">;
+							FSeek(currentpos2);
+						}
+					}movepropertiesstruct<name="Move Properties">;
 					FSeek(currentpos);
 				}movestruct<name="Move",read=GetMove>;
 			}movesetmovelist<name="List of Moves">;
