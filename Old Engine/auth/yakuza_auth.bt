@@ -1,0 +1,183 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza_gmt.bt 
+//   Authors: SutandoTsukai181 (Based on TGE's templates) 
+//   Version: 1.0 
+//   Purpose: Parse Yakuza series Auth.bin files
+//  Category:  
+// File Mask: Auth.bin 
+//  ID Bytes:  
+//   History:  
+//------------------------------------------------ 
+
+#include "../../Common/includes/include.h"
+
+typedef struct
+{
+    SetRandomBackColor();
+    LittleEndian();
+    char Magic[4];      // AUTH
+    u8 Endianness0;     // 2 for big, 21 for little
+    u8 Endianness1;     // 1 for big, 0 for little
+    if ( Endianness1 == 1 ) BigEndian();
+    FSkip( 0x2 );
+    u32 Version;
+    FSkip( 0x4 );
+
+    u32 FileSize;
+    u32 Sec2Start;
+    u32 Sec2Count;
+    u32 EntriesStart;
+
+    u32 Sec4Start;
+    u32 Sec4Count;
+    f32 TotalFrames;    // Not completely sure
+    u32 EntriesCount;
+
+    u32 Sec3Start;
+    FSkip( 0xC );
+
+    local u32 entryColor = SetRandomBackColor();
+    local u32 dataColor = SetRandomBackColor();
+    local u32 dataHeaderColor = SetRandomBackColor();
+    local u32 sec2Color = SetRandomBackColor();
+    local u32 sec3Color = SetRandomBackColor();
+    local u32 sec4Color = SetRandomBackColor();
+    local u32 sec5Color = SetRandomBackColor();
+
+	if ( EntriesStart && EntriesCount )
+	{
+		//FSeekRel( EntriesStart );
+		SetBackColor( entryColor );
+        //struct { struct TEntry Entry[ EntriesCount ]; } Entries;
+        struct { ReadEntries( 0, EntriesStart, 0 ); } Entries;
+	}
+
+    if ( Sec2Start && Sec2Count )
+    {
+        FSeekRel( Sec2Start );
+        SetBackColor( sec2Color );
+        struct { struct TFramePair FramePair[ Sec2Count ]; } FramePairs1;
+    }
+
+    if ( Sec3Start && EntriesCount )
+    {
+        FSeekRel( Sec3Start );
+        SetBackColor( sec3Color );
+        struct { struct TFramePair FramePair[ EntriesCount ]; } FramePairs2;
+    }
+
+    if ( Sec4Start && Sec4Count )
+    {
+        FSeekRel( Sec4Start );
+        SetBackColor( sec4Color );
+        struct { struct TSec4Entry Sec4Entry[ Sec4Count ]; } Section4;
+    }
+
+} TAuth;
+
+typedef struct
+{
+    u32 Field00;
+    u32 Field04;
+
+    u8 Reference[ 0x10 ];   // Used as a reference for other parts of the file or for resources
+
+    u32 Field18[ 3 ];       // All 0
+	u32 Field24;            // 0 or 1
+
+	u32 Field28[ 4 ];       // All 0
+    f32 Field38[ 3 ];       // All 1
+    u32 Field44;            // 1
+
+    u32 Field48[ 6 ];       // All 0
+
+    u32 Sec5Offset;
+    u32 Field64;            // 0
+    u32 DataOffset;
+    u32 ChildEntryOffset;   // Offset to child entry
+
+    u32 NextEntryOffset;    // Offset to next entry
+    u32 Field74[ 3 ];       // All 0
+
+    FPush();
+	{
+		FSeekRel( Sec5Offset );
+
+        SetBackColor( sec5Color );
+		struct TSec5Entry Sec5Entry;
+        SetBackColor( entryColor );
+	}
+	FPop();
+
+	FPush();
+	{
+		FSeekRel( DataOffset );
+        SetBackColor( dataColor );
+
+        // There might be more than 1 structure for each entry but the actual count is unknown
+		struct TEntryData EntryData;
+        SetBackColor( entryColor );
+	}
+	FPop();
+
+} TEntry <optimize=false>;
+
+typedef struct
+{
+    f32 StartFrame;   // Not confirmed
+    f32 EndFrame;
+    f32 Field08[ 2 ]; // All 0
+} TFramePair;
+
+typedef struct
+{
+    u32 Field00;
+	u8 Reference[ 0x10 ];
+	u32 Field14[ 3 ];
+} TSec4Entry;
+
+typedef struct
+{
+    u32 Field00;
+    u32 Field04;
+	u8 Reference[ 0x10 ];
+	f32 StartFrame;       // Not confirmed
+    f32 EndFrame;
+    u32 Field20[ 24 ];    // All 0
+} TSec5Entry;
+
+typedef struct
+{
+    SetBackColor( dataHeaderColor );
+	u8 Reference[ 0x10 ];
+	u32 TypeFlag;         // Not confirmed
+    u32 DataSize;
+    u32 Field18[ 2 ];     // All 0
+
+    SetBackColor( dataColor );
+    u8 Data[ DataSize ];
+} TEntryData <optimize=false>;
+
+void ReadEntries( u32 child, u32 next, u32 currentCount )
+{
+    local u32 entryStart = child;
+    if ( child == 0 )
+    {
+        entryStart = next;
+        next = 0;
+    }
+
+    FSeekRel( entryStart );
+    struct TEntry Entry;
+
+    child = Auth.Entries.Entry[currentCount].ChildEntryOffset;
+    if ( Auth.Entries.Entry[currentCount].NextEntryOffset != 0 )
+        next = Auth.Entries.Entry[currentCount].NextEntryOffset;
+
+    if ( child != 0 || next != 0 )
+        ReadEntries( child, next, currentCount + 1 );
+}
+
+TAuth Auth;
