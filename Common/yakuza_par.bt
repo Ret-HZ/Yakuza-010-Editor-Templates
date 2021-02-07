@@ -1,0 +1,169 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza_par.bt
+//   Authors: SutandoTsukai181 (Based on Kaplas80's Par Manager)
+//   Version: 1.0
+//   Purpose: Parse Yakuza series .par archives
+//  Category: 
+// File Mask: *.par
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "includes/include.h"
+
+local u32 parColor = SetRandomBackColor();
+local u32 nameColor = SetRandomBackColor();
+local u32 folderColor = SetRandomBackColor();
+local u32 fileColor = SetRandomBackColor();
+
+typedef struct
+{
+    SetBackColor( parColor );
+    LittleEndian();
+    char Magic[4];      // PARC
+    u8 Endianness0;     // 2 for big, 21 for little
+    u8 Endianness1;     // 1 for big, 0 for little
+    if ( Endianness1 == 1 ) BigEndian();
+    u16 Unused <hidden=true>;
+    u32 Version;
+    u32 Unused <hidden=true>;
+
+    u32 FolderCount;
+    u32 FolderOffset;
+    u32 FileCount;
+    u32 FileOffset;
+
+    SetBackColor( nameColor );
+    struct TName Name[ FolderCount + FileCount ];
+
+    local u32 i;
+
+    if ( FolderCount && FolderOffset )
+    {
+        FSeekRel( FolderOffset );
+        struct
+        {
+            for ( i = 0; i < FolderCount; i++ )
+            {
+                struct TFolder Folder( i );
+            }
+        } Folders;
+    }
+
+    if ( FileCount && FileOffset )
+    {
+        FSeekRel( FileOffset );
+        struct
+        {
+            for ( i = 0; i < FileCount; i++ )
+            {
+                struct TFile File( i );
+            }
+        } Files;
+    }
+} TPar <optimize=false>;
+
+typedef struct ( u32 index )
+{
+    FPush();
+    {
+        FSeekRel( 0x20 + ( index * 0x40 ) );
+        SetBackColor( nameColor );
+        char Name[ 0x40 ];
+    }
+    FPop();
+
+    SetBackColor( folderColor );
+
+    u32 FolderCount;
+    u32 FolderStart;
+    u32 FileCount;
+    u32 FileStart;
+
+    s32 Attributes;
+    u32 Padding[ 3 ] <hidden=true>;
+
+    FPush();
+    {
+        SetBackColor( nameColor );
+
+        if ( FolderCount )
+        {
+            FSeekRel( 0x20 + ( FolderStart * 0x40 ) );
+            struct TName Folders[ FolderCount ];
+        }
+
+        if ( FileCount )
+        {
+            FSeekRel( 0x20 +
+                ((parentof(parentof(this)).FolderCount + FileStart) * 0x40) );
+            struct TName Files[ FileCount ];
+        }
+    }
+    FPop();
+} TFolder <optimize=false, read=ReadFolderName>;
+
+typedef struct ( u32 index )
+{
+    FPush();
+    {
+        FSeekRel( 0x20 +
+            ((parentof(parentof(this)).FolderCount + index) * 0x40) );
+        SetBackColor( nameColor );
+        char Name[ 0x40 ];
+    }
+    FPop();
+
+    SetBackColor( fileColor );
+
+    u32 CompressionFlag <format=hex>;
+    u32 Size;
+    u32 CompressedSize;
+    u32 BaseOffset;
+
+    s32 Attributes;
+    u32 ExtendedOffset;
+    time64_t Timestamp;
+
+    FPush();
+    {
+        FSeekRel( BaseOffset );
+
+        // If this file has an uncompressed PAR header, define it as a new TPar
+        if ( ReadString( FTell(), 4 ) == "PARC" )
+        {
+            FPushBase();
+            {
+                TPar ParFile;
+            }
+            FPopBase();
+        }
+        else
+            u8 Data[ CompressedSize ];
+    }
+    FPop();
+} TFile <optimize=false, read=ReadFileName>;
+
+typedef struct
+{
+    char Name[ 0x40 ];
+} TName <read=ReadEntryName>;
+
+string ReadFolderName( TFolder& value )
+{
+    return value.Name;
+}
+
+string ReadFileName( TFile& value )
+{
+    return value.Name;
+}
+
+string ReadEntryName( TName& value )
+{
+    return value.Name;
+}
+
+TPar Par;
