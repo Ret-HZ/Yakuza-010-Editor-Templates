@@ -27,16 +27,18 @@ local int currentpos4;
 local int textending;
 local int dataarraystart<hidden=true>;
 local int dataarrayblocks<hidden=true>;
+local int maxfilesize<hidden=true>;
 
 struct File{
 
 	struct FileHeader{
-		uint32 filetype<name="Filetype">;
-		uint16 Endianess<name = "Endianess ID">;
+		uint32 filetype<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
 		uint16 unk;
-		uint32 FileVersion<name="File Version">;
-		uint32 filesize<name="Filesize">;
-	}fileheader<name = "File Header">;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+		maxfilesize = filesize;
+	}fileheader<name = "File Header",bgcolor = cRed>;
 
 	struct TextData{
 		for( j = 0; j < 99999; j++ )
@@ -52,9 +54,9 @@ struct File{
 				FSkip(-1);
 				char StringValue[];
 			}
-		}text<read = GetString,name="String">;
+		}text<read = GetString,name="String",bgcolor = cRed>;
         textending = FTell()+3;
-	}textdata<name="String Data">;
+	}textdata<name="String Data",bgcolor = cRed>;
 	
 	k = 4 - (FTell() % 4);
 	for( j = 0; j < k; j++ )
@@ -66,15 +68,15 @@ struct File{
 	FSkip(-8);
 	
 	struct CommandSetTable{
-		uint32 numstyletypes<name="Number of Command Sets">;
+		uint32 numstyletypes<name="Number of Command Sets",bgcolor = cRed>;
 		i = FTell();
 		FSkip(-12);
-		uint32 commandtablestart<name="Pointer to Start of Table">;
+		uint32 commandtablestart<name="Pointer to Start of Table",bgcolor = cRed>;
 		FSeek(commandtablestart);
 		
 		for( j = 0; j < numstyletypes; j++ ){
 		struct CommandSetBlock{
-			uint32 pointer<name="Command Set Pointer">;
+			uint32 pointer<name="Command Set Pointer",bgcolor = cRed>;
 			FSkip(4);
 			if (pointer > textending)
 			{
@@ -87,59 +89,67 @@ struct File{
 					FSeek(pointer2);
 					uint32 pointer3<hidden=true>;
 					FSkip(-4);
-					char pointerval2[]<name="Command Set Name">;
+					char pointerval2[]<name="Command Set Name",bgcolor = cRed>;
 					FSeek(pointer);
 				}
 			}
-			uint32 movesetnamepointer<name="Pointer to Moveset Name">;
+			uint32 movesetnamepointer<name="Pointer to Moveset Name",bgcolor = cRed>;
 			FSkip(4);
-			uint32 commandID<name="Command Set ID">;
+			uint32 commandID<name="Command Set ID",bgcolor = cRed>;
 			FSkip(4);
-			uint32 movetablepointer<name="Pointer to Move Table">;
+			uint32 movetablepointer<name="Pointer to Move Table",bgcolor = cRed>;
 			FSkip(4);
-			uint32 weplistpointer<name="Pointer to Weapon List", comment= "Points to Current Command Set if number of weapon command sets is 0.">;
+			uint32 weplistpointer<name="Pointer to Weapon List", comment= "Points to Current Command Set if number of weapon command sets is 0.",bgcolor = cRed>;
 			FSkip(4);
-			uint16 nummoves<name="Number of Moves">;
-			uint16 numwepcommandsets<name="Number of Weapon Command Sets">;
+			uint16 nummoves<name="Number of Moves",bgcolor = cRed>;
+			uint16 numwepcommandsets<name="Number of Weapon Command Sets",bgcolor = cRed>;
 			FSeek(movetablepointer);
 			struct MovesetMovelist{
 				for( k = 0; k < nummoves; k++ )
 				struct MoveStruct{
-					uint32 movepointer<name="Move Pointer">;
+					uint32 movepointer<name="Move Pointer",bgcolor = cRed>;
 					FSkip(4);
 					currentpos = FTell();
 					FSeek(movepointer);
-					uint32 movelocation<name="Move Location">;
+					uint32 movelocation<name="Move Location",bgcolor = cRed>;
 					FSeek(movelocation);
 					char MoveName[]<name="Move Name",hidden=true>;
 					FSeek(movepointer);
 					struct MovePropertiesStruct{
-						uint32 MoveNamePointer<name="Pointer to Move Name">;
+						uint32 MoveNamePointer<name="Pointer to Move Name",bgcolor = cRed>;
 						FSkip(4);
-						uint32 MoveAnimationTablePointer<name="Pointer to Move Animation Table",comment="Points straight to move animation if anim table is equal to 0">;
+						uint32 MoveAnimationTablePointer<name="Pointer to Move Animation Table",comment="Points straight to move animation if anim table is equal to 0",bgcolor = cRed>;
+						if(MoveAnimationTablePointer % 4 != 0 & MoveAnimationTablePointer > dataarraystart){
+						FSkip(-4);
+						uint16 unkanimval1<name="Unknown Animation Related uint16?">;
+						uint16 unkanimval2<name="Unknown Animation Related uint16?">;
+						uint16 unkanimval3<name="Unknown Animation Related uint16?">;
+						uint16 unkanimval4<name="Unknown Animation Related uint16?">;
+						FSkip(-4);
+						}
 						FSkip(4);
-						uint32 MoveFollowUpListPointer<name="Pointer to Follow-Up List">;
+						uint32 MoveFollowUpListPointer<name="Pointer to Follow-Up List",bgcolor = cRed>;
 						FSkip(4);
-						uint32 unkPointerbegin<name="Pointer to beginning of Move?">;
+						uint32 unkPointerbegin<name="Pointer to beginning of Move?",bgcolor = cRed>;
 						FSkip(4);
-						uint16 NumMoveFollowUp<name="Amount of Follow Ups">;
-						ubyte AnimTableBoolean<name="Number of Animation Tables?">;
-						ubyte unk<comment="Could be move type?">;
+						uint16 NumMoveFollowUp<name="Amount of Follow Ups",bgcolor = cRed>;
+						ubyte AnimTableBoolean<name="Number of Animation Tables?",bgcolor = cRed>;
+						ubyte unk<comment="Could be move type?",bgcolor = cRed>;
 						FSeek(MoveFollowUpListPointer);
 						for( l = 0; l < NumMoveFollowUp; l++ )
 						struct MoveFollowUpStruct{
-							uint32 MoveFollowUpPointer<name="Pointer to Move Follow Up">;
+							uint32 MoveFollowUpPointer<name="Pointer to Move Follow Up",bgcolor = cRed>;
 							FSkip(4);
 							currentpos2 = FTell();
 							FSeek(MoveFollowUpPointer);
-							uint16 nummovesetfollowupprops<name="Number of Follow up Properties?">;
-							uint16 movetofollowupto<name="IDx of Move to Follow up to",comment="The array number of the move that will be followed into">;
+							uint16 nummovesetfollowupprops<name="Number of Follow up Properties?",bgcolor = cRed>;
+							uint16 movetofollowupto<name="IDx of Move to Follow up to",comment="The array number of the move that will be followed into",bgcolor = cRed>;
 							FSkip(4);
-							uint32 movesetfollowupproplist<name="Follow up Property List?">;
+							uint32 movesetfollowupproplist<name="Follow up Property List?",bgcolor = cRed>;
 							FSeek(movesetfollowupproplist);
 							for( m = 0; m < nummovesetfollowupprops; m++ )
 							struct MoveFollowUpProperties{
-								uint32 movefollowuppropertypointer<name="Pointer to move follow-up property">;
+								uint32 movefollowuppropertypointer<name="Pointer to move follow-up property",bgcolor = cRed>;
 								FSkip(4);
 								currentpos3 = FTell();
 								FSeek(movefollowuppropertypointer);
@@ -147,9 +157,9 @@ struct File{
 								FSkip(4);
 								uint32 unk;
 								FSeek(currentpos3);
-							}movefollowupproperties<name="Move Follow Up Property">;
+							}movefollowupproperties<name="Move Follow Up Property",bgcolor = cRed>;
 							FSeek(currentpos2);
-						}movefollowupstruct<name="Move Follow Ups">;							
+						}movefollowupstruct<name="Move Follow Ups",bgcolor = cRed>;							
 						for( l = 0; l < AnimTableBoolean; l++ ){
 							currentpos2 = FTell();
 							FSeek(MoveAnimationTablePointer);
@@ -159,48 +169,66 @@ struct File{
 							FSeek(animationtablepointer);
 							for( m = 0; m < numberofanims; m++ )
 							struct AnimationTableStruct{
-								uint32 AnimationPointer<name="Pointer to Animation Name">;
+								uint32 AnimationPointer<name="Pointer to Animation Name",bgcolor = cRed>;
 								FSkip(4);
 								currentpos3 = FTell();
 								FSeek(AnimationPointer);
-								uint32 pointertoanim<name="Pointer to Animation Used">;
-								uint32 unk<comment="Might be padding but including just in case">;
+								uint32 pointertoanim<name="Pointer to Animation Used",bgcolor = cRed>;
+								uint32 unk<comment="Might be padding but including just in case",bgcolor = cRed>;
 								ubyte unk;
 								ubyte unk;
 								ubyte unk;
 								ubyte unk;
 								uint32 unk;
 								FSeek(currentpos3);
-							}animationtablestruct<name="Animation Table">;
+							}animationtablestruct<name="Animation Table",bgcolor = cRed>;
 							FSeek(currentpos2);
 						}
-					}movepropertiesstruct<name="Move Properties">;
+					}movepropertiesstruct<name="Move Properties",bgcolor = cRed>;
 					FSeek(currentpos);
 				}movestruct<name="Move",read=GetMove>;
-			}movesetmovelist<name="List of Moves">;
+			}movesetmovelist<name="List of Moves",bgcolor = cRed>;
 			FSeek(weplistpointer);
 			struct WeaponMovesetList{
 				for( k = 0; k < numwepcommandsets; k++ )
 				struct WeaponMovesetStruct{
-					uint32 wepsetpointer1<name="Weapon Command Set Pointer">;
+					uint32 wepsetpointer1<name="Weapon Command Set Pointer",bgcolor = cRed>;
 					FSkip(4);
 					currentpos = FTell();
 					FSeek(wepsetpointer1);
-					uint32 wepsetpointer2<name="Weapon Command Set Pointer">;
+					uint32 wepsetpointer2<name="Weapon Command Set Pointer",bgcolor = cRed>;
+					FSkip(4);
+					uint32 unkvalue<comment="Value is same as weapon moveset. Seems to have no point?">;
 					FSeek(wepsetpointer2);
-					uint16 unk<name="Unknown uint16",comment="Always equal to 01 00">;
-					uint16 wepsetcommandid<name="Command Set ID",comment="You can find the value in the command set for the referenced weapon">;
+					uint16 numweaponmovesetprops<name="Number of Weapon Moveset Properties?",bgcolor = cRed>;
+					uint16 wepsetcommandid<name="Command Set ID",comment="You can find the value in the command set for the referenced weapon",bgcolor = cRed>;
+					FSkip(4);
+					uint32 weppropertiespointer<name="Weapon Moveset Properties Pointer">;
+					FSeek(weppropertiespointer);
+					for( l = 0; l < numweaponmovesetprops; l++ )
+					struct WeaponMovesetPropertyStruct{
+						uint32 wepmovproppointer<name="Pointer to Property">;
+						FSkip(4);
+						currentpos2 = FTell();
+						FSeek(wepmovproppointer);
+						uint16 unk;
+						uint16 unk;
+						FSkip(4);
+						uint16 unk;
+						uint16 unk;
+						FSeek(currentpos2);
+					}weaponmovesetpropertystruct<name="Weapon Moveset Property",bgcolor=cRed>;
 					FSeek(currentpos);
-				}weaponmovesetstruct<name="Weapon Moveset">;
-			}weaponmovesetlist<name="List of Weapon Movesets">;
+				}weaponmovesetstruct<name="Weapon Moveset",bgcolor = cRed>;
+			}weaponmovesetlist<name="List of Weapon Movesets",bgcolor = cRed>;
 			FSeek(h);
 		}commandsetblock<name="Command Set Block", read = GetCommandSet>;
 		}
 		FSeek(i);
-	}commandsettable<name="Command Set Table">;
+	}commandsettable<name="Command Set Table",bgcolor = cRed>;
 
 	FSeek(h);
-}file<name="Fighter_Command.cfc">;
+}file<name="Fighter_Command.cfc",bgcolor = cRed>;
 
 
 

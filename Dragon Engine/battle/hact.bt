@@ -1,0 +1,177 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: hact.chp
+//   Authors: HeartlessSeph
+//   Version: 1.00
+//   Purpose: Kiwami 2 Fighter Command Mapping
+//   History
+//   1.00    06/01/2020  HeartlessSeph - started this
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+LittleEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int k<hidden=true>;
+local int l<hidden=true>;
+local int m<hidden=true>;
+local int currentpos;
+local int currentpos2;
+local int currentpos3;
+local int currentpos4;
+local int textending;
+local int dataarraystart<hidden=true>;
+local int dataarrayblocks<hidden=true>;
+local int maxfilesize<hidden=true>;
+
+struct File{
+
+	struct FileHeader{
+		uint32 filetype<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
+		uint16 unk;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+		maxfilesize = filesize;
+	}fileheader<name = "File Header",bgcolor = cRed>;
+
+	struct TextData{
+		for( j = 0; j < 99999; j++ )
+		struct Text{
+			ubyte textendcheck<hidden=true>;
+			if (textendcheck == 204)
+			{
+				j = 99999;;
+				FSkip(-1);
+			}
+			else
+			{
+				FSkip(-1);
+				char StringValue[];
+			}
+		}text<read = GetString,name="String",bgcolor = cRed>;
+        textending = FTell()+3;
+	}textdata<name="String Data",bgcolor = cRed>;
+	
+	k = 4 - (FTell() % 4);
+	for( j = 0; j < k; j++ )
+	FSkip(1);
+	dataarraystart = FTell();
+	dataarrayblocks = ((fileheader.filesize) - dataarraystart) / 8;
+
+	FSeek(fileheader.filesize);
+	FSkip(-8);
+	
+	struct HactTable{
+		uint32 commandtablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSkip(-12);
+		uint32 numhacts<name="Number of hacts",bgcolor = cRed>;
+		FSeek(commandtablestart);
+		
+		for( j = 0; j < numhacts; j++ ){
+		struct HactBlock{
+			uint32 pointer<name="Hact Pointer",bgcolor = cRed>;
+			FSkip(4);
+			if (pointer > textending)
+			{
+				h = FTell();
+				FSeek(pointer);
+				uint32 pointer2<name="Hact Location", hidden=true>;
+				FSkip(-4);
+				char pointerval[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+				if (pointer2 < fileheader.filesize){
+					FSeek(pointer2);
+					uint32 pointer3<hidden=true>;
+					FSkip(-4);
+					char pointerval2[]<name="Hact Name",bgcolor = cRed>;
+					FSeek(pointer);
+				}
+			}
+			uint32 movesetnamepointer<name="Pointer to Hact Name",bgcolor = cRed>;
+			FSkip(4);
+			uint32 hacttablepointer<name="Pointer to hact Table",bgcolor = cRed>;
+			FSkip(4);
+			uint32 hacttype<name="Hact Type?",bgcolor = cRed>;
+			uint32 hactid<name="Hact ID">;
+			uint32 weplistpointer<name="Pointer to Unk List", comment= "Points to Current Hact if number of weapon Hacts is 0.",bgcolor = cRed>;
+			FSkip(4);
+			uint16 numhact<name="Number of Hact Targets",bgcolor = cRed>;
+			uint16 numwepcommandsets<name="Number of Weapon Hacts?",bgcolor = cRed>;
+			uint32 unkint<name="Unk int",bgcolor = cRed>;
+			uint32 unkint1<name="Unk int",bgcolor = cRed>;
+			uint32 unkint2<name="Unk int",bgcolor = cRed>;
+			uint32 unkint3<name="Unk int",bgcolor = cRed>;
+			uint32 unkint4<name="Unk int",bgcolor = cRed>;
+			uint32 hactpointer2<name="Pointer to Hact Base (For numbered hacts, else points to base)",bgcolor = cRed>;
+			FSeek(hacttablepointer);
+			struct HactSubList{
+				for( k = 0; k < numhact; k++ )
+				struct SubHactStruct{
+					uint32 subhactpointer<name="Target Pointer",bgcolor = cRed>;
+					FSkip(4);
+					currentpos = FTell();
+					FSeek(subhactpointer);
+					uint32 subhactlocation<name="Target Location",bgcolor = cRed>;
+					FSeek(subhactlocation);
+					char SubHactName[]<name="Subhact Name Name",hidden=true>;
+					FSeek(subhactpointer);
+					struct TargetPropertiesStruct{
+						uint32 TargetPointer<name="Pointer to Target Name",bgcolor = cRed>;
+						FSkip(4);
+						uint32 TargetPropertyTablePointer<name="Pointer to Target Property Table",comment="Points straight to move animation if anim table is equal to 0",bgcolor = cRed>;
+						FSkip(4);
+						uint32 unkint32<name="Unknown int (Target Type?)",bgcolor = cRed>;
+						FSkip(4);
+						uint32 numtargetprops<name="Amount of Unk Tables",bgcolor = cRed>;
+						FSeek(TargetPropertyTablePointer);
+						for( l = 0; l < numtargetprops; l++ )
+						struct TargetPropertyStruct{
+							uint32 TargetPropertyPointer<name="Pointer to Target Property",bgcolor = cRed>;
+							FSkip(4);
+							currentpos2 = FTell();
+							FSeek(TargetPropertyPointer);
+							uint16 unkval1<name="Unknown Value 1",bgcolor = cRed>;
+							uint16 unkval2<name="Unknown Value 2",bgcolor = cRed>;
+							FSkip(4);
+							uint32 unkval3<name="Unknown Value 3",bgcolor = cRed>;
+							if (unkval3 == 41){
+								FSkip(-8);
+								ubyte unkbyte1;
+								ubyte unkbyte2;
+								ubyte unkbyte3;
+								ubyte unkbyte4;
+								FSkip(4);
+							}
+							FSeek(currentpos2);
+						}targetpropertystruct<name="Target Properties",bgcolor = cRed>;	
+						FSeek(currentpos);
+					}targetpropertiesstruct<name="Target Properties",bgcolor = cRed>;
+					FSeek(currentpos);
+				}subhactstruct<name="Hact Target",read=GetSubHact>;
+			}hactsublist<name="List of Hact Targets",bgcolor = cRed>;
+			FSeek(h);
+		}hactblock<name="Hact Block", read = GetHact>;
+		}
+		FSeek(i);
+	}hacttable<name="Hact Table",bgcolor = cRed>;
+
+	FSeek(h);
+}file<name="Fighter_Command.cfc",bgcolor = cRed>;
+
+
+string GetHact(HactBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetSubHact(SubHactStruct & k)
+{
+    return k.SubHactName;
+}
+

@@ -1,0 +1,370 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: fighter_command.cfc
+//   Authors: HeartlessSeph
+//   Version: 1.00
+//   Purpose: Old Engine Property.bin Mapping
+//   History
+//   1.00    24/01/2021  HeartlessSeph - started this
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+BigEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int k<hidden=true>;
+local int l<hidden=true>;
+local int m<hidden=true>;
+local int n<hidden=true>;
+local int o<hidden=true>;
+local int currentpos<hidden=true>;
+local int currentpos2<hidden=true>;
+local int currentpos3<hidden=true>;
+local int currentpos4<hidden=true>;
+local int textending<hidden=true>;
+local int dataarraystart<hidden=true>;
+local int dataarrayblocks<hidden=true>;
+local int maxfilesize<hidden=true>;
+local int propertytablestart;
+local int propertytablepos;
+
+struct File{
+
+	struct FileHeader{
+		uint32 filetype<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
+		uint16 unk;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+		maxfilesize = filesize;
+	}fileheader<name = "File Header",bgcolor = cRed>;
+
+	struct TextData{
+		for( j = 0; j < 99999; j++ )
+		struct Text{
+			ubyte textendcheck<hidden=true>;
+			if (textendcheck == 204)
+			{
+				j = 99999;;
+				FSkip(-1);
+			}
+			else
+			{
+				FSkip(-1);
+				char StringValue[];
+			}
+		}text<read = GetString,name="String",bgcolor = cRed>;
+        textending = FTell()+3;
+	}textdata<name="String Data",bgcolor = cRed>;
+	
+	k = 4 - (FTell() % 4);
+	for( j = 0; j < k; j++ )
+	FSkip(1);
+	dataarraystart = FTell();
+	dataarrayblocks = ((fileheader.filesize) - dataarraystart) / 8;
+
+	
+	
+	FSeek(fileheader.filesize);
+	FSkip(-40);
+	
+	struct Unknown3Table{
+		uint32 numgmts<name="Number of Move Blocks",bgcolor = cRed>;
+		uint32 gmttablestart<name="Pointer to Start of Name Table",bgcolor = cRed>;
+		uint32 gmtdatastart<name="Pointer to Start of Data Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		h = FTell();
+		FSeek(gmtdatastart);
+		n = FTell();
+		FSeek(h);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct UnknownBlock{
+			FSeek(h);
+			uint32 pointer<name="Pointer to Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(n);
+			uint32 pointerdata<name="Pointer to Data",bgcolor = cRed>;
+			n = FTell();
+			FSeek(pointerdata);
+			uint32 unk0val;
+			uint32 MEPTableIdx<name="Effect (MEP) Used", comment = "Index Number of Effect Entry in MEP Table">;
+			uint32 unk2val;
+			uint32 unk3val;
+			uint16 unk4p1<comment="Not known what this does. Is not a 'num of'. Might be hitbox">;
+			uint16 unk4p2;
+			struct Unk5bitfield{
+				uint32 bit1 : 1<name="Unknown Bit">;
+				uint32 bit2 : 1<name="Unknown Bit">;
+				uint32 bit3 : 1<name="Unknown Bit">;
+				uint32 bit4 : 1<name="Unknown Bit">;
+				uint32 bit5 : 1<name="Unknown Bit">;
+				uint32 bit6 : 1<name="Unknown Bit">;
+				uint32 bit7 : 1<name="Unknown Bit">;
+				uint32 bit8 : 1<name="Unknown Bit">;
+				uint32 bit9 : 1<name="Unknown Bit">;
+				uint32 bit10 : 1<name="Unknown Bit">;
+				uint32 bit11 : 1<name="Unknown Bit">;
+				uint32 bit12 : 1<name="Unknown Bit">;
+				uint32 bit13 : 1<name="Unknown Bit">;
+				uint32 bit14 : 1<name="Unknown Bit">;
+				uint32 bit15 : 1<name="Unknown Bit">;
+				uint32 bit16 : 1<name="Unknown Bit">;
+				uint32 bit17 : 1<name="Unknown Bit">;
+				uint32 bit18 : 1<name="Unknown Bit">;
+				uint32 bit19 : 1<name="Unknown Bit">;
+				uint32 bit20 : 1<name="Unknown Bit">;
+				uint32 bit21 : 1<name="Unknown Bit">;
+				uint32 bit22 : 1<name="Unknown Bit">;
+				uint32 bit23 : 1<name="Unknown Bit">;
+				uint32 bit24 : 1<name="Unknown Bit">;
+				uint32 bit25 : 1<name="Unknown Bit">;
+				uint32 bit26 : 1<name="Unknown Bit">;
+				uint32 bit27 : 1<name="Unknown Bit">;
+				uint32 bit28 : 1<name="Unknown Bit">;
+				uint32 bit29 : 1<name="Unknown Bit">;
+				uint32 bit30 : 1<name="Unknown Bit">;
+				uint32 bit31 : 1<name="Unknown Bit">;
+				uint32 bit32 : 1<name="Unknown Bit">;				
+			}unk5bitfield<name="Unk 5 Bit Field">;
+			uint32 unk6val<name="Always 0">;
+			uint32 unk7val<name="Always 0">;
+			uint32 GMTTableIdx<name="Animation (GMT) Used", comment = "Index Number of Animation Entry in GMT Table">;
+			uint32 unk9val;
+			uint32 unk10val;
+			uint16 unk11p1<comment="Seems to be a number of something. Additional Props? Unsure">;
+			uint16 unk11p2;
+			ubyte unk;
+			uint16 unk;
+			ubyte unk;
+			uint32 unk13val;
+			uint32 unk14val;
+			struct MoveProperties{
+				propertytablestart = FTell();
+				uint16 unk;
+				uint16 numproperties<name = "Number of Properties">;
+				for( o = 0; o < numproperties; o++ )
+				struct Property{
+					uint16 StartFrame;
+					uint16 EndFrame;
+					ubyte Modifier;
+					ubyte unk1;
+					ubyte unk2;
+					ubyte PropertyTypeID;
+					uint32 unkvalue;
+					uint32 Pointer;
+					if (PropertyTypeID == 5){
+						struct Hitbox{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 HitboxLocation1;
+							uint16 HitboxLocation2;
+							uint16 unk;
+							ubyte unk;
+							ubyte unk;
+							uint16 Flags;
+							ubyte damage;
+							ubyte heat;
+							uint32 unk;
+							FSeek(propertytablepos);
+						}hitbox<name="Hitbox">;
+					}
+					if (PropertyTypeID == 4){
+						struct ControlLock{
+						}controllock<name="Control Lock">;
+					}
+					if (PropertyTypeID == 2){
+						struct Audio{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;							
+							FSeek(propertytablepos);
+						}audio<name="Audio">;
+					}
+					if (PropertyTypeID == 3){
+						struct FollowUpLock{
+						}followuplock<name="Follow Up Lock">;
+					}
+					if (PropertyTypeID == 1){
+						struct UnkProp1{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;							
+							FSeek(propertytablepos);
+						}unkprop1<name="Unknown Property">;
+					}
+				}property;
+			}moveproperties;
+			FSeek(h);
+		}unknownblock<name="Move Block", read = GetUnkName>;
+		}
+		FSeek(i);
+	}unknown3table<name="Move Data",bgcolor = cRed>;
+	
+
+	FSeek(fileheader.filesize);
+	FSkip(-28);
+	
+	struct GMTTable{
+		uint32 numgmts<name="Number of GMT Files",bgcolor = cRed>;
+		uint32 gmttablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct GMTBlock{
+			uint32 pointer<name="Pointer to GMT Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(h);
+		}gmtblock<name="GMT Block", read = GetGMTName>;
+		}
+		FSeek(i);
+	}gmttable<name="GMT Table",bgcolor = cRed>;
+	
+	
+	
+	struct MEPTable{
+		uint32 nummep<name="Number of MEP Files",bgcolor = cRed>;
+		uint32 meptablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(meptablestart);
+		
+		for( j = 0; j < nummep; j++ ){
+		struct MepBlock{
+			uint32 pointer<name="Pointer to MEP Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(h);
+		}mepblock<name="MEP Block", read = GetMepName>;
+		}
+		FSeek(i);
+	}meptable<name="MEP Table",bgcolor = cRed>;
+	
+
+	struct ActionTable{
+		uint32 numgmts<name="Number of GMT Files",bgcolor = cRed>;
+		uint32 gmttablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct ActionBlock{
+			uint32 pointer<name="Pointer to GMT Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(h);
+		}actionblock<name="Unk Block", read = GetActionName>;
+		}
+		FSeek(i);
+	}actiontable<name="Unk Table",bgcolor = cRed>;
+
+	FSeek(fileheader.filesize);
+	FSkip(-12);
+	
+	struct DataTable2{
+		uint32 numgmts<name="Number of Unk Blocks",bgcolor = cRed>;
+		FSkip(4);
+		uint32 gmttablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct DataTable2Block{
+			uint32 pointer<name="Pointer to Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			uint32 numunkpointer1;
+			uint32 unkpointer1;
+			uint32 namepointer<name="Pointer to Name">;
+			m = FTell();
+			FSeek(namepointer);
+			char pointerval2[]<hidden=true>;
+			FSeek(m);
+			uint32 numunkpointer3;
+			uint32 unkpointer3;
+			k = FTell();
+			FSeek(unkpointer1);
+			for( n = 0; n < numunkpointer1; n++ )
+			struct UnkPointer1Struct{
+				uint32 pointertotable;
+				o = FTell();
+				FSeek(pointertotable);
+				uint32 tablename;
+				uint32 unkval;
+				FSeek(tablename);
+				char pointerval[];
+				FSeek(o);
+			}unkpointer1struct;
+			FSeek(h);
+		}datatable2block<name="Unk Block",read=GetDataBlockName>;
+		}
+		FSeek(i);
+	}datatable2<name="Data Table",bgcolor = cRed>;
+	
+	
+	FSeek(h);
+}file<name="property.bin",bgcolor = cRed>;
+
+
+
+
+
+string GetString(Text& j)
+{
+    return j.StringValue;
+}
+
+string GetMepName(MepBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetActionName(ActionBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetGMTName(GMTBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetUnkName(UnknownBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetDataBlockName(DataTable2Block& j)
+{
+    return j.pointerval2;
+}
