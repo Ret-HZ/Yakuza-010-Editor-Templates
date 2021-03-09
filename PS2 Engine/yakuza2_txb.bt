@@ -1,0 +1,71 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza2_txb.bt 
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Parse Yakuza 1 and 2 .txb files
+//  Category: 
+// File Mask: *.txb
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------ 
+
+#ifndef TXB
+#define TXB
+
+#include "../Common/includes/include.h"
+
+typedef struct
+{
+    SetRandomBackColor();
+    LittleEndian();
+
+    char Magic[4];      // TXBP
+    u32 TextureCount;   // Number of layers/textures
+    u32 DataSize;       // Size without header
+    FSkip( 0x14 );
+
+    local u32 headerColor = SetRandomBackColor();
+    local u32 textureColor = SetRandomBackColor();
+
+    struct
+    { 
+        local u32 currentTex = 0;
+        while ( currentTex < TextureCount )
+        {
+            struct TTexture Texture;
+            currentTex++;
+        }
+    } Textures;
+
+} TTxb;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    u32 Size <format=hex>;
+
+    #ifdef SGT
+        u32 ResX;
+        u32 ResY;
+    #else
+        u32 Res;
+        u32 Field08;
+    #endif
+
+    u32 Mipmaps;      // Not sure
+    s32 Unk[ 4 ];
+
+    SetBackColor( textureColor );
+    u8 TextureData[ Size ];
+} TTexture <optimize=false>;
+
+#ifndef DAT
+    #ifndef SGT
+        TTxb Txb;
+    #endif
+#endif
+
+#endif // #ifndef TXB
