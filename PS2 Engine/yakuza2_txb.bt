@@ -62,10 +62,10 @@ typedef struct
     u8 TextureData[ Size ];
 } TTexture <optimize=false>;
 
+#endif // #ifndef TXB
+
 #ifndef DAT
     #ifndef SGT
         TTxb Txb;
     #endif
 #endif
-
-#endif // #ifndef TXB
