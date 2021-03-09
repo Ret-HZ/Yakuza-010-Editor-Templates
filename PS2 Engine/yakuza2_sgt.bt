@@ -1,0 +1,41 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza2_sgt.bt 
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Parse Yakuza 1 and 2 .sgt files
+//  Category: 
+// File Mask: *.sgt
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------ 
+
+#define SGT
+
+#include "../Common/includes/include.h"
+#include "yakuza2_txb.bt"
+
+typedef struct
+{
+    SetRandomBackColor();
+    LittleEndian();
+
+    char Magic[4]; // SGT
+    u32 ResX;
+    u32 ResY;
+    u32 TextureStart <format=hex>;
+
+    u32 TextureStart1 <format=hex>; // Same as TextureStart
+    u32 Width;
+    u32 Height;
+    u32 TextureCount;
+
+    #ifdef TXB
+        TTxb Txb;
+    #endif
+} TSgt;
+
+#ifndef DAT   // Just in case we find a DAT that contains an SGT
+    TSgt Sgt;
+#endif

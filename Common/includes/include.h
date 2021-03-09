@@ -1,6 +1,6 @@
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef COMMON
+#define COMMON
 
 typedef char bool;
 typedef char s8;
@@ -215,11 +215,6 @@ typedef struct
         f32 Column[4];
     } Row[4];
 } TMatrix4x4;
-
-#endif // #ifndef TYPES_H
-
-#ifndef UTILS_H
-#define UTILS_H
 
 void PrintValueUInt( string name, u64 value )
 {
@@ -474,5 +469,4 @@ void ArrayMaxUInt( u32 array[], u32 count )
     return max;
 }
 
-
-#endif // #ifndef UTILS_H
+#endif // #ifndef COMMON
