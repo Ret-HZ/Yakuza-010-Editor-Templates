@@ -177,6 +177,22 @@ struct File{
 							FSeek(propertytablepos);
 						}hitbox<name="Hitbox">;
 					}
+					if (PropertyTypeID == 18){
+						struct Camera{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 Camera;
+							uint16 HitboxLocation2;
+							uint16 unk;
+							ubyte unk;
+							ubyte unk;
+							uint16 Flags;
+							ubyte damage;
+							ubyte heat;
+							uint32 unk;
+							FSeek(propertytablepos);
+						}hitbox<name="Camera">;
+					}
 					if (PropertyTypeID == 4){
 						struct ControlLock{
 						}controllock<name="Control Lock">;
