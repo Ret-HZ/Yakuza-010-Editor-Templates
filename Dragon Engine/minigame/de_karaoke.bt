@@ -2,8 +2,8 @@
 //--- 010 Editor v10.0.2 Binary Template
 //
 //      File: de_karaoke.bt
-//   Authors: SutandoTsukai181 (Based on ryanbevins's KarKBD)
-//   Version: 1.0
+//   Authors: SutandoTsukai181, Timo654 (Based on ryanbevins's KarKBD)
+//   Version: 1.1
 //   Purpose: Parse Yakuza series Dragon Engine .kbd karaoke sheets
 //  Category: 
 // File Mask: *.kbd
@@ -75,7 +75,8 @@ typedef struct
 
     BUTTON ButtonType <name="enum ButtonType">; // 0, 1, 2, 3 for ◯/B, ✕/A, □/X, △/Y
     NOTE   NoteType   <name="enum NoteType">;   // 0, 1, 2 for Regular, Hold, Rapid
-    u32    SoundId    <format=hex>;             // Used for cheers
+    u16    CueId;                               // Used for cheers
+    u16    CuesheetId;                         // Used for cheers
     u32    Field1C    <hidden=true>;
 } TNote <read=ReadNote>;
 
@@ -114,9 +115,9 @@ string ReadNote( TNote& value )
         SPrintf(hold, "-%u]", value.EndPosition);
     }
 
-    if ( value.ButtonType == Triangle || value.SoundId )
+    if ( value.ButtonType == Triangle || value.CueId || value.CuesheetId )
     {
-        SPrintf(sound, ", Sound: %X", value.SoundId);
+        SPrintf(sound, ", Cue Sheet: %u, Cue ID: %u", value.CuesheetId, value.CueId);
     }
 
     return note + hold + sound;
