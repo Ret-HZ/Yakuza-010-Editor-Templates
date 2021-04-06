@@ -1,0 +1,153 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: de_karaoke.bt
+//   Authors: SutandoTsukai181 (Based on ryanbevins's KarKBD)
+//   Version: 1.0
+//   Purpose: Parse Yakuza series Dragon Engine .kbd karaoke sheets
+//  Category: 
+// File Mask: *.kbd
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+
+local u32 circleColor   = 0x2061F5;
+local u32 crossColor    = 0xF8A236;
+local u32 squareColor   = 0xF1B8F7;
+local u32 triangleColor = 0xB2D58D;
+
+typedef enum <u32>
+{
+    Circle,
+    Cross,
+    Square,
+    Triangle
+} BUTTON;
+
+typedef enum <u32>
+{
+    Regular,
+    Hold,
+    Rapid
+} NOTE;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    LittleEndian();
+    char Magic[4];  // NTBK
+
+    u32 Unused <hidden=true>;
+    u32 Version;
+    u32 FileSizeWithoutHeader;
+
+    u32 NoteCount;
+    u32 MaxScore;  // This is converted to percentage in game
+
+    if ( Version > 1 )
+    {
+        u32 Unk1;
+    }
+
+    local int i;
+    struct
+    {
+        for ( i = 0; i < NoteCount; i++ )
+        {
+            struct TNote Note;
+        }
+    } Notes;
+} TKbd <optimize=false>;
+
+typedef struct
+{
+    SetNoteColor( ReadInt( FTell() + 0x10 ) );
+
+    u32 StartPosition;
+    u32 EndPosition;
+    u32 VerticalPosition; // version 1 has 0-3, version 2 has 0-6
+    u32 Field0C <hidden=true>;
+
+    BUTTON ButtonType <name="enum ButtonType">; // 0, 1, 2, 3 for ◯/B, ✕/A, □/X, △/Y
+    NOTE   NoteType   <name="enum NoteType">;   // 0, 1, 2 for Regular, Hold, Rapid
+    u32    SoundId    <format=hex>;             // Used for cheers
+    u32    Field1C    <hidden=true>;
+} TNote <read=ReadNote>;
+
+void SetNoteColor( BUTTON buttonType )
+{
+    switch ( buttonType )
+    {
+        case Circle:
+            SetBackColor( circleColor );
+            break;
+        case Cross:
+            SetBackColor( crossColor );
+            break;
+        case Square:
+            SetBackColor( squareColor );
+            break;
+        case Triangle:
+            SetBackColor( triangleColor );
+            break;
+    }
+}
+
+string ReadNote( TNote& value )
+{
+    local string note  = "";
+    local string hold  = "]";
+    local string sound = "";
+
+    SPrintf( note, "%s (%s): [%u",
+        BUTTONToString(value.ButtonType),
+        NOTEToString(value.NoteType),
+        value.StartPosition);
+    
+    if ( value.EndPosition )
+    {
+        SPrintf(hold, "-%u]", value.EndPosition);
+    }
+
+    if ( value.ButtonType == Triangle || value.SoundId )
+    {
+        SPrintf(sound, ", Sound: %X", value.SoundId);
+    }
+
+    return note + hold + sound;
+}
+
+string BUTTONToString( BUTTON value )
+{
+    switch ( value )
+    {
+        case Circle:
+            return "Circle";
+        case Cross:
+            return "Cross";
+        case Square:
+            return "Square";
+        case Triangle:
+            return "Triangle";
+    }
+}
+
+string NOTEToString( NOTE value )
+{
+    switch ( value )
+    {
+        case Regular:
+            return "Regular";
+        case Hold:
+            return "Hold";
+        case Rapid:
+            return "Rapid";
+    }
+}
+
+TKbd Kbd;
