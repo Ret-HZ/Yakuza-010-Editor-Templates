@@ -76,7 +76,7 @@ typedef struct
     BUTTON ButtonType <name="enum ButtonType">; // 0, 1, 2, 3 for ◯/B, ✕/A, □/X, △/Y
     NOTE   NoteType   <name="enum NoteType">;   // 0, 1, 2 for Regular, Hold, Rapid
     u16    CueId;                               // Used for cheers
-    u16    ContainerId;                         // Used for cheers
+    u16    CuesheetId;                         // Used for cheers
     u32    Field1C    <hidden=true>;
 } TNote <read=ReadNote>;
 
@@ -115,9 +115,9 @@ string ReadNote( TNote& value )
         SPrintf(hold, "-%u]", value.EndPosition);
     }
 
-    if ( value.ButtonType == Triangle || value.CueId || value.ContainerId )
+    if ( value.ButtonType == Triangle || value.CueId || value.CuesheetId )
     {
-        SPrintf(sound, ", Container: %u, Cue ID: %u", value.ContainerId, value.CueId);
+        SPrintf(sound, ", Cue Sheet: %u, Cue ID: %u", value.CuesheetId, value.CueId);
     }
 
     return note + hold + sound;
