@@ -1,0 +1,76 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: de_karaoke_kpm.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse Yakuza series Dragon Engine .kpm karaoke param files
+//  Category: 
+// File Mask: *.kpm
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+local u32 dataColor = SetRandomBackColor();
+
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    LittleEndian();
+    char Magic[4];  // MRPK
+
+    u32 Unused <hidden=true>;
+    u32 Version;
+    u32 FileSizeWithoutHeader;
+
+    u32 DataCount;
+
+    local int i;
+    struct
+    {
+        for ( i = 0; i < DataCount; i++ )
+        {
+            struct TData Data;
+        }
+    } Data;
+} TKpm <optimize=false>;
+
+typedef struct
+{
+	SetBackColor( dataColor );
+    float GreatRangeBefore;
+    float GoodRangeBefore;
+    float GreatRangeAfter;
+    float GoodRangeAfter;
+    float HoldGreat;
+    float HoldGood;
+	
+    u32 RapidGreat;
+	u32 RapidGood;
+	
+	float Scale; // The smaller the less notes you can see at a time
+    float CutsceneTime; // Cutscene start timing (seconds)
+	if ( Version >= 1 )
+    {
+        float Unk1;
+    }
+	
+} TData <read=ReadData>;
+
+
+string ReadData( TData& value )
+{
+    local string data = "";
+	
+    SPrintf(data, "Scale: %.2f, Cutscene timing: %.3f", value.Scale, value.CutsceneTime);
+	
+	return data;
+    
+}
+
+TKpm Kpm;
