@@ -1,0 +1,63 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: de_karaoke_klc.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse Yakuza series Dragon Engine .klc karaoke lyrics files
+//  Category: 
+// File Mask: *.klc
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    LittleEndian();
+    char Magic[4];  // CRLK
+
+    u32 Unused <hidden=true>;
+	u32 Unused <hidden=true>;
+    u32 Unk1; // 40 in Y6, 44 in K2/Y7
+    u32 LyricCount;
+
+    local int i;
+    struct
+    {
+        for ( i = 0; i < LyricCount; i++ )
+        {
+            struct TData Lyric;
+        }
+    } Lyrics;
+} TKlc <optimize=false>;
+
+typedef struct
+{
+	SetRandomBackColor();
+	float StartTiming; // lyric start time in seconds
+    float EndTiming; // lyric end time in seconds
+    float AppearTiming; // lyric texture appear time in seconds
+    float DisappearTiming; // lyric texture disappear time in seconds
+    u32 VerticalPos; // values above 1 crash the game
+	u32 Unused <hidden=true>;
+	
+} TData <read=ReadLyrics>;
+
+
+string ReadLyrics ( TData& value )
+{
+    local string lyric = "";
+	
+    SPrintf(lyric, "Appear: %.1fs, Disappear: %.1fs", value.AppearTiming, value.DisappearTiming);
+	
+	return lyric;
+    
+}
+
+TKlc Klc;
