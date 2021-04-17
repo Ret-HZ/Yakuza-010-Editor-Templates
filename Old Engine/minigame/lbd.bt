@@ -53,8 +53,8 @@ typedef struct
 		u16 Unk2 <hidden=true>; //FFFF
 		u32 NoteCount;
 	}
-	
-	u32 ClimaxHeat;
+    
+    u32 ClimaxHeat;
     u32 Unk4;
 	
 	if ( Version == 0)
@@ -69,10 +69,10 @@ typedef struct
 		u32 GoodRangeBefore;
 		u32 GreatRangeBefore;
 	}
-	
+    
 	u32 SpecialModeStart; //divide by 3 to get ms
 	u32 SpecialModeLength; //divide by 3 to get ms
-	
+    
 	if ( Version > 0)
 	{
 		u32 Scale; // The smaller the number, the faster the notes appear
@@ -80,7 +80,7 @@ typedef struct
 		u32 GreatRangeAfter;
 		u32 HitRangeAfter;
 	}
-	
+    
     local int i;
     struct
     {
@@ -93,15 +93,15 @@ typedef struct
 	if ( ClimaxHeat >= 1 )
     {
         u32 CostumeSwitchStart;
-		u32 CostumeSwitchEnd;
+        u32 CostumeSwitchEnd;
     }
 } TLbd <optimize=false>;
 
 typedef struct
 {
-	SetNoteColor( ReadInt( FTell()) );
-	u8 Unk5; // either 0 or 16
-	u8 Line; // which line it appears on.
+    SetNoteColor( ReadInt( FTell()) );
+    u8 Unk5; // either 0 or 16
+    u8 Line; // which line it appears on.
     BUTTON ButtonType <name="enum ButtonType">;
     u32 StartPos; //divide by 3 to get ms
     u32 EndPos; //divide by 3 to get ms
@@ -145,18 +145,18 @@ void SetNoteColor( BUTTON buttonType )
 string ReadNote ( TData& value )
 {
     local string note = "";
-	local string hold  = "]";
+    local string hold  = "]";
 	
-	SPrintf( note, "%s: [%u",
+    SPrintf( note, "%s: [%u",
         BUTTONToString(value.ButtonType),
         value.StartPos);
 	
-	if ( value.EndPos )
+    if ( value.EndPos )
     {
         SPrintf(hold, "-%u]", value.EndPos);
     }
-	
-	return note + hold;
+
+    return note + hold;
     
 }
 
