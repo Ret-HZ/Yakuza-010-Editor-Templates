@@ -31,11 +31,11 @@ typedef enum <u16>
     Cross = 1,
     Square = 2,
     Triangle = 3,
-	Bomb = 4, // dance battle
-	Up = 9,
-	Down = 10,
-	Right = 11,
-	Left = 12
+    Bomb = 4, // dance battle
+    Up = 9,
+    Down = 10,
+    Right = 11,
+    Left = 12
 } BUTTON;
 
 typedef struct
@@ -124,10 +124,10 @@ void SetNoteColor( BUTTON buttonType )
         case Triangle:
             SetBackColor( triangleColor );
             break;
-		case Bomb:
+        case Bomb:
             SetBackColor( bombColor );
             break;
-		case Up:
+        case Up:
             SetBackColor( upColor );
             break;
         case Down:
@@ -172,15 +172,15 @@ string BUTTONToString( BUTTON value )
             return "Square";
         case Triangle:
             return "Triangle";
-		case Bomb:
+        case Bomb:
             return "Bomb";		
-		case Up:
+        case Up:
             return "Up";
-		case Down:
+        case Down:
             return "Down";
-		case Right:
+        case Right:
             return "Right";
-		case Left:
+        case Left:
             return "Left";
     }
 }
