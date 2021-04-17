@@ -1,0 +1,188 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: lbd.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse Yakuza 5 .lbd rhythm game files
+//  Category: 
+// File Mask: *.lbd
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+
+local u32 circleColor = 0x2061F5;
+local u32 crossColor = 0xF8A236;
+local u32 squareColor = 0xF1B8F7;
+local u32 triangleColor = 0xB2D58D;
+local u32 bombColor = 0x393835;
+local u32 upColor = 0x42CF8B;
+local u32 downColor = 0xF28D11;
+local u32 rightColor = 0x074df0;
+local u32 leftColor = 0xE375F0;
+
+typedef enum <u16>
+{
+    Circle = 0,
+    Cross = 1,
+    Square = 2,
+    Triangle = 3,
+	Bomb = 4, // dance battle
+	Up = 9,
+	Down = 10,
+	Right = 11,
+	Left = 12
+} BUTTON;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+    BigEndian();
+    u16 Version;
+	
+	if ( Version == 0)
+	{
+		u16 NoteCount;
+    }
+	else
+	{
+		u16 Unk2 <hidden=true>; //FFFF
+		u32 NoteCount;
+	}
+	
+	u32 ClimaxHeat;
+    u32 Unk4;
+	
+	if ( Version == 0)
+	{
+		u32 HitRange;
+		u32 GoodRange;
+		u32 GreatRange;
+	}
+	else
+	{
+		u32 HitRangeBefore;
+		u32 GoodRangeBefore;
+		u32 GreatRangeBefore;
+	}
+	
+	u32 SpecialModeStart; //divide by 3 to get ms
+	u32 SpecialModeLength; //divide by 3 to get ms
+	
+	if ( Version > 0)
+	{
+		u32 Scale; // The smaller the number, the faster the notes appear
+		u32 GoodRangeAfter;
+		u32 GreatRangeAfter;
+		u32 HitRangeAfter;
+	}
+	
+    local int i;
+    struct
+    {
+		for ( i = 0; i < NoteCount; i++ )
+        {
+            struct TData Note;
+        }
+    } Notes;
+	
+	if ( ClimaxHeat >= 1 )
+    {
+        u32 CostumeSwitchStart;
+		u32 CostumeSwitchEnd;
+    }
+} TLbd <optimize=false>;
+
+typedef struct
+{
+	SetNoteColor( ReadInt( FTell()) );
+	u8 Unk5; // either 0 or 16
+	u8 Line; // which line it appears on.
+    BUTTON ButtonType <name="enum ButtonType">;
+    u32 StartPos; //divide by 3 to get ms
+    u32 EndPos; //divide by 3 to get ms
+	
+} TData <read=ReadNote>;
+
+void SetNoteColor( BUTTON buttonType )
+{
+    switch ( buttonType )
+    {
+        case Circle:
+            SetBackColor( circleColor );
+            break;
+        case Cross:
+            SetBackColor( crossColor );
+            break;
+        case Square:
+            SetBackColor( squareColor );
+            break;
+        case Triangle:
+            SetBackColor( triangleColor );
+            break;
+		case Bomb:
+            SetBackColor( bombColor );
+            break;
+		case Up:
+            SetBackColor( upColor );
+            break;
+        case Down:
+            SetBackColor( downColor );
+            break;
+        case Right:
+            SetBackColor( rightColor );
+            break;
+        case Left:
+            SetBackColor( leftColor );
+            break;
+    }
+}
+
+string ReadNote ( TData& value )
+{
+    local string note = "";
+	local string hold  = "]";
+	
+	SPrintf( note, "%s: [%u",
+        BUTTONToString(value.ButtonType),
+        value.StartPos);
+	
+	if ( value.EndPos )
+    {
+        SPrintf(hold, "-%u]", value.EndPos);
+    }
+	
+	return note + hold;
+    
+}
+
+string BUTTONToString( BUTTON value )
+{
+    switch ( value )
+    {
+        case Circle:
+            return "Circle";
+        case Cross:
+            return "Cross";
+        case Square:
+            return "Square";
+        case Triangle:
+            return "Triangle";
+		case Bomb:
+            return "Bomb";		
+		case Up:
+            return "Up";
+		case Down:
+            return "Down";
+		case Right:
+            return "Right";
+		case Left:
+            return "Left";
+    }
+}
+
+TLbd Lbd;
