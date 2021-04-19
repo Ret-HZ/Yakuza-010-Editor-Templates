@@ -1,0 +1,164 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: waterfall.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse Kenzan waterfall files
+//  Category: 
+// File Mask: wtfl_*.bin
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+local u32 circleColor = 0x2061F5;
+local u32 crossColor = 0xF8A236;
+local u32 squareColor = 0xF1B8F7;
+local u32 triangleColor = 0xB2D58D;
+
+typedef enum <u32>
+{
+    Cross = 0,
+    Circle = 1,
+    Square = 2,
+    Triangle = 3,
+} BUTTON;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    BigEndian();
+    char Magic[4];  // LFTW
+
+    u16 EndianCheck <format=hex>;
+    u8 NoteCount;
+    u8 Unk1;
+    u32 Version <format=hex>;
+    u32 Unused <hidden=true>;
+
+    if ( Version > 0x1000000)
+    {
+        char Name[13];
+    }
+    
+    if ( NoteCount == 0)
+    {
+        local int e;
+        struct
+        {
+            for ( e = 0; e < 5; e++ )
+            {
+                struct TData Data;
+            }
+        } Data;
+    
+    
+        local int o;
+        struct
+        {
+            for ( o = 0; o < 5; o++ )
+            {
+                struct TData2 Data;
+            }
+        } Data2;
+    }
+    else
+    {
+        local int i;
+        struct
+        {
+            for ( i = 0; i < NoteCount; i++ )
+            {
+                struct TNote Note;
+            }
+        } Notes;
+    }
+    
+} TWtfl <optimize=false>;
+
+typedef struct
+{
+    SetNoteColor( ReadInt( FTell()) );
+    BUTTON ButtonType <name="enum ButtonType">;
+    float Position;
+    
+    
+} TNote <read=ReadNote>;
+
+void SetNoteColor( BUTTON buttonType )
+{
+    switch ( buttonType )
+    {
+        case Circle:
+            SetBackColor( circleColor );
+            break;
+        case Cross:
+            SetBackColor( crossColor );
+            break;
+        case Square:
+            SetBackColor( squareColor );
+            break;
+        case Triangle:
+            SetBackColor( triangleColor );
+            break;
+    }
+}
+
+typedef struct
+{
+    SetRandomBackColor();
+    u32 Unk2;
+    u32 StartingHeat;
+    u32 Unk3[4];
+    u32 MaxHeat;
+    u32 Scale; // The smaller the value the faster it is
+    u32 Unk4[8];
+    
+    
+    
+} TData;
+
+typedef struct
+{
+    SetRandomBackColor();
+    u32 Unk5[21];
+    u32 HitRange; // The smaller the value the bigger the range
+    u32 GoodRange; // The smaller the value the bigger the range
+    u32 GreatRange; // The smaller the value the bigger the range
+    
+    
+} TData2;
+
+
+string ReadNote( TNote& value )
+{
+    local string note = "";
+    
+    SPrintf( note, "%s: [%.2f]",
+        BUTTONToString(value.ButtonType),
+        value.Position);
+    
+    return note;
+    
+}
+
+string BUTTONToString( BUTTON value )
+{
+    switch ( value )
+    {
+        case Circle:
+            return "Circle";
+        case Cross:
+            return "Cross";
+        case Square:
+            return "Square";
+        case Triangle:
+            return "Triangle";
+    }
+}
+
+TWtfl Wtfl;
