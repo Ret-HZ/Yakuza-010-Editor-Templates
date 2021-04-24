@@ -104,11 +104,11 @@ typedef struct
         u32 HitRangeAfter <name="Hit range (After)", comment="Hit range after note passes">;
     }
     
-    if ( Version > 3)
+    if ( Version > 3) // Yakuza 0
     {
-        u32 Unk2;
-        u32 Unk3;
-        u32 Unk4;
+        u32 Padding <hidden=true>;
+        u32 Padding <hidden=true>;
+        u32 Padding <hidden=true>;
     }
     
     local int i;
