@@ -3,12 +3,12 @@
 //
 //      File: lbd.bt
 //   Authors: Timo654
-//   Version: 1.0
-//   Purpose: Parse Yakuza 5 .lbd rhythm game files
+//   Version: 1.1
+//   Purpose: Parse Yakuza series .lbd rhythm game files
 //  Category: 
 // File Mask: *.lbd
 //  ID Bytes: 
-//   History: 
+//   History:
 //------------------------------------------------
 
 #include "../../Common/includes/include.h"
@@ -24,91 +24,180 @@ local u32 upColor = 0x42CF8B;
 local u32 downColor = 0xF28D11;
 local u32 rightColor = 0x074df0;
 local u32 leftColor = 0xE375F0;
+local u32 unk1Color = 0x2AF409;
+local u32 unk2Color = 0x6000BF;
+local u32 countdownColor = 0x2BE1FE;
+local u32 endColor = 0xFFFF00;
 
-typedef enum <u16>
+local u16 Version = 0;
+
+typedef enum <u8>
+{
+    CircleY5 = 0,
+    CrossY5 = 1,
+    SquareY5 = 2,
+    TriangleY5 = 3,
+    Bomb = 4, // Dance battle
+    UpY5 = 9, // Special Mode only
+    DownY5 = 10, // Special Mode only
+    RightY5 = 11, // Special Mode only
+    LeftY5 = 12 // Special Mode only
+} BUTTON1; // Yakuza 5
+
+typedef enum <u8>
 {
     Circle = 0,
     Cross = 1,
-    Square = 2,
-    Triangle = 3,
-    Bomb = 4, // dance battle
-    Up = 9,
-    Down = 10,
-    Right = 11,
-    Left = 12
-} BUTTON;
+    Triangle = 2,
+    Square = 3,
+    Right = 4,
+    Down = 5,
+    Up = 6,
+    Left = 7,
+    Countdown = 8, // Ishin
+    Unk1 = 9,
+    Unk2 = 10,
+    End = 11,
+} BUTTON2; // Yakuza Ishin and Zero
+
 
 typedef struct
 {
     SetBackColor( headerColor );
     BigEndian();
-    u16 Version;
-	
-	if ( Version == 0)
-	{
-		u16 NoteCount;
+    u16 Ver <name="Version", comment="0, 2 = Y5, 3 = Ishin, 4 = Y0">;
+    Version = Ver;
+    if ( Version == 0)
+    {
+        u16 NoteCount <name="Note count", comment="Amount of notes">;
     }
-	else
-	{
-		u16 Unk2 <hidden=true>; //FFFF
-		u32 NoteCount;
-	}
+    else
+    {
+        u16 Unk <hidden=true>; //FFFF
+        u32 NoteCount <name="Note count", comment="Amount of notes">;
+    }
     
-    u32 ClimaxHeat;
-    u32 Unk4;
-	
-	if ( Version == 0)
-	{
-		u32 HitRange;
-		u32 GoodRange;
-		u32 GreatRange;
-	}
-	else
-	{
-		u32 HitRangeBefore;
-		u32 GoodRangeBefore;
-		u32 GreatRangeBefore;
-	}
+    u32 ClimaxHeat <name="Climax heat", comment="0 - false, 1 - true">;
+    u32 Unk1;
     
-	u32 SpecialModeStart; //divide by 3 to get ms
-	u32 SpecialModeLength; //divide by 3 to get ms
+    if ( Version == 0)
+    {
+        u32 HitRange <name="Hit range", comment="Hit range for note">;
+        u32 GoodRange <name="Good range", comment="Good range for note">;
+        u32 GreatRange <name="Great range", comment="Great range for note">;
+    }
+    else
+    {
+        u32 HitRangeBefore <name="Hit range (Before)", comment="Hit range before note passes">;
+        u32 GoodRangeBefore <name="Good range (Before)", comment="Good range before note passes">;
+        u32 GreatRangeBefore <name="Great range (Before)", comment="Great range before note passes">;
+    }
     
-	if ( Version > 0)
-	{
-		u32 Scale; // The smaller the number, the faster the notes appear
-		u32 GoodRangeAfter;
-		u32 GreatRangeAfter;
-		u32 HitRangeAfter;
-	}
+    u32 SpecialModeStart <name="Special Mode Start", comment="Live battle / practice only, happens mid song">;
+    u32 SpecialModeLength <name="Special Mode Length", comment="Special Mode duration">;
+    
+    if ( Version > 0)
+    {
+        u32 Scale <name="Scale", comment="Controls note appear distance / speed">;
+        u32 GoodRangeAfter <name="Good range (After)", comment="Good range after note passes">;
+        u32 GreatRangeAfter <name="Great range (After)", comment="Great range after note passes">;
+        u32 HitRangeAfter <name="Hit range (After)", comment="Hit range after note passes">;
+    }
+    
+    if ( Version > 3) // Yakuza 0
+    {
+        u32 Padding <hidden=true>;
+        u32 Padding <hidden=true>;
+        u32 Padding <hidden=true>;
+    }
     
     local int i;
     struct
     {
-		for ( i = 0; i < NoteCount; i++ )
+        for ( i = 0; i < NoteCount; i++ )
         {
             struct TData Note;
         }
     } Notes;
-	
-	if ( ClimaxHeat >= 1 )
+    
+    if ( ClimaxHeat >= 1 )
     {
-        u32 CostumeSwitchStart;
-        u32 CostumeSwitchEnd;
+        u32 CostumeSwitchStart <name="Costume Switch Start", comment="Costume switch QTE start">;
+        u32 CostumeSwitchEnd <name="Costume Switch End", comment="Costume switch QTE end">;
     }
+    
 } TLbd <optimize=false>;
 
 typedef struct
 {
-    SetNoteColor( ReadInt( FTell()) );
+    if ( Version > 2)
+    {
+        SetNoteColor2( ReadInt( FTell()) );
+    }    
+    else
+    {
+        SetNoteColor1( ReadInt( FTell()) );
+    }
+
     u8 Unk5; // either 0 or 16
-    u8 Line; // which line it appears on.
-    BUTTON ButtonType <name="enum ButtonType">;
-    u32 StartPos; //divide by 3 to get ms
-    u32 EndPos; //divide by 3 to get ms
-	
+    u8 Line <name="Line", comment="Which line the note appears on">;
+    u8 Unk6;
+    
+    if ( Version > 2)
+    {
+        BUTTON2 ButtonType <name="enum ButtonType">;
+    }    
+    else
+    {
+        BUTTON1 ButtonType <name="enum ButtonType">;
+    }
+
+    u32 StartPos <name="Start position", comment="Divide by 3 to get ms">;
+    u32 EndPos <name="End position", comment="Hold. Divide by 3 to get ms">;
+    
+    
+    if ( Version > 3)
+    {
+        u32 GridPosition <name="Grid position", comment="Where the button appears on the grid">;
+    }
+    
 } TData <read=ReadNote>;
 
-void SetNoteColor( BUTTON buttonType )
+void SetNoteColor1( BUTTON1 buttonType ) // Y5
+{
+    switch ( buttonType )
+    {
+        case CircleY5:
+            SetBackColor( circleColor );
+            break;
+        case CrossY5:
+            SetBackColor( crossColor );
+            break;
+        case SquareY5:
+            SetBackColor( squareColor );
+            break;
+        case TriangleY5:
+            SetBackColor( triangleColor );
+            break;
+        case Bomb:
+            SetBackColor( bombColor );
+            break;
+        case UpY5:
+            SetBackColor( upColor );
+            break;
+        case DownY5:
+            SetBackColor( downColor );
+            break;
+        case RightY5:
+            SetBackColor( rightColor );
+            break;
+        case LeftY5:
+            SetBackColor( leftColor );
+            break;
+    }
+}
+
+void SetNoteColor2( BUTTON2 buttonType ) //Ishin and Y0
 {
     switch ( buttonType )
     {
@@ -124,9 +213,6 @@ void SetNoteColor( BUTTON buttonType )
         case Triangle:
             SetBackColor( triangleColor );
             break;
-        case Bomb:
-            SetBackColor( bombColor );
-            break;
         case Up:
             SetBackColor( upColor );
             break;
@@ -139,18 +225,40 @@ void SetNoteColor( BUTTON buttonType )
         case Left:
             SetBackColor( leftColor );
             break;
+        case Unk1:
+            SetBackColor( unk1Color );
+            break;
+        case Unk2:
+            SetBackColor( unk2Color );
+            break;
+        case End:
+            SetBackColor( endColor );
+            break;
+        case Countdown:
+            SetBackColor( countdownColor );
+            break;
     }
 }
+
 
 string ReadNote ( TData& value )
 {
     local string note = "";
     local string hold  = "]";
-	
+    
+    if ( Version > 2)
+    {
+        SPrintf( note, "%s: [%u",
+        BUTTON2ToString(value.ButtonType),
+        value.StartPos );
+    }
+    else
+    {
     SPrintf( note, "%s: [%u",
-        BUTTONToString(value.ButtonType),
-        value.StartPos);
-	
+        BUTTON1ToString(value.ButtonType),
+        value.StartPos );
+    }
+    
     if ( value.EndPos )
     {
         SPrintf(hold, "-%u]", value.EndPos);
@@ -160,7 +268,32 @@ string ReadNote ( TData& value )
     
 }
 
-string BUTTONToString( BUTTON value )
+string BUTTON1ToString( BUTTON1 value )
+{
+    switch ( value )
+    {
+        case CircleY5:
+            return "Circle";
+        case CrossY5:
+            return "Cross";
+        case SquareY5:
+            return "Square";
+        case TriangleY5:
+            return "Triangle";
+        case Bomb:
+            return "Bomb";        
+        case UpY5:
+            return "Up";
+        case DownY5:
+            return "Down";
+        case RightY5:
+            return "Right";
+        case LeftY5:
+            return "Left";
+    }
+}
+
+string BUTTON2ToString( BUTTON2 value )
 {
     switch ( value )
     {
@@ -172,8 +305,14 @@ string BUTTONToString( BUTTON value )
             return "Square";
         case Triangle:
             return "Triangle";
-        case Bomb:
-            return "Bomb";		
+        case Unk1:
+            return "Unk1";
+        case Unk2:
+            return "Unk2";
+        case End:
+            return "End";
+        case Countdown:
+            return "Countdown";            
         case Up:
             return "Up";
         case Down:
@@ -184,5 +323,6 @@ string BUTTONToString( BUTTON value )
             return "Left";
     }
 }
+
 
 TLbd Lbd;
