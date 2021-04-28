@@ -1,0 +1,145 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza2_screffect.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse Yakuza 2 HD ScrEffectParam files
+//  Category: 
+// File Mask: ST_*.bin
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+local u32 headerFlag;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    LittleEndian();
+
+    u32 HeaderFlag <format=hex>;
+    headerFlag == HeaderFlag;
+    
+    if (HeaderFlag >= 0x2500)
+    {
+        struct TFoc Focus;
+    }
+    
+    if (HeaderFlag < 0xA500)
+    {
+        if (HeaderFlag >= 0x2700)
+        {
+            struct TFog Fog;
+        }
+    }
+    
+    if (HeaderFlag >= 0x2400)
+    {
+        struct TClr ColorFilter;
+    }
+    
+    struct TGlare Glare;
+    
+    if (HeaderFlag >= 0x202500)
+    {
+        struct TFogV FogVertex;
+    }
+    
+    u32 Shadow <format=hex>;
+    
+} TScr <optimize=false>;
+
+typedef struct
+{
+    SetRandomBackColor();
+    float fInFrame;
+    float fOutFrame;
+    float fGrowth;
+    u8 byNum;
+    u8 byGrowthAngle;
+    u16 byGlareTable;
+    s32 dwFarZ;
+    u8 byNearAlpha;
+    u8 byFarAlpha;
+    u8 byZUse;
+    u8 byZNum;
+    
+    if (HeaderFlag < 0x202500)
+    {
+        if (ReadInt( FTell()) == 0)
+        {
+            u32 Padding <hidden=true>;
+        }
+    }
+    
+} TGlare;
+
+typedef struct
+{
+    SetRandomBackColor();
+    float fInFrame;
+    float fOutFrame;
+    u32 dwColor <format=hex>;
+    u32 Padding <hidden=true>;
+    
+} TClr;
+
+typedef struct
+{
+    SetRandomBackColor();
+    float fInFrame;
+    float fOutFrame;
+    u8 byBlurSize[2];
+    u8 byBlurDbFlg;
+    u8 byBlurDepth;
+    float fBlurOfsStep;
+    u8 byZSize;
+    u8 byEnableNear;
+    u8 byBDNum[2];
+    u8 byAlpha[4];
+    float fRange[5];
+    u32 dwColor <format=hex>;
+    
+    
+} TFoc;
+
+typedef struct
+{
+    SetRandomBackColor();
+    float fInFrame;
+    float fOutFrame;
+    u8 byZSize;
+    u8 byEnableNear;
+    u8 byBDNum[2];
+    u8 byAlpha[4];
+    float fRange[5];
+    u32 dwColor <format=hex>;
+    u8 byFlatRatio;
+    u8 byTexSize;
+    u32 Padding <hidden=true>;
+    u16 Padding <hidden=true>;
+    
+} TFog;
+
+typedef struct
+{
+    SetRandomBackColor();
+    float fInFrame;
+    float fOutFrame;
+    u8 byR;
+    u8 byG;
+    u8 byB;
+    u8 Padding <hidden=true>;
+    float fNear;
+    float fFar;
+    u32 Padding2[5] <hidden=true>;
+    
+} TFogV;
+
+
+TScr Scr;
