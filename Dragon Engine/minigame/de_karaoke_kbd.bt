@@ -51,7 +51,7 @@ typedef struct
 
     if ( Version > 1 )
     {
-        u32 ScoreForCutscene; // Minimum score needed for cutscene to play
+        u32 MaxScorePreScene; // Maximum score before cutscene start
     }
 
     local int i;

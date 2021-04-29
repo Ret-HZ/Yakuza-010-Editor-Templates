@@ -1,0 +1,60 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: list.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse files in chara_common/list.par
+//  Category: 
+// File Mask: Adv*.bin,Btl*.bin,E_*.bin,Villian*.bin,Male*.bin,Female*.bin,MAIN_*_BTL.bin,STID_ST_*.bin,PLAYER_*.bin,Audience*.bin,ALL_STAGE_COMMON*.bin
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+local u32 headerColor = SetRandomBackColor();
+
+
+typedef struct
+{
+	
+    SetBackColor( headerColor );
+
+    BigEndian();
+	
+    u32 Unused <hidden=true>;
+    u16 EndianCheck <format=hex>;
+	u16 Unused <hidden=true>;
+	u32 Unused <hidden=true>;
+	u32 Unused <hidden=true>;
+    u32 UnkCount;
+    u32 Unused <hidden=true>;
+    u32 Unused <hidden=true>;
+	u32 Unused <hidden=true>;
+	
+    {
+        local int i;
+        struct
+        {
+            for ( i = 0; i < UnkCount; i++ )
+            {
+                struct TUnk Unk;
+           }
+        } Unknown;
+    }
+    
+} TInfo <optimize=false>;
+
+typedef struct
+{
+    SetRandomBackColor();
+	
+    u8 Unk1;
+	u8 Unk2;
+	u16 Unk3;
+	u32 Unk4;
+	
+} TUnk;
+
+
+TInfo Info;

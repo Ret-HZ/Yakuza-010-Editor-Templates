@@ -1,0 +1,75 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: wkl.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse .wkl files
+//  Category: 
+// File Mask: *.wkl
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    BigEndian();
+    char Magic[4];  // WKL 
+
+    u16 EndianCheck <format=hex>;
+    u16 Empty;
+    u32 Empty2;
+    u32 Size; //wo header
+	
+    struct
+    {
+        struct TNote Note;
+    } Notes;
+ 
+    
+} TWtfl <optimize=false>;
+
+typedef struct
+{
+	SetRandomBackColor();
+	float Unk1;
+	float Unk2;
+	float Unk3;
+	float Unk4;
+	float Unk5;
+	float Unk6;
+	float Unk7;
+	float Unk8;
+	float Unk9;
+	u32 Unk10;
+	u32 Unk11;
+	u32 Unk12;
+	u32 Unk13;
+	float Unk14;
+	float Unk15;
+	float Unk16;
+	float Unk17;
+    
+    
+} TNote <read=ReadNote>;
+
+string ReadNote( TNote& value )
+{
+    local string note = "";
+    
+    //SPrintf( note, "%s: [%.2f]",
+    //    BUTTONToString(value.ButtonType),
+    //    value.Position);
+    
+    return note;
+    
+}
+
+
+TWtfl Wtfl;
