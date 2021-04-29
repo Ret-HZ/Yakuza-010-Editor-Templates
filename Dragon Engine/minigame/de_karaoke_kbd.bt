@@ -3,7 +3,7 @@
 //
 //      File: de_karaoke.bt
 //   Authors: SutandoTsukai181, Timo654 (Based on ryanbevins's KarKBD)
-//   Version: 1.1
+//   Version: 1.2
 //   Purpose: Parse Yakuza series Dragon Engine .kbd karaoke sheets
 //  Category: 
 // File Mask: *.kbd
@@ -51,7 +51,7 @@ typedef struct
 
     if ( Version > 1 )
     {
-        u32 Unk1;
+        u32 MaxScorePreScene; // Maximum score before cutscene start
     }
 
     local int i;
