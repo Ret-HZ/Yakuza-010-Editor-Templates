@@ -334,6 +334,48 @@ u32 SetBackColorToLighterShadeOfLastColor()
     return color;
 }
 
+u32 StringToInt( char str[] )
+{
+    local u32 result = 0;
+    local u32 length = Strlen( str );
+
+    if ( length > 4 ) length = 4;
+
+    while ( length )
+    {
+        --length;
+        result += str[length] * Pow( 10, length);
+    }
+
+    return result;
+}
+
+// Generate color uniquely based on a string of 4 or less characters
+u32 MyRandomFromString( char str[] )
+{
+	local u32 to = 0xFFFFFFFF;
+	local u32 RandomBit = 0;
+	
+	if ( Strlen( str ) > 4 ) return MyRandom( to );
+	
+	local u32 RandomSeed = 0xC0FFEE + StringToInt( str );
+	
+    RandomBit  = ( (RandomSeed >> 0 ) ^ ( RandomSeed >> 2 ) ^ ( RandomSeed >> 3 ) ^ ( RandomSeed >> 5 ) ) & 1;
+    RandomSeed = ( ( ( ( RandomBit << 15 ) | ( RandomSeed >> 1 ) ) + ( 0xBABE ) ) % to );
+
+    while( RandomSeed < 0 )
+        RandomSeed += to;
+
+    return RandomSeed;
+}
+
+u32 SetRandomBackColorFromString( char str[] )
+{
+    local u32 color = MyRandomFromString( str );
+    SetBackColor( color );
+    return color;
+}
+
 // Generate u32 from FourCC in string format
 u32 ReadFourCC()
 {
