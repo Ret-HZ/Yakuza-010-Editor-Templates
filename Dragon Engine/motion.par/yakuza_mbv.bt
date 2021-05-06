@@ -1,0 +1,367 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza_mbv.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Parse Yakuza series Dragon Engine .mbv motion behavior files
+//  Category: 
+// File Mask: *.mbv
+//  ID Bytes: 50 42 52 42 //PBRB
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+// Note: As the entries are all declared with the same variable name, they will
+// have array indices appended to them, which may or may not indicate
+// whether they are a "duplicate" of the same struct.
+
+// Set to 1 to enable generating colors based on the magic
+// Takes more time to execute the template
+local bool enableColors = 1;
+
+local u32 pbrbColor = SetRandomBackColorFromString( "PBRB" );
+
+local u32 magicCount = 1;
+
+// Should be enough for all magics
+local u32 magicArray[100];
+local u32 colorArray[100];
+
+local u32 magicArraySize = 0;
+
+typedef struct
+{
+    SetBackColor( pbrbColor );
+    LittleEndian();
+
+    char Magic[4];  // PBRB
+    Assert( Magic == "PBRB" );
+
+    u8 Endianness0; // 0
+    u8 Endianness1; // 1 for big, 0 for little
+
+    if ( Endianness1 == 1 ) BigEndian();
+
+    u16 Unused <hidden=true>;
+
+    u32 Version <format=hex>;
+    u32 FileSize;
+
+    while ( FTell() + 0x10 <= FileSize )
+    {
+        if ( ReadEntry() )
+            break;
+    }
+} TPbrb <optimize=false, name="PBRB">;
+
+typedef struct
+{
+    local string description;
+
+    char Magic[4];
+    u32 HeaderSize <hidden=true>; // Always 0x10
+
+    Assert( HeaderSize == 0x10 );
+
+    u32 ContainerSize <hidden=true>;
+    u32 ContentSize <hidden=true>;
+
+    if ( ContentSize )
+    {
+        switch ( Magic )
+        {
+            case "PBBN":
+                u32 NameCount;
+
+                if ( NameCount )
+                {
+                    ReadStrings( NameCount, 0x20 );
+                }
+                else
+                {
+                    // One entry still exists if the count is 0
+                    char Empty[0x20];
+                }
+
+                description = "Bone Names";
+                break;
+            case "PBPJ":
+                char Name[ContentSize];
+                description = "File Name";
+                break;
+            case "PFNL":
+                u32 NameCount1;
+                u32 StartOffset2;
+                u32 NameCount2;
+                u32 StartOffset2;
+                struct { ReadStrings( NameCount1, 0x10 ); } Names1;
+                struct { ReadStrings( NameCount2, 0x10 ); } Names2;
+                description = "Behavior Names";
+                break;
+            case "PSFN":
+                u32 NameCount;
+                u32 StartOffset;
+                ReadStrings( NameCount, 0x10 );
+                description = "Behavior Types";
+                break;
+            case "BSTN":
+                u32 NameCount;
+                u32 StartOffset;
+                ReadStrings( NameCount, 0x10 );
+                break;
+            case "PBSB":
+                u32 Unk1;
+                u32 Unk2; // Always 0
+                break;
+            case "BSTL":
+                f32 Unk1;
+                u32 Unk2;
+                break;
+            case "BSBM":
+                u32 Unk1;
+                u32 Unk2;
+                u32 Unk3;
+                u32 Unk4;
+                break;
+            case "BTLT":
+                u32 Unk1; // 0
+                u32 Unk2;
+                f32 Unk3;
+                u32 Unk4; // 0
+                u32 Unk5;
+                break;
+            case "BTBF":
+                u32 Unk1;
+                break;
+            case "BSPS":
+                u32 Unk1;
+                break;
+            case "PDMY":
+                u32 Dummy; // Always 0
+                break;
+            case "BSBC":
+                s32 Unk1; // -1
+                u32 Unk2;
+                u32 Unk3;
+                u32 Unk4;
+                break;
+            case "BSTT":
+                u32 Unk1;
+                break;
+            case "SUID":
+                u16 Unk1;
+                u16 Unk2; // 0?
+                u32 Unk3;
+                u16 Unk4;
+                u16 Unk5; // 0?
+                u32 Unk6;
+                break;
+            case "BSTC":
+                u32 Unk1;
+                u32 Unk2;
+                break;
+            case "BTSN":
+                u32 Unk1;
+                u32 Unk2;
+                u32 Unk3;
+                break;
+            case "TCGL":
+                u32 Unk1;
+                break;
+            case "TCGN":
+                u32 Unk1;
+                break;
+            case "BTTL":
+                f32 Unk1;
+                u32 Unk2;
+                break;
+            case "TBBN":
+                u32 Unk1;
+                break;
+            case "BTBM":
+                u32 Unk1;
+                u32 Unk2;
+                break;
+            case "BTVB":
+                u32 Unk1;
+                break;
+            case "PBMP":
+                u32 Unk1;
+                f32 Unk2;
+                u16 Unk3;
+                u16 Unk4; // 0?
+                u32 Unk5;
+                break;
+            case "PBMI":
+                u32 Unk1;
+                u32 Unk2;
+                u32 Unk3; // 0?
+                u32 Unk4; // 0?
+                break;
+            case "PBSI":
+                u32 Unk1;
+                u32 Unk2;
+                break;
+            case "PBII":
+                u8 Unk1;
+                u8 Unk2;
+                u16 Unk3;
+                u32 Unk4;
+                break;
+            case "PBUC":
+                ReadStrings( 1, 0x10 );
+                break;
+            case "PBCK":
+                f32 Unk1;
+                f32 Unk2;
+                u32 Unk3;
+                break;
+            case "PBMF":
+                u32 Unk1;
+                f32 Unk2;
+                f32 Unk3;
+                break;
+            case "PBPB":
+                u16 Unk1;
+                u16 Unk2;
+                u32 Unk3;
+                u16 Unk4;
+                u16 Unk5;
+                u32 Unk6;
+                break;
+            case "BTTT":
+                f32 Unk1;
+                f32 Unk2;
+                break;
+            case "BTBR":
+                f32 Unk1;
+                f32 Unk2;
+                u32 Unk3;
+                break;
+            case "BTTC":
+                u32 Unk1;
+                f32 Unk2;
+                f32 Unk3;
+                u32 Unk4; // 0
+                u32 Unk5; // 0
+                u32 Unk6; // 0
+                u32 Unk7; // 0
+                u32 Unk8; // 0
+                f32 Unk9;
+                break;
+            case "BTCC":
+                u32 Unk1;
+                u8 Unk2;
+                u8 Unk3;
+                u16 Unk4;
+                break;
+            case "BTTS":
+                u32 Unk1;
+                s32 Unk2<format=hex>; // 0xFF000000
+                break;
+            case "TCCN":
+                u32 Unk1;
+                break;
+            default:
+                u8 Content[ContentSize];
+                break;
+        }
+    }
+
+    local u32 pos = FTell();
+    while ( (FTell() - pos) < ContainerSize - ContentSize )
+    {
+        ReadEntry();
+    }
+} TEntry <optimize=false, name=ReadMagicName, read=ReadMagicDesc>;
+
+typedef struct ( u32 size )
+{
+    char Data[size];
+} TString <read=ReadTString>;
+
+bool ReadEntry()
+{
+    ++magicCount;
+
+    local char magic[4] = ReadString( FTell(), 4 );
+
+    if ( !StringToInt( magic ) )
+    {
+        return -1;
+    }
+
+    if ( enableColors )
+    {
+        SetRandomBackColorFromString( magic );
+    }
+
+    struct TEntry Entry;
+
+    return 0;
+}
+
+// Disabled
+// Turned out to be more expensive than calculating the color each time
+//
+// To enable, uncomment and use in ReadEntry()
+/*
+void SetMagicColor( char magic[] )
+{
+    local u32 magicInt = StringToInt( magic );
+    local s32 index = ArrayIndexOfUInt( magicArray, magicArraySize, magicInt );
+
+    if ( index != -1 )
+    {
+        SetBackColor( colorArray[index] );
+    }
+    else
+    {
+        magicArray[magicArraySize] = magicInt;
+        colorArray[magicArraySize] = SetRandomBackColorFromString( magic );
+        ++magicArraySize;
+    }
+}
+*/
+
+void ReadStrings( u32 count, u32 stringLength)
+{
+    while ( count )
+    {
+        struct TString String( stringLength );
+        --count;
+    }
+}
+
+string ReadTString( TString& value )
+{
+    return value.Data;
+}
+
+string ReadMagicName( TEntry& value )
+{
+    return value.Magic;
+}
+
+string ReadMagicDesc( TEntry& value )
+{
+    return value.description;
+}
+
+// Disabled
+// Waiting for the template to completely execute is better
+// than having it lag when randomly accessing entries
+//
+// To enable, uncomment and add size=GetTEntrySize
+// to the attributes of TEntry
+/*
+int GetTEntrySize( TEntry& value )
+{
+    return 0x10 + ReadUInt( startof( value ) + 0x8 );
+}
+*/
+
+TPbrb PBRB;
+Printf("Number of entries: %u", magicCount);
