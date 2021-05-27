@@ -1,0 +1,224 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: ome.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse ome model files
+//  Category: 
+// File Mask: *.ome
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+local u64 headerPos;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+
+    LittleEndian();
+    char Magic[4];  // OME
+
+    u32 Unk1;
+    u32 ODBPPointer; 
+    u32 Empty;
+    u32 UnkCount;
+    u32 Unk1Pointer;
+	u32 Unk5;
+    u32 Unk6;
+	u32 Padding[4];
+
+    
+    local int i;
+     struct
+       {
+             for ( i = 0; i < UnkCount; i++ )
+             {
+                 struct TUnk1 Unk1;
+             }
+        } Unk1;
+	
+	struct TOdbp Odbp;
+    
+} TOme <optimize=false>;
+
+typedef struct
+{
+	SetRandomBackColor();
+    u32 Padding1[6];
+	s32 Unk7;
+	s32 Unk8;
+    
+} TUnk1;
+
+typedef struct
+{
+    u32 Unk9;
+	u32 Unk10;
+	u32 Padding[2];
+	headerPos = FTell();
+	char Magic[4];  // ODBP
+	u32 Unk2Pointer;
+	u32 Unk12;
+	u32 ODBPSize;
+	u32 Padding1[4];
+	u32 Unk3Pointer;
+	u32 Unk3Count;
+	u32 Unk4Pointer;
+	u32 Unk4Count;
+	u32 Unk13;
+	u32 Padding2[5];
+	u32 Unk5Pointer;
+	u32 Padding3;
+	u32 Unk6Pointer;
+	u32 Padding4[3];
+	
+	local int i;
+     struct
+       {
+             for ( i = 0; i < Unk3Count; i++ )
+             {
+                 struct TUnk3 Unk3;
+             }
+        } Unk3;
+		
+	local int e;
+     struct
+       {
+             for ( e = 0; e < Unk4Count; e++ )
+             {
+                 struct TUnk4 Unk4;
+             }
+        } Unk4;
+	
+	struct TUnk5 Unk5;
+	struct TUnk6 Unk6;
+	struct TUnk2 Unk2;
+	
+	struct TUnk7 Unk7;
+	//unk8 here
+	struct TUnk9 Unk9;
+	
+	local int o;
+     struct
+       {
+             for ( o = 0; o < Unk7.FaceIndicesCount; o++ )
+             {
+                 struct TFaceIndices FaceIndice;
+             }
+        } FaceIndices;
+	
+    
+} TOdbp;
+
+typedef struct
+{
+	SetRandomBackColor();
+    u32 Padding[8];
+	u32 Unk16;
+	u32 Unk17;
+	u32 Padding1;
+	s32 Unk18;
+	u32 Unk19;
+	u32 Padding2[2];
+	u32 Unk20;
+    
+} TUnk3;
+
+typedef struct
+{
+	SetRandomBackColor();
+    float Unk21;
+	float Unk22;
+	float Unk23;
+	float Unk24;
+	float Unk25;
+	u32 Padding[3];
+	u32 Unk26;
+	u32 Unk27;
+	u32 Unk28;
+	u32 Padding2;
+	float Unk29;
+	float Unk30;
+	u32 Unk31;
+	u32 Padding3[5];
+	
+    
+} TUnk4;
+
+typedef struct
+{
+	SetRandomBackColor();
+    float Unk31;
+	float Unk32;
+	float Unk33;
+	float Unk34;
+    
+} TUnk5;
+
+typedef struct
+{
+	SetRandomBackColor();
+    float Unk35;
+	u32 Padding[3];
+	u32 Unk36;
+	float Unk37;
+	float Unk38;
+	float Unk39;
+	u32 Unk40;
+	u32 Unk41;
+	u32 Padding1[2];
+	u32 Unk42;
+	float Unk43;
+	float Unk44;
+	float Unk45;
+	
+} TUnk6;
+
+typedef struct
+{
+	SetRandomBackColor();
+	u32 Unk46;
+	u32 Unk47;
+	u32 Padding2[6];
+    
+} TUnk2;
+
+typedef struct
+{
+    u32 Unk48;
+	u32 Unk49;
+	u32 Unk7Pointer;
+	u32 Unk51;
+	u32 Unk9Pointer;
+	u32 FaceIndicesCount;
+	u32 Padding5[2];
+	FSeek(headerPos + Unk9Pointer); // go to unk9
+    
+} TUnk7;
+
+typedef struct
+{
+	SetRandomBackColor();
+	float Unk54;
+	float Unk55;
+	u32 Unk56;
+	float Unk57;
+	float Unk58;
+	float Unk59;
+	float Unk60;
+	float Unk61;
+    
+} TUnk9;
+
+typedef struct
+{
+	u16 FaceIndice;
+    
+} TFaceIndices;
+
+TOme Ome;

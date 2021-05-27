@@ -1,0 +1,97 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza2_dat.bt 
+//   Authors: SutandoTsukai181
+//   Version: 1.0 
+//   Purpose: Parse Yakuza 1 and 2 .dat files
+//  Category: 
+// File Mask: *.dat
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------ 
+
+#define DAT
+
+#include "../Common/includes/include.h"
+#include "yakuza2_txb.bt"
+
+typedef struct
+{
+    SetRandomBackColor();
+    LittleEndian();
+
+    u32 OmeStart <format=hex>;
+    u32 OmeCount;
+    u32 TxbStart <format=hex>;
+    u32 TxbCount;
+
+    u32 Sec3Start <format=hex>;
+    u32 Sec3Count;
+    u32 Field18;
+    u32 Field1C;
+
+    local u32 headerColor = SetRandomBackColor();
+    local u32 omeColor = SetRandomBackColor();
+    local u32 txbColor = SetRandomBackColor();
+    local u32 sec3Color = SetRandomBackColor();
+
+    if ( OmeStart && OmeCount )
+    {
+        FSeekRel( OmeStart );
+        struct { struct TOmeEntry Ome[ OmeCount ]; } OMEs;
+    }
+
+    if ( TxbStart && TxbCount )
+    {
+        FSeekRel( TxbStart );
+        struct { struct TTxbEntry Txb[ TxbCount ]; } TXBs;
+    }
+
+    if ( Sec3Start && Sec3Count )
+    {
+        FSeekRel( Sec3Start );
+        struct { struct TSec3Entry Sec3[ Sec3Count ]; } Sec3;
+    }
+
+} TDat;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+    u32 Size <format=hex>;
+    u32 Unk[ 3 ];
+
+    #ifdef OME
+        TOme Ome;
+    #else
+        SetBackColor( omeColor );
+        u8 Data[ Size ];
+    #endif
+} TOmeEntry <optimize=false>;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+    u32 Size <format=hex>;
+    u32 Unk[ 3 ];
+
+    #ifdef TXB
+        TTxb Txb;
+    #else
+        SetBackColor( txbColor );
+        u8 Data[ Size ];
+    #endif
+} TTxbEntry <optimize=false>;
+
+typedef struct
+{
+    SetBackColor( headerColor );
+    u32 Size <format=hex>;
+    u32 Unk[ 3 ];
+
+    SetBackColor( sec3Color );
+    u8 Data[ Size ];
+} TSec3Entry <optimize=false>;
+
+TDat Dat;

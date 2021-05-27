@@ -1,0 +1,574 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza_gmt.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Parse Yakuza series GMT animation files
+//  Category: 
+// File Mask: *.gmt
+//  ID Bytes: 47 53 47 54
+//   History: 
+//   1.0 - Initial release
+//------------------------------------------------
+
+#include "/../includes/include.h"
+
+typedef struct
+{
+    u16 Checksum;
+    char Data[ 30 ];
+
+    local u16 newChecksum = 0;
+    local u32 i;
+    for ( i = 0; i < 30; ++i )
+        newChecksum += Data[i];
+
+    Assert( newChecksum == Checksum );
+} TString;
+
+string TStringToString( TString& value )
+{
+    return value.Data;
+}
+
+typedef struct
+{
+    SetRandomBackColor();
+    LittleEndian();
+    char Magic[4];  // GSGT
+    u8 Endianness1; // 2 or 0x21
+    u8 Endianness2; // 1 or 0
+    if ( Endianness2 == 1 ) BigEndian();
+    u16 Padding <hidden=true>;
+    u32 Version <format=hex>;
+    u32 FileSize;
+
+    SetRandomBackColor();    
+    TString Name;
+
+    local u32 animationColor = SetRandomBackColor();
+    u32 AnimationCount;
+    u32 AnimationOffset;
+
+    local u32 graphColor = SetRandomBackColor();
+    u32 GraphCount;
+    u32 GraphOffsets;
+
+    local u32 graphPoolColor = SetRandomBackColor();
+    u32 GraphPoolSize;
+    u32 GraphPoolOffset;
+
+    local u32 namesColor = SetRandomBackColor();
+    u32 NamesCount;
+    u32 NamesOffset;
+
+    local u32 animationBoneMapColor = SetRandomBackColor();
+    u32 AnimationBoneMapCount;
+    u32 AnimationBoneMapOffset;
+
+    local u32 boneCurveMapColor = SetRandomBackColor();
+    u32 BoneCurveMapCount;
+    u32 BoneCurveMapOffset;
+
+    local u32 curveColor = SetRandomBackColor();
+    u32 CurveCount;
+    u32 CurveOffset;
+
+    local u32 animationDataColor = SetRandomBackColor();
+    u32 AnimationDataSize;
+    u32 AnimationDataOffset;
+
+    local u32 unkFieldColor = SetRandomBackColor();
+    u32 Padding2[3] <hidden=true>;
+    u32 Flags;
+
+	if ( NamesCount && NamesOffset )
+	{
+		FSeekRel( NamesOffset );
+		SetBackColor( namesColor );
+		TString Names[ NamesCount ] <read=TStringToString>;
+	}
+	
+    if ( AnimationCount && AnimationOffset )
+    {
+        FSeekRel( AnimationOffset );
+        SetBackColor( animationColor );
+
+        struct TAnimation Animation[AnimationCount];
+    }
+
+    if ( GraphCount && GraphOffsets )
+    {
+        FSeekRel( GraphOffsets );
+        SetBackColor( graphColor );
+        struct { struct TGraph Graph[ GraphCount ]; } Graphs;
+    }
+
+	local int i, j;
+    if ( AnimationBoneMapCount && AnimationBoneMapOffset )
+	{
+		FSeekRel( AnimationBoneMapOffset );
+		SetBackColor( animationBoneMapColor );
+		struct
+		{
+			for( i = 0; i < AnimationBoneMapCount; i++ )
+			{
+				struct TIndexMap AnimationBoneMap( i )<name="TIndexMap AnimationBoneMap", read=BoneMapToString>;
+			}
+		} AnimationBoneMaps;
+	}
+
+    if ( BoneCurveMapCount && BoneCurveMapOffset )
+	{
+		FSeekRel( BoneCurveMapOffset );
+		SetBackColor( boneCurveMapColor );
+        struct
+        {
+            for ( i = 0; i < AnimationCount; i++ )
+            {
+                for ( j = 0; j < Animation[i].BoneNameCount; j++ )
+                {
+                    struct TIndexMap BoneCurveMap( Animation[i].BoneNameIndex + j )<name="TIndexMap BoneCurveMap", read=CurveMapToString>;
+                }
+            }
+        } BoneCurveMaps;
+	}
+
+    if ( CurveCount && CurveOffset )
+	{
+		FSeekRel( CurveOffset );
+		SetBackColor( curveColor );
+		struct { struct TAnimationSegment AnimationSegment[ CurveCount ]; } AnimationSegments;
+	}
+	
+	if ( GraphPoolSize && GraphPoolOffset )
+    {
+	    FSeekRel( GraphPoolOffset );
+	    SetBackColor( graphPoolColor );
+        u8 GraphPool[ GraphPoolSize ]<optimize=true>;
+    }
+
+    if ( AnimationDataSize && AnimationDataOffset )
+	{
+		FSeekRel( AnimationDataOffset );
+		SetBackColor( animationDataColor );
+		u8 AnimationData[ AnimationDataSize ]<optimize=true>;
+	}
+
+} TGmt;
+
+typedef struct
+{
+    u32 StartFrame;
+    u32 EndFrame; // = last frame + 1
+    u32 Index;
+    f32 Framerate; // not actually used?
+    u32 NameIndex; // equal to index
+	u32 AnimationMapIndex;
+	u32 BoneNameIndex;
+	u32 BoneNameCount;
+    u32 CurveCount; 
+    u32 GraphStartIndex;
+	
+    u32 GraphCount;
+	
+	u32 AnimationDataSize;
+	u32 AnimationDataOffset;
+	
+	u32 GraphSize;
+	u32 GraphOffset;
+    
+	u32 Padding <hidden=true>;
+	
+	FPush();
+	{
+		FSeekRel( AnimationDataOffset );
+		u8 AnimationData[ AnimationDataSize ];
+	}
+	FPop();
+	
+    if ( NameIndex != -1 )
+        local string name = GMT.Names[ NameIndex ].Data;
+
+} TAnimation <optimize=false, read=TAnimationToString>;
+
+typedef struct
+{
+    u32 Offset;
+    FPush();
+	{
+		FSeekRel( Offset );
+		u16 Count;
+		u16 Keyframes[Count];
+		u16 Delimiter <hidden=true>; // 0xFFFF
+	}
+    FPop();
+
+    SetRandomBackColor();
+} TGraph <optimize=false, read=GraphFrames>;
+
+string GraphFrames( TGraph& value )
+{
+    local string str = "";
+    SPrintf( str, "Count: %d | Last keyframe: %d", value.Count, value.Keyframes[value.Count - 1] );
+
+    return str;
+}
+
+typedef struct
+{
+    u32 Graph; // contains keyframes indices
+	u32 AnimationDataOffset;
+	u32 Field08;
+	u32 Field0C; // acts like a format? 0x010001 is a single u32
+	FPush();
+	{
+		FSeekRel( AnimationDataOffset );
+		struct TAnimationData AnimationData( Graph, Field08, Field0C );
+		// u8 SegmentData[  ]; // either reverse the format or get offset from next segment
+	}
+	FPop();
+} TAnimationSegment <optimize=false>;
+
+string s16Float( s16& value )
+{
+    local string str = "";
+    SPrintf( str, "%f", ((f32)value) / 16384.0f);
+    return str;
+}
+
+string s32Float( s32& value )
+{
+    local string str = "";
+    SPrintf( str, "%f", ((f32)value) / 2147483648.0f);
+    return str;
+}
+
+string u8Float( u8& value )
+{
+    local string str = "";
+    SPrintf( str, "%f", ((f32)value - 128.0f) / 128.0f);
+    return str;
+}
+
+typedef struct
+{
+    s16 X<read=s16Float>;
+    s16 Y<read=s16Float>;
+    s16 Z<read=s16Float>;
+    s16 W<read=s16Float>;
+} TQuat;
+
+typedef struct
+{
+    f32 X;
+    f32 Y;
+    f32 Z;
+} TQuatXYZ;
+
+string TQuatToString( TQuat& value )
+{
+    local string str = "";
+    SPrintf( str, "[%.6f, %.6f, %.6f, %.6f]",
+        ((f32)value.X) / 16384.0f,
+        ((f32)value.Y) / 16384.0f,
+        ((f32)value.Z) / 16384.0f,
+        ((f32)value.W) / 16384.0f);
+    return str;
+}
+
+string TQuat2ToString( TQuat& value )
+{
+    local string str = "";
+    SPrintf( str, "[%.6f, %.6f, %.6f, %.6f]",
+        ((f32)value.X) / 32768.0f,
+        ((f32)value.Y) / 32768.0f,
+        ((f32)value.Z) / 32768.0f,
+        ((f32)value.W) / 32768.0f);
+    return str;
+}
+
+string TQuatXYZToString( TQuatXYZ& value )
+{
+    local string str = "";
+    local f32 x = (f32)value.X;
+    local f32 y = (f32)value.Y;
+    local f32 z = (f32)value.Z;
+    local f32 w = Sqrt(1.0 - ( Pow(x, 2) + Pow(y, 2) + Pow(z, 2) ));
+    SPrintf( str, "[%.6f, %.6f, %.6f, %.6f]", x, y, z, w);
+    return str;
+}
+
+typedef struct( u32 Graph, u32 Field08, u32 Field0C )
+{
+    local int Count = GMT.Graphs.Graph[Graph].Count;
+	// there should be cases other than these but they probably don't need byte swaps
+	// should check flow to make sure nothing is repeated twice / missed
+    if ( (u16)Field0C - 5 <= 1 ) // if = 5 or 6
+	{
+		if ( Field08 == 4 )
+		{
+			// four u32
+		}
+		else if ( Field08 == 0xC )
+		{
+			// four u16
+		}
+	}
+	
+	switch ( Field0C )
+	{
+		case 0x40001 : 
+		case 0x20001 : 
+		case 0x10001 : 
+        // should be position as well
+		// same as above, case 76
+        // four u8, or one u32?
+        
+        // should be 4 * u8: XYZ0 (0x40001)
+			break;
+
+        case 0x70005 :         
+        case 0x60005 : 
+        case 0x50005 : 
+		case 0x40005 : 
+        case 0x30005 : 
+		case 0x20005 : 
+		case 0x10005 : 
+        case 5 :
+            struct
+            {
+                s8 Unk1;
+            } Unk1D[Count];
+            break;
+		case 0x30004 : 
+		case 0x20004 : 
+		case 0x10004 : 
+		case 4 : 
+            struct
+            {
+                s16 Unk1;
+                s16 Unk2;
+            } Unk1C[Count];
+            break;
+		// case 23
+		// related to number 2
+		// u16
+			break;
+		
+		case 0x30000 : 
+		case 0x20000 : 
+		case 0x10000 : 
+		// case 83
+			switch ( Field08 )
+			{
+				// 2 values
+                // maybe one axis rotation, with W?
+				case 0x10 :
+				case 0x11 :
+				case 0x12 :
+				case 0x16 :
+				case 0x17 :
+				case 0x18 :
+					// u32
+                    struct
+                    {
+                        f32 Unk1;
+                        f32 Unk2;
+                    } UnkRotation[Count];
+                    break;
+				case 0x13 :
+				case 0x14 :
+				case 0x15 :
+				case 0x19 :
+				case 0x1A :
+				case 0x1B :
+					// u16
+                    struct
+                    {
+                        u16 Unk1;
+                        u16 Unk2;
+                    } UnkRotation[Count];
+					break;
+			}
+			break;
+		
+        // position
+		case 1 : 
+			switch ( Field08 )
+			{
+				// related to number 3
+				case 6 :
+					// 3x f32
+                    // XYZ relative position
+                    struct
+                    {
+                        f32 X;
+                        f32 Y;
+                        f32 Z;
+                    } Position[Count];
+				case 0xE :
+					// u16
+                    // same as rotation scaled quaternion but 3 values only
+					break;
+			}
+			break;
+		
+        // rotation
+		case 0 : 
+			switch ( Field08 )
+			{
+				case 1 :
+                    struct TQuatXYZ Quaternion[Count]<read=TQuatXYZToString>;
+				case 9 :
+					// related to number 3
+					// u32
+					break;
+				case 2 :
+                    // 4x s16: XYZW quaternion
+                    if ( GMT.Version < 0x20000 )
+                    {
+                        struct
+                        {
+                            f16 X;
+                            f16 Y;
+                            f16 Z;
+                            f16 W;
+                        } Quaternion[Count];
+                    }
+                    else
+                        struct TQuat Quaternion[Count]<read=TQuatToString>;
+				case 0xA :
+					// related to number 4
+					// u16
+					break;
+				case 3 :
+				case 0xB :
+					// u32
+					break;
+				case 0x1E :
+                    struct TQuat Quaternion[2]<read=TQuat2ToString>;
+                    break;
+                    /*
+                    u32 UnkRotation[Count];
+                    local int i;
+                    local int f;
+                    for ( i; i < Count; i++ )
+                    {
+                        f = UnkRotation[i] >> 2;
+                        switch ( UnkRotation[i] & 3 )
+                        {
+                            // case 0: xyzw
+                            // case 1: xywz
+                            // case 2: xwyz
+                            // case 3: wxyz
+                            case 0 :
+                                
+                                // you should multiply as floats, not int
+                                //f += f << 8;
+                                //f += f << 16;
+                                //f += f << 32;
+                                //f += ( f >> 16 ) << 32;
+                                
+                                local float x = ( (float)f & ( (float)(unsigned long)0x000003FF ) ) * ( (float)(unsigned long)0x3A800000 );
+                                local float y = ( (float)f & ( (float)(unsigned long)0x000FFC00 ) ) * ( (float)(unsigned long)0x35800000 );
+                                local float z = ( (float)f & ( (float)(unsigned long)0x3FF00000 ) ) * ( (float)(unsigned long)0x30800000 );
+                                
+                                //f &= 0x000003FF000FFC003FF0000000000000;
+                                //f *= 0x3A800000358000003080000000000000;
+                                
+                                x = ( x * (float)Quaternion[1].X ) + (float)Quaternion[0].X;
+                                y = ( y * (float)Quaternion[1].Y ) + (float)Quaternion[0].Y;
+                                z = ( z * (float)Quaternion[1].Z ) + (float)Quaternion[0].Z;
+                                
+                                // multiply floats by Quaternion[1]
+                                // add Quaternion[0] to the floats
+                                
+                                // store f somewhere else for reuse (important)
+                                
+                                // calculate W:
+                                
+                                    local float xw = x * x;
+                                    local float yw = y * y;
+                                    local float zw = z * z;
+                                    
+                                    // multiply f by itself
+                                    
+                                    // current f = 3E8408003E8100803EC8500800000000
+                                    
+                                    // make four vectors, each has repeated 4 components, for each component in f16
+                                    
+                                    local float w = xw + yw + zw;
+                                    
+                                    // add all vectors together
+                                    
+                                    w = 1.0f - w;
+                                    
+                                    // subtract result from vector of (1, 1, 1, 1) in float
+                                    
+                                    // result = max(result, 0) ?
+                                    
+                                    w = sqrtf(w);
+                                    
+                                    // result = sqrt(result)
+                                
+                                // add one of floats in result as 4th component in stored f16
+                                
+                                // finished
+                                
+                                Printf("[%.6f, %.6f, %.6f, %.6f]", x, y, z, w);
+                                // result quaternion should be 3F020000, 3F008000, 3F202000, 3EA10B14
+                                break;
+                        }
+                    }
+                    */
+				case 0x1F :
+					// complex format
+					// four u16 (two times?)
+					// then regular four u32
+					break;
+			}
+			break;
+		
+	}
+	
+} TAnimationData <optimize=false>;
+
+string TAnimationToString( TAnimation& value )
+{
+    local string str = "";
+    SPrintf( str, "%s (Length: %d)", exists( value.name ) ? value.name : "", value.EndFrame );
+
+    return str;
+}
+
+string NameToString( u16& value )
+{
+    return GMT.Names[ value ].Data;
+}
+
+typedef struct( int Map )
+{
+	local u16 map = (u16)Map;
+    u16 Index;
+	u16 Count;
+} TIndexMap;
+
+string BoneMapToString( TIndexMap& value )
+{
+    local string str = "";
+    SPrintf( str, "%s: [%s, %d]", NameToString( value.map ), NameToString( value.Index ), value.Count );
+
+    return str;
+}
+
+string CurveMapToString( TIndexMap& value )
+{
+    local string str = "";
+    SPrintf( str, "%s: [%d, %d]", NameToString( value.map ), value.Index, value.Count );
+
+    return str;
+}
+ 
+TGmt GMT;
