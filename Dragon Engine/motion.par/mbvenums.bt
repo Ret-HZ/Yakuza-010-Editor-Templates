@@ -1,0 +1,53 @@
+// Enums for animations
+enum<uint32> AnimationName
+{
+	default0 = 0,
+};
+
+enum<uint32> PBMPIdentifier
+{
+	BattleStandALoop = 22,
+	BattleStandBLoop = 343,
+	BattleStandCLoop = 426,
+	BattleStandDLoop = 427,
+	AdvtoBattleStartAnimation = 225,
+	BattleEndAnimation = 226,
+	
+	BattleStance_BackWalk = 319,
+	BattleStance_BackLeftWalk = 320,
+	BattleStance_BackRightWalk = 321,
+	BattleStance_ForwardWalk = 318,
+	BattleStance_ForwardRightWalk = 315,
+	BattleStance_ForwardLeftWalk = 322,
+	BattleStance_LeftWalk = 316,
+	BattleStance_RightWalk = 317,
+	
+	
+	
+	BattleStance_HeatModeStandLoop = 472,
+	P_KRU_MOV_wlk_ftr_fastIden = 473,
+	P_KRU_MOV_wlk_ftl_fastIden = 474,
+	
+	BattleStance_S_BackWalk = 486,
+	BattleStance_S_BackLeftWalk = 484,
+	BattleStance_S_BackRightWalk = 480,
+	BattleStance_S_ForwardWalk = 485,
+	BattleStance_S_ForwardRightWalk = 487,
+	BattleStance_S_ForwardLeftWalk = 482,
+	BattleStance_S_LeftWalk = 481,
+	BattleStance_S_RightWalk = 483,
+	
+	P_KRU_BTL_SUD_stp_fIden = 555,
+	P_KRU_BTL_SUD_stp_bIden = 556,
+	
+	BattleStance_NormaltoHeatModeStand = 535,
+	BattleStance_HeatModeStandtoNormal = 536,
+	BattleStance_StandA_toB = 545,
+	BattleStance_StandB_toA = 546,
+	
+	a248 = 248,
+	a249 = 249,
+	a250 = 250,
+	a241 = 251,
+
+};

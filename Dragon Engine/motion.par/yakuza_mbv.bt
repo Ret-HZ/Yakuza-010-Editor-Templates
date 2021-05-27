@@ -12,6 +12,7 @@
 //------------------------------------------------
 
 #include "../../Common/includes/include.h"
+#include "mbvenums.bt"
 
 // Note: As the entries are all declared with the same variable name, they will
 // have array indices appended to them, which may or may not indicate
@@ -116,7 +117,7 @@ typedef struct
                 u32 Unk2; // Always 0
                 break;
             case "BSTL":
-                f32 Unk1;
+                f32 NumberFrames<name="Number of Frames/2">;
                 u32 Unk2;
                 break;
             case "BSBM":
@@ -127,7 +128,8 @@ typedef struct
                 break;
             case "BTLT":
                 u32 Unk1; // 0
-                u32 Unk2;
+                PBMPIdentifier Identifier;
+				description = EnumToString(Identifier);
                 f32 Unk3;
                 u32 Unk4; // 0
                 u32 Unk5;
@@ -188,11 +190,12 @@ typedef struct
                 u32 Unk1;
                 break;
             case "PBMP":
-                u32 Unk1;
+                PBMPIdentifier Identifier<name="Motion Identifier">;
+				description = EnumToString(Identifier);
                 f32 Unk2;
                 u16 Unk3;
                 u16 Unk4; // 0?
-                u32 Unk5;
+                AnimationName GMT_ID<name="GMT ID", comment = "From motion_gmt in puid (K2) or motion.par (Y6)">;
                 break;
             case "PBMI":
                 u32 Unk1;
@@ -312,7 +315,6 @@ void SetMagicColor( char magic[] )
 {
     local u32 magicInt = StringToInt( magic );
     local s32 index = ArrayIndexOfUInt( magicArray, magicArraySize, magicInt );
-
     if ( index != -1 )
     {
         SetBackColor( colorArray[index] );
