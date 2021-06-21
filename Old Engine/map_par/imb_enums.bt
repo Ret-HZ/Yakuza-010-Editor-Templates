@@ -1,0 +1,56 @@
+//Icons
+enum<byte> IconID
+{
+    Player = 1,
+    Enemy = 2,
+    Boss = 3,
+    NPC = 4,
+    Mission_Objective_Marker = 5,
+
+    Green_Objective_Marker = 7,
+    
+    Taxi = 9,
+    Prohibited_Sign = 10,
+    Locker = 11,
+    Save_Point = 12,    
+    Location = 13,
+    X = 14,
+    Enemy_2 = 15,
+    Enemy_3 = 16,
+    Kamiyama_Works = 17,
+    Event = 18,
+    Mission_Questionmark = 19,
+    Kamiyama_Works_Old = 20,
+    Training = 21,
+    Map_Arrow = 22,
+    Unknown_2d_jm_map_fukubiki = 23,
+    
+    PS_Cross_Button = 25,
+    Mission_Objective_Marker_2 = 26,
+    Entertainment_Location = 27,
+    Player_Car = 28,
+    Mob_Car = 29,
+    Enemy_Car = 30,
+    Blue_Objective_Marker = 31,
+    
+    Enemy_Detection_Cone_1 = 33,
+    Enemy_Detection_Cone_2 = 34,
+    Enemy_Detection_Cone_3 = 35,
+    Elite_Enemy = 36,
+    Real_Estate_Money_Flow_Stop = 37,
+};
+
+
+//Locations
+enum<int> LocationID
+{
+    None = -1,
+    Eatery = 0,
+    Store = 1,
+    Entertainment = 2,
+    Story = 3,
+    Training_Area = 4,
+    X_Leftover = 5,
+    Destination_Set = 6,
+    Eatery_Unused = 7,
+};

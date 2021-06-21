@@ -1,0 +1,76 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: Old Engine .imb files (map icons and locations)
+//   Authors: Capitán Retraso
+//   Version: 1.00
+//   Purpose: Parsing .imb files
+// File Mask: *.imb
+//   History: 
+//   1.00     2021-06-20  Capitán Retraso - Start
+//------------------------------------------------
+
+#include "imb_enums.bt"
+
+BigEndian();
+
+float position_x <name="Position (X)", comment="Irrelevant if attached to map part", bgcolor=0x00d916>;
+float position_z <name="Position (Z)", comment="Irrelevant if attached to map part", bgcolor=0x00d916>;
+float position_y <name="Position (Y)", comment="Irrelevant if attached to map part", bgcolor=0x00d916>;
+float unknown1 <name="Unknown", bgcolor=0xa3a3a3>;
+IconID iconid <name="Icon ID", bgcolor=0xffd500>;
+byte map_part_attachment <name="Map Part ID", comment="GMD the imb data attaches to", bgcolor=0x00d5ff>;
+FSkip(0x2); //Padding
+float unknown2 <name="Unknown", bgcolor=0xa3a3a3>;
+int ptrExtraData <name="Pointer to Extra Data", comment="TO DO", bgcolor=0x00ced1>;
+int ptrTaxiData <name="Pointer to Taxi Data", bgcolor=0x00fbff>;
+int ptrText_Header <name="Pointer to Text (Header)", bgcolor=0x3ba0ff>;
+int ptrText_Body <name="Pointer to Text (Body)", bgcolor=0x004dde>;
+int unknown3 <name="Unknown", bgcolor=0xa3a3a3>;
+int unknown4 <name="Unknown", bgcolor=0xa3a3a3>;
+LocationID locationid <name="Location ID", comment="Only used if Icon ID = Location", bgcolor=0xd10092>;
+int unknown5 <name="Unknown", bgcolor=0xa3a3a3>;
+byte unknown6 <name="Unknown", bgcolor=0xa3a3a3>;
+byte unknown7 <name="Unknown", bgcolor=0xa3a3a3>;
+byte unknown8 <name="Unknown", bgcolor=0xa3a3a3>;
+byte unknown9 <name="Unknown", bgcolor=0xa3a3a3>;
+int unknown5 <name="Unknown", bgcolor=0xa3a3a3>;
+int ptrTexture_Name <name="Pointer to Texture Name", bgcolor=0x73ff00>;
+
+
+local int currentptr = 0;
+
+if (ptrTaxiData != 0)
+{
+    currentptr = FTell();
+    FSeek(ptrTaxiData);
+    string text_taxi <name="Taxi Data", bgcolor=0x00fbff>;
+    FSeek(currentptr);
+}
+
+
+if (ptrText_Header != 0)
+{
+    currentptr = FTell();
+    FSeek(ptrText_Header);
+    string text_header <name="Text (Header)", bgcolor=0x3ba0ff>;
+    FSeek(currentptr);
+}
+
+
+if (ptrText_Body != 0)
+{
+    currentptr = FTell();
+    FSeek(ptrText_Body);
+    string text_body <name="Text (Body)", bgcolor=0x004dde>;
+    FSeek(currentptr);
+}
+
+
+if (ptrTexture_Name != 0)
+{
+    currentptr = FTell();
+    FSeek(ptrTexture_Name);
+    string text_texture <name="Texture Name", bgcolor=0x73ff00>;
+    FSeek(currentptr);
+}
