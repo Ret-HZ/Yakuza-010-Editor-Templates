@@ -1,0 +1,172 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: Yakuza Dragon Engine meps
+//   Authors: HeartlessSeph
+//   Version: 1.00
+//   Purpose: Parses mep files for easier editing
+//   History
+//   1.00    28/12/2020  HeartlessSeph - started this
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+#include "OEYakuza_mepenums.bt"
+
+BigEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int numintprops<hidden=true>;
+local int result;
+local int check;
+
+check = 0;
+struct File{
+	struct FileHeader{
+		char filetype[4];
+		uint32 unk;
+		uint32 unk;
+		uint32 unk;
+	}fileheader<name="File Header">;
+	
+	struct startlock{
+		byte lockarea[0x10];
+	}startlocked<bgcolor=cRed, name="Section Lock",hidden=true>;
+	
+	
+	for( j = 0; j < 999999; j++ ){
+		struct Property{
+			uint16 bonechecksum<name="Bone Checksum">;
+			char bonename[30]<name="Bone Name">;
+			FSkip(-32);
+			BoneName1 boneEnum1;
+			BoneName2 boneEnum2;
+			FSkip(20);
+			uint16 PropertySection<name = "Property Section">;
+			uint16 PropertyType<name = "Property Type">;
+			uint32 PropertySize<name = "Property Size">;
+			numintprops = PropertySize/4;
+			uint32 unkint;
+			uint32 unkint;
+			if (PropertySection == 0){
+				PropertyTypes property<name="Controller Type? (Always equal to Property Type)">;
+				float startframe<name = "Start Frame">;
+				float endframe<name = "End Frame">;
+				uint32 unk0;
+				uint32 unk1;
+				uint32 unk2;
+				uint32 unk3;
+				uint32 unk4;
+				
+				if (PropertyType == 29)
+				//FlowdustEmitter
+				{
+						uint32 unk5;
+						uint32 emittertype;
+						if (emittertype == 9){
+							float unk7;
+							float unk8;
+							uint32 unk9;
+							uint32 unk10;
+							uint32 unk11;
+							uint32 unk12;
+							uint32 unk13;
+							uint32 unk14;
+							uint32 unk15;
+							uint32 unk16;
+							float unk17;
+							float unk18;
+							uint32 separator;
+							uint32 unk20[11];
+						
+						}
+						else if (emittertype == 12){
+							float unk7;
+							float unk8;
+							uint32 unk9;
+							uint32 unk10;
+							uint32 unk11;
+							uint32 unk12;
+							uint32 unk13;
+							uint32 unk14;
+							uint32 unk15;
+							uint32 unk16;
+							float unk17;
+							float unk18;
+							uint32 separator;
+							uint32 unk20[14];
+						
+						}
+						else if (emittertype == 14){
+							float unk7;
+							float unk8;
+							uint32 unk9;
+							uint32 unk10;
+							uint32 unk11;
+							uint32 unk12;
+							uint32 unk13;
+							uint32 unk14;
+							uint32 unk15;
+							uint32 unk16;
+							float unk17;
+							float unk18;
+							uint32 separator;
+							float layer0red<name="Layer 0 Color (Red)">;
+							float layer0green<name="Layer 0 Color (Green)">;
+							float layer0blue<name="Layer 0 Color (Blue)">;
+							float layer0bright<name="Layer 0 Brightness">;
+							float layer1red<name="Layer 1 Color (Red)">;
+							float layer1green<name="Layer 1 Color (Green)">;
+							float layer1blue<name="Layer 1 Color (Blue)">;
+							float layer1bright<name="Layer 1 Brightness">;
+							float lifetime<name="Lifetime">;
+							float unk;
+							float speed<name="Speed">;
+							float unk;
+							float scatterspeed<name="Scatter Speed">;
+							float unk;
+							float gravity<name="Gravity">;
+							float verticalscatter<name="Vertical Scatter">;	
+						}
+						else{
+							uint32 unk[numintprops-10];
+						}
+				}
+				
+				
+				//Not mapped Properties
+				else{
+					if (PropertySize > 32)
+					uint32 unk[numintprops-8];
+				}
+			}
+			if (PropertySection == 17){
+				PropertyTypes property<name="Property Type">;
+				uint32 unk[numintprops-1];
+			}
+		}property<read=GetProperty,bgcolor=cBlue,name = "Property">;
+			
+		struct Lock2{
+			byte lockarea[0x10];
+		}lock2<bgcolor=cRed, name="Section Lock",hidden=true>;
+		
+		if (FTell()+48 == FileSize())
+		break;		
+	}	
+}file;
+
+string GetProperty(Property &j)
+{
+    string null = "";
+	if (j.PropertySection == 17)
+	{
+		return "Lock on Structure?";
+	}
+    if (j.PropertySection == 0)
+    {
+		return EnumToString(j.property);
+    }
+};
