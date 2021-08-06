@@ -1,0 +1,316 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza3_rop.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Parse Yakuza 3 robj_parameter.rop
+//  Category: 
+// File Mask: robj_parameter.rop
+//  ID Bytes: 61 72 6D 70
+//   History: 
+//   1.0 - Initial release
+//------------------------------------------------
+
+#include "/../../Common/includes/include.h"
+
+local u32 ropColor = SetRandomBackColor();
+local u32 itemColor = SetRandomBackColor();
+local u32 pointersColor = SetRandomBackColor();
+local u32 stringsColor = SetRandomBackColor();
+local u32 groupsColor = SetRandomBackColor();
+local u32 sec1Color = SetRandomBackColor();
+local u32 sec2Color = SetRandomBackColor();
+local u32 sec3Color = SetRandomBackColor();
+
+local int i;
+
+typedef struct
+{
+    local u32 startPos = FTell();
+
+    LittleEndian();
+    SetBackColor(ropColor);
+
+    char Magic[4]; Assert(Magic == "armp");
+    
+    u8 Field04 <hidden=true>;
+    u8 Endianness;
+
+    if (Endianness) BigEndian();
+
+    u16 Field06 <hidden=true>;
+
+    u16 VersionMajor;
+    u16 VersionMinor;
+
+    u32 FileSize;
+
+    u32 ItemCount;
+    u32 ModelCount;
+    u32 TextureNamesCount;
+    u32 CollisionNamesCount;
+
+    local u32 pointersSize = ((ModelCount * 5) + TextureNamesCount + 2) * 4;
+
+    // Skip the items section
+    FSeekRel(0x20 + (ItemCount * 0x140));
+
+    SetBackColor(pointersColor);
+    u32 Sec1Arr[ModelCount];
+    u32 Sec2Arr[ModelCount];
+    u32 Sec3Arr[ModelCount];
+    u32 TextureGroupsArr[ModelCount];
+    u32 ModelNamesArr[ModelCount];
+
+    u32 TextureNamesArr[TextureNamesCount];
+    u32 CollisionNamesArr[CollisionNamesCount];
+
+    FSeekRel(startPos);
+} TRopData <optimize=false>;
+
+typedef struct
+{
+    TRopData RopData;
+
+    FSeekRel(0x20);
+    SetBackColor(itemColor);
+    struct TItem Items[RopData.ItemCount];
+
+    FSeekRel(FTell() + RopData.pointersSize);
+
+    SetBackColor(sec1Color);
+    struct
+    {
+        for (i = 0; i < RopData.ModelCount; i++)
+        {
+            if (RopData.Sec1Arr[i])
+            {
+                FSeekRel(RopData.Sec1Arr[i]);
+                struct TSec1 Sec1Entry;
+            }
+            else
+            {
+                struct {} None;
+            }
+        }
+    } Sec1;
+
+    SetBackColor(sec2Color);
+    struct
+    {
+        for (i = 0; i < RopData.ModelCount; i++)
+        {
+            if (RopData.Sec2Arr[i])
+            {
+                FSeekRel(RopData.Sec2Arr[i]);
+                FPushBase();
+                struct TSec2 Sec2Entry;
+                FPopBase();
+            }
+            else
+            {
+                struct {} None;
+            }
+        }
+    } Sec2;
+
+    SetBackColor(sec3Color);
+    struct
+    {
+        for (i = 0; i < RopData.ModelCount; i++)
+        {
+            if (RopData.Sec3Arr[i])
+            {
+                FSeekRel(RopData.Sec3Arr[i]);
+                FPushBase();
+                struct TSec3 Sec3Entry;
+                FPopBase();
+            }
+            else
+            {
+                struct {} None;
+            }
+        }
+    } Sec3;
+
+    SetBackColor(groupsColor);
+    struct
+    {
+        for (i = 0; i < RopData.ModelCount; i++)
+        {
+            FSeekRel(RopData.TextureGroupsArr[i]);
+            struct TGroupTexture Group;
+        }
+    } TextureGroups;
+
+    SetBackColor(stringsColor);
+    struct
+    {
+        for (i = 0; i < RopData.ModelCount; i++)
+        {
+            FSeekRel(RopData.ModelNamesArr[i]);
+            struct TString Name;
+        }
+    } ModelNames;
+
+    SetBackColor(stringsColor);
+    struct
+    {
+        for (i = 0; i < RopData.TextureNamesCount; i++)
+        {
+            FSeekRel(RopData.TextureNamesArr[i]);
+            struct TString Name;
+        }
+    } TextureNames;
+
+    SetBackColor(stringsColor);
+    struct
+    {
+        for (i = 0; i < RopData.CollisionNamesCount; i++)
+        {
+            FSeekRel(RopData.CollisionNamesArr[i]);
+            struct TString Name;
+        }
+    } CollisionNames;
+} TRop <optimize=false>;
+
+typedef struct
+{
+    char Name[0x10];
+
+    s32 UnkArr[60];
+    char Comment[0x40];
+} TItem <read=ReadTItem>;
+
+typedef struct
+{
+    local int i, total;
+    u32 EntryCounts[8];
+
+    total = 0;
+    for (i = 0; i < 8; i++)
+    {
+        total += EntryCounts[i];
+    }
+
+    struct { f32 Values[8]; } Entries[total];
+} TSec1;
+
+typedef struct
+{
+    char Magic[4]; Assert(Magic == "WCS");
+
+    u8 Field04 <hidden=true>;
+    u8 Endianness;
+
+    u16 Field06 <hidden=true>;
+
+    u16 VersionMajor;
+    u16 VersionMinor;
+
+    u32 FileSizeUnused;
+
+    u32 EntryCount;
+    u32 StringCount;
+    u32 StringStart;
+    u32 Padding; Assert(Padding == 0);
+
+    struct TSec2Entry Entries[EntryCount];
+
+    FSeekRel(StringStart);
+    struct TString20 Strings[StringCount];
+} TSec2 <optimize=false>;
+
+typedef struct
+{
+    u32 EntrySize;
+    s32 UnkInts[3];
+    f32 UnkFloats[(EntrySize - 0x10) / 4];
+} TSec2Entry <optimize=false>;
+
+typedef struct
+{
+    char Magic[4]; Assert(Magic == "PRBD");
+
+    u8 Field04 <hidden=true>;
+    u8 Endianness;
+
+    u16 Field06 <hidden=true>;
+
+    u16 VersionMajor;
+    u16 VersionMinor;
+
+    u32 FileSizeUnused;
+
+    u32 EntryCount;
+    u32 Padding; Assert(Padding == 0);
+    u32 StringCount;
+    u32 StringStart;
+
+    struct TSec3Entry Entries[EntryCount];
+
+    FSeekRel(StringStart);
+    struct TString20 Strings[StringCount];
+} TSec3 <optimize=false>;
+
+typedef struct
+{
+    u32 EntrySize;
+    s32 Unk1;
+
+    if (EntrySize == 0x10)
+    {
+        u32 SubEntryCount;
+        u32 Padding; Assert(Padding == 0);
+        struct TSec3Entry SubEntries[SubEntryCount];
+    }
+    else
+    {
+        f32 UnkFloats[(EntrySize - 0x8) / 4];
+    }
+} TSec3Entry <optimize=false>;
+
+typedef struct
+{
+    char Data[0x20];
+} TString20 <read=ReadTString20>;
+
+typedef struct
+{
+    string Data;
+} TString <read=ReadTString>;
+
+typedef struct
+{
+    local int i;
+    u32 Count;
+
+    for (i = 0; i < Count; i++)
+    {
+        u32 Indices <read=TextureIndexToString>;
+    }
+    
+} TGroupTexture;
+
+string ReadTString(TString& value)
+{
+    return value.Data;
+}
+
+string ReadTString20(TString20& value)
+{
+    return value.Data;
+}
+
+string TextureIndexToString(u32 value)
+{
+    return Rop.TextureNames.Name[value].Data;
+}
+
+string ReadTItem(TItem& value)
+{
+    return value.Name;
+}
+
+TRop Rop <name="Arms parameters">;
