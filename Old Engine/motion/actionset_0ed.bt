@@ -1,0 +1,156 @@
+//------------------------------------------------
+//--- 010 Editor Binary Template
+//
+//      File: ActionSet.cas
+//   Authors: Draxx182 - Used HeartlessSeph's template as a base
+//   Version: 1
+//   Purpose: ActionSet.cas Editing
+//   History
+//   1.00    03/09/2021  Draxx182
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+BigEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int k<hidden=true>;
+local int l<hidden=true>;
+local int m<hidden=true>;
+local int n<hidden=true>;
+local int o<hidden=true>;
+local int p<hidden=true>;
+local int currentpos<hidden=true>;
+local int currentpos2<hidden=true>;
+local int currentpos3<hidden=true>;
+local int currentpos4<hidden=true>;
+local int textending<hidden=true>;
+local int dataarraystart<hidden=true>;
+local int dataarrayblocks<hidden=true>;
+local int maxfilesize<hidden=true>;
+local int propertytablestart;
+local int propertytablepos;
+local int checkthis;
+
+struct File{
+
+	checkthis = 0;
+
+	struct FileHeader{
+		uint32 filetype<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
+		uint16 unk;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+		maxfilesize = filesize;
+	}fileheader<name = "File Header",bgcolor = cRed>;
+
+	struct TextData{
+		for( j = 0; j < 99999; j++ )
+      {
+        ubyte textendcheck<hidden=true>;
+        FSkip(-1);
+        if (textendcheck == 255)
+        {
+	        j = 99999;
+        }
+        else
+        {
+          struct BTLTable{
+	           char StringValue[];
+          }text<read = GetString,name="Effect",bgcolor = cRed>;
+        }
+      }
+	}textdata<name="Effects Strings",bgcolor = cRed>;
+	FSkip(1);
+
+   struct TextData2{
+		for( j = 0; j < 99999; j++ )
+      {
+        ubyte textendcheck<hidden=true>;
+        FSkip(-1);
+        if (textendcheck == 255)
+        {
+	        j = 99999;
+        }
+        else
+        {
+          struct BatTable{
+	           char StringValue[];
+          }text<read = GetString2,name="Battle",bgcolor = cRed>;
+        }
+      }
+	}textdata<name="Battle Strings",bgcolor = cRed>;
+   FSkip(1);
+
+   struct DataTable{
+		for( j = 0; j < 99999; j++ )
+      {
+        uint32 textendcheck<hidden=true>;
+        FSkip(-4);
+        if (textendcheck == 1313820229)
+        {
+	        j = 99999;
+        }
+        else
+        {
+          struct BTDTable{
+	           uint16 Unk;
+          }text<name="Effect",bgcolor = cRed>;
+        }
+      }
+	}textdata<name="Effects Data",bgcolor = cRed>;
+   
+   struct TextData3{
+		for( j = 0; j < 99999; j++ )
+      {
+        ubyte textendcheck<hidden=true>;
+        FSkip(-1);
+        if (textendcheck == 255)
+        {
+	        j = 99999;
+        }
+        else
+        {
+          struct MovTable{
+	           char StringValue[];
+          }text<read = GetString3,name="Move",bgcolor = cRed>;
+        }
+      }
+	}textdata<name="Move Strings",bgcolor = cRed>;
+   FSkip(2);
+
+   struct DataTable2{
+		for( j = 0; j < 99999; j++ )
+      {
+        if (FTell() == FileSize())
+        {
+	        j = 99999;
+        }
+        else
+        {
+          struct ModTable{
+	           uint16 Unk;
+          }text<name="Move",bgcolor = cRed>;
+        }
+      }
+	}textdata<name="Move Data",bgcolor = cRed>;
+}file<name="ActionSet.cas",bgcolor = cRed>;
+
+string GetString(BTLTable& j)
+{
+    return j.StringValue;
+}
+
+string GetString2(BatTable& j)
+{
+    return j.StringValue;
+}
+
+string GetString3(MovTable& j)
+{
+    return j.StringValue;
+}

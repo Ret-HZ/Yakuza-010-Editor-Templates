@@ -1,0 +1,155 @@
+//------------------------------------------------
+//--- 010 Editor Binary Template
+//
+//      File: Hact.chp
+//   Authors: Draxx182 - Used HeartlessSeph's template as a base
+//   Version: 1
+//   Purpose: hact.chp editing
+//   History
+//   1.00    03/09/2021  Draxx182
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+BigEndian();
+local int UnkTableStart<hidden=true>;
+local int DataPointer<hidden=true>;
+local int DataPointer2<hidden=true>;
+local int NamePointer<hidden=true>;
+local int NamePointer2<hidden=true>;
+local int NamePointer3<hidden=true>;
+local int ActorPointer<hidden=true>;
+local int PropertyPointer<hidden=true>;
+local int ActorStart<hidden=true>;
+local int j<hidden=true>;
+local int j2<hidden=true>;
+
+struct File{
+	struct FileHeader{
+		uint32 filetype<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
+		uint16 unk;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+	}fileheader<name = "File Header",bgcolor = cRed>;
+
+	struct TextData{
+		for( j = 0; j < 99999; j++ )
+      {
+        ubyte textendcheck<hidden=true>;
+        FSkip(-1);
+        if (textendcheck == 204)
+        {
+	        j = 99999;
+        }
+        else
+        {
+          struct BTLTable{
+	           char StringValue[];
+          }text<read = GetString,name="String",bgcolor = cRed>;
+        }
+      }
+	}textdata<name="String Table",bgcolor = cRed>;
+	FSkip(3);
+
+	FSeek(fileheader.filesize);
+	FSkip(-8);
+
+   struct HactTable{
+      uint32 numOfUnks<name="Number of Hact Blocks">;
+      uint32 pointerToStart<name="Pointer to Start of Hact Table">;
+      FSeek(pointerToStart);
+      UnkTableStart = pointerToStart;
+		for( j = 0; j < numOfUnks; j++ )
+      {
+        struct HactBlock{
+          uint32 DPointer<name="Pointer to Data Block">;
+          DataPointer = FTell();
+          FSeek(DPointer);
+
+          uint32 NPointer<name="Pointer to Name">;
+          NamePointer = FTell();
+          FSeek(NPointer);
+          char NameValue[]<hidden=true>;
+          FSeek(NamePointer);
+
+          DataPointer2 = FTell()+12;
+          struct ActorBlock{
+              uint32 numOfAct<name="Number of Actors">;
+              uint32 APointer<name="Pointer to Start of Actors">;
+              uint32 unk<name="Unknown">;
+              ActorPointer = FTell();
+              FSeek(APointer);
+              for( j2 = 0; j2 < numOfAct; j2++ )
+              {
+                  struct ActorNameBlock{
+                      uint32 actor<name="Actor Pointer">;
+                      ActorStart = FTell();
+                      FSeek(actor);
+                      uint32 PPointer<name="Pointer to Actor Name">;
+                      uint32 property<name="Property Type ID">;
+                      uint32 unk;
+                      uint32 pointerToUnkTable;
+                      if (property == 1)
+                      {
+                        struct PropertyBlock{
+                            uint32 unk;
+                            uint32 unk;
+                            uint32 unk;
+                            uint32 unk;
+                            uint32 unk;
+                            uint32 unk;
+                            uint32 unk;
+                            uint32 unk;
+                        }propblock<name="Property Block">;
+                      }
+                      FSeek(PPointer);
+                      char PNameValue[];
+                      FSeek(ActorStart);
+                  }actproperty<name="Actor Block",read=GetActorName>;
+              }
+              FSeek(DataPointer2);
+          }hactproperty<name="Actor Block">;
+          
+          uint32 NPointer2<name="Pointer to Completion Name">;
+          NamePointer2 = FTell();
+          FSeek(NPointer2);
+          char NameValue2[]<name="Completion">;
+          FSeek(NamePointer2);
+          uint32 unk;
+          uint32 unk;
+          uint32 unk;
+          uint32 NPointer3<name="Pointer to Condition Name">;
+          NamePointer3 = FTell();
+          FSeek(NPointer3);
+          char NameValue3[]<name="Condition">;
+          FSeek(NamePointer3);
+
+          uint32 unk;
+          uint32 unk;
+          uint32 unk;
+
+          FSeek(DataPointer);
+        }hactblock<name="Hact Block", read = GetUnkName>;
+      }
+	}hactdata<name="Hact Table",bgcolor = cRed>;
+
+}file<name="Hact.chp",bgcolor = cRed>;
+
+string GetString(BTLTable& j)
+{
+    return j.StringValue;
+}
+
+string GetUnkName(HactBlock& j)
+{
+    return j.NameValue;
+}
+
+string GetActorName(ActorNameBlock& j)
+{
+    return j.PNameValue;
+}
+
