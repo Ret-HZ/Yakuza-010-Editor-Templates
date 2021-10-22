@@ -19,7 +19,7 @@ local u32 circleColor   = 0x2061F5;
 local u32 crossColor    = 0xF8A236;
 local u32 squareColor   = 0xF1B8F7;
 local u32 triangleColor = 0xB2D58D;
-local u32 allColor = 0x00D7FF;
+local u32 anyColor = 0x00D7FF;
 
 typedef enum <u32>
 {
@@ -28,7 +28,7 @@ typedef enum <u32>
     Square,
 	Triangle,
 	Unknown_B,
-	All
+	Any
 } BUTTON;
 
 typedef enum <u32>
@@ -122,8 +122,8 @@ void SetNoteColor( BUTTON buttonType )
 		case Unknown:
             SetBackColor( headerColor );
             break;
-        case All:
-            SetBackColor( allColor );
+        case Any:
+            SetBackColor( anyColor );
             break;
     }
 }
@@ -169,8 +169,8 @@ string BUTTONToString( BUTTON value )
             return "Triangle";
 		case Unknown_B:
             return "Unknown button";
-		case All:
-            return "All";		
+		case Any:
+            return "Any";		
     }
 }
 
