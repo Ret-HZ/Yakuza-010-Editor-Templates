@@ -3,10 +3,10 @@
 //
 //      File: de_karaoke_kpm.bt
 //   Authors: Timo654
-//   Version: 1.0
-//   Purpose: Parse Yakuza series Dragon Engine .kpm karaoke param files
+//   Version: 1.1
+//   Purpose: Parse Yakuza series Dragon Engine .*pm karaoke param files
 //  Category: 
-// File Mask: *.kpm
+// File Mask: *.?pm
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
