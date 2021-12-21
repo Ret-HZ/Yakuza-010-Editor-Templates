@@ -2,7 +2,7 @@
 //--- 010 Editor v10.0.2 Binary Template
 //
 //      File: info.bt
-//   Authors: Timo654
+//   Authors: Timo654, edited by Draxx182 and Kan
 //   Version: 1.0
 //   Purpose: Parse Yakuza info.bin files
 //  Category: 
@@ -28,6 +28,7 @@ typedef struct
 	u32 Unused <hidden=true>;
     u32 CharacterCount;
     u32 ModelCount;
+    local int sex = 5;
     u32 Unused <hidden=true>;
 	u32 Unused <hidden=true>;
 	
@@ -63,7 +64,7 @@ typedef struct
             {
                 struct TChara Chara;
            }
-        } Characters;
+        } Characters<name="Characters">;
     }
 	
 	{
@@ -74,20 +75,37 @@ typedef struct
             {
                 struct TModel Model;
            }
-        } Models;
+        } Models<name="Models">;
     }
 	
 	if ( Version == 3) 
 	{
 		{
         local int a;
-        struct
+        struct Par
         {
-            for ( a = 0; a < CharacterCount; a++ ) // not sure if correct
+            local int p = 0;
+            for ( a = 0; a < ModelCount; a++ )
             {
-                struct TUnk1 Unk1;
-           }
-        } Unk1;
+                ubyte parNum<name="Amount of Pars in a Model">;
+                p = p + parNum;
+            }
+
+            local string parSum = "Pars Sum: ";
+            local string parFun;
+            SPrintf(parFun, "%d",(int)p );
+            parSum = parSum + parFun;
+        }par<read=parSum, name="Par Count">;
+        
+        local int unkC;
+        struct UnkTable{
+            for (unkC = 0; unkC < par.p; unkC++){
+                struct UnkArray{
+                    ubyte unkByte[4];
+                }unkray1<read=ReadData, name="Par Data Unk">;         
+            }
+        }unkTable<name="Par Data">;
+
     }
     }
     
@@ -97,7 +115,7 @@ typedef struct
 {
     SetRandomBackColor();
 	
-    u16 ID;
+    u16 InfoID;
 	u16 FaceModel;
 	u16 TopsModel;
 	if ( Version > 1)
@@ -121,13 +139,19 @@ typedef struct
 	u32 Unused <hidden=true>;
 	
 	u8 Height;
-	u8 Animations; // when changing this, Kiryu's anims changed to NPC ones
+	u8 Type; // type of character, animations, where to load it from
 	
 	if ( Version == 3)
 	{
-		u8 Unk[14];
-		u8 ModelFlags;
-		u8 Unk2[7];
+        u8 CharaID; // unsure
+        u8 VoiceID;
+        u8 Unk[3];
+        u8 VoiceLibrary;
+        u8 TexPar;
+        u8 Unk2[7];
+		u8 ModelFlags1;
+        u8 ModelFlags2;
+		u8 Unk3[6];
     }
 	else if ( Version == 2)
 	{
@@ -138,7 +162,7 @@ typedef struct
 		u8 Unk[14];
 	}
     
-} TChara <read=ReadChara>;
+} TChara <read=ReadChara, name="Character Data">;
 
 typedef struct
 {
@@ -152,15 +176,8 @@ typedef struct
         newChecksum += Data[i];
 
     Assert( newChecksum == Checksum );
-} TModel;
+} TModel <read=ReadModel, name="Model Name">;
 
-typedef struct
-{
-    SetRandomBackColor();
-	
-    u8 Unk;
-	
-} TUnk1 <read=ReadUnk1>;
 
 string ReadChara( TChara& value )
 {
@@ -179,21 +196,24 @@ string ReadModel( TModel& value )
     local string model = "";
     
     SPrintf( model, "%s",
-        value.Model);
+        value.Data);
     
     return model;
     
 }
 
-string ReadUnk1( TUnk1& value )
+string ReadData( UnkArray& value )
 {
-    local string unk1 = "";
+    local string data = "";
     
-    SPrintf( unk1, "%i",
-        value.Unk);
+    SPrintf( data, "%i, %i, %i, %i",
+        value.unkByte[0],
+        value.unkByte[1],
+        value.unkByte[2],
+        value.unkByte[3]);
     
-    return unk1;
+    return data;
     
 }
 
-TInfo Info;
+TInfo Info<name="Info">;
