@@ -1,0 +1,12 @@
+// Enums for names
+enum<ubyte> PropertyID
+{
+	Hitbox = 5,
+	VoiceAudio = 1,
+	SEAudio = 2,
+	ControlLock = 4,
+	FollowUp = 3,
+	SelfContainedHitbox = 10,
+	CameraShake = 18,
+	HyperArmor = 30,
+};

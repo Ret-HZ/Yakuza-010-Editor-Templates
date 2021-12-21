@@ -1,0 +1,395 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: fighter_command.cfc
+//   Authors: HeartlessSeph
+//   Version: 1.00
+//   Purpose: Old Engine Property.bin Mapping
+//   History
+//   1.00    24/01/2021  HeartlessSeph - started this
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+#include "property_enum.bt"
+BigEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int k<hidden=true>;
+local int l<hidden=true>;
+local int m<hidden=true>;
+local int n<hidden=true>;
+local int o<hidden=true>;
+local int p<hidden=true>;
+local int currentpos<hidden=true>;
+local int currentpos2<hidden=true>;
+local int currentpos3<hidden=true>;
+local int currentpos4<hidden=true>;
+local int textending<hidden=true>;
+local int dataarraystart<hidden=true>;
+local int dataarrayblocks<hidden=true>;
+local int maxfilesize<hidden=true>;
+local int propertytablestart;
+local int propertytablepos;
+local int checkthis;
+
+
+struct ByteBitfield{
+	ubyte Bit1 : 1<name = "Bit 1">;
+	ubyte Bit2 : 1<name = "Bit 2">;
+	ubyte Bit3 : 1<name = "Bit 3">;
+	ubyte Bit4 : 1<name = "Bit 4">;
+	ubyte Bit5 : 1<name = "Bit 5">;
+	ubyte Bit6 : 1<name = "Bit 6">;
+	ubyte Bit7 : 1<name = "Bit 7">;
+	ubyte Bit8 : 1<name = "Bit 8">;
+};
+
+struct ByteBitfieldME1{
+	ubyte MoveEffect1 : 1<name = "Regular Hit">;
+	ubyte MoveEffect2 : 1<name = "Attack through Guard">;
+	ubyte MoveEffect3 : 1<name = "Guard Break">;
+	ubyte MoveEffect4 : 1<name = "Move Effect 4">;
+	ubyte MoveEffect5 : 1<name = "Move Effect 5">;
+	ubyte MoveEffect6 : 1<name = "Move Effect 6">;
+	ubyte MoveEffect7 : 1<name = "Move Effect 7">;
+	ubyte MoveEffect8 : 1<name = "Move Effect 8">;
+};
+
+
+
+
+
+struct File{
+
+	checkthis = 0;
+
+	struct FileHeader{
+		uint32 filetype<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
+		uint16 unk;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+		maxfilesize = filesize;
+	}fileheader<name = "File Header",bgcolor = cRed>;
+
+	struct TextData{
+		for( j = 0; j < 99999; j++ )
+		struct Text{
+			ubyte textendcheck<hidden=true>;
+			if (textendcheck == 204)
+			{
+				j = 99999;;
+				FSkip(-1);
+			}
+			else
+			{
+				FSkip(-1);
+				char StringValue[];
+			}
+		}text<read = GetString,name="String",bgcolor = cRed>;
+        textending = FTell()+3;
+	}textdata<name="String Data",bgcolor = cRed>;
+	
+	k = 4 - (FTell() % 4);
+	for( j = 0; j < k; j++ )
+	FSkip(1);
+	dataarraystart = FTell();
+	dataarrayblocks = ((fileheader.filesize) - dataarraystart) / 8;
+
+	
+	
+	FSeek(fileheader.filesize);
+	FSkip(-40);
+	
+	struct Unknown3Table{
+		uint32 numgmts<name="Number of Move Blocks",bgcolor = cRed>;
+		uint32 gmttablestart<name="Pointer to Start of Name Table",bgcolor = cRed>;
+		uint32 gmtdatastart<name="Pointer to Start of Data Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		h = FTell();
+		FSeek(gmtdatastart);
+		n = FTell();
+		FSeek(h);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct UnknownBlock{
+			FSeek(h);
+			uint32 pointer<name="Pointer to Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(n);
+			uint32 pointerdata<name="Pointer to Data",bgcolor = cRed>;
+			n = FTell();
+			FSeek(pointerdata);
+			uint32 unk0val;
+			uint32 MEPTableIdx<name="Effect (MEP) Used", comment = "Index Number of Effect Entry in MEP Table">;
+			uint32 sizeofmaintable;
+			uint32 movepropertiesStart;
+			checkthis = sizeofmaintable - 1;
+			for( p = 0; p < checkthis / 4; p++ )
+			uint32 maintableunk;
+			struct MoveProperties{
+				propertytablestart = FTell();
+				uint16 unk;
+				uint16 numproperties<name = "Number of Properties">;
+				for( o = 0; o < numproperties; o++ )
+				struct Property{
+					uint16 StartFrame;
+					uint16 EndFrame;
+					ubyte Modifier;
+					ubyte unk1;
+					ubyte unk2;
+					PropertyID PropertyTypeID;
+					uint32 unkvalue;
+					uint32 Pointer;
+					if (PropertyTypeID == 5){
+						struct Hitbox{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 HitboxLocation1;
+							uint16 HitboxLocation2;
+							uint16 unk;
+							ubyte unk;
+							ubyte unk;
+							uint16 Flags;
+							ubyte damage;
+							ubyte heat;
+							uint32 unk;
+							FSkip(-4);
+							ByteBitfieldME1 Effect1;
+							ByteBitfield Effect2;
+							ByteBitfield Effect3;
+							ByteBitfield Effect4;
+							FSeek(propertytablepos);
+						}hitbox<name="Hitbox">;
+					}
+					if (PropertyTypeID == 18){
+						struct Camera{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 Camera;
+							uint16 HitboxLocation2;
+							uint16 unk;
+							ubyte unk;
+							ubyte unk;
+							uint16 Flags;
+							ubyte damage;
+							ubyte heat;
+							uint32 unk;
+							FSeek(propertytablepos);
+						}hitbox<name="Camera">;
+					}
+					if (PropertyTypeID == 4){
+						struct ControlLock{
+						}controllock<name="Control Lock">;
+					}
+					if (PropertyTypeID == 2){
+						struct Audio{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;							
+							FSeek(propertytablepos);
+						}audio<name="Audio">;
+					}
+					if (PropertyTypeID == 3){
+						struct FollowUpLock{
+						}followuplock<name="Follow Up Lock">;
+					}
+					if (PropertyTypeID == 1){
+						struct UnkProp1{
+							propertytablepos = FTell();
+							FSeek(propertytablestart + Pointer);
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;
+							uint16 unk;							
+							FSeek(propertytablepos);
+						}unkprop1<name="Unknown Property">;
+					}
+				}property<name = "Property", read = GetPropertyType>;
+			}moveproperties;
+			FSeek(h);
+		}unknownblock<name="Move Block", read = GetUnkName>;
+		}
+		FSeek(i);
+	}unknown3table<name="Move Data",bgcolor = cRed>;
+	
+
+	FSeek(fileheader.filesize);
+	FSkip(-28);
+	
+	struct GMTTable{
+		uint32 numgmts<name="Number of GMT Files",bgcolor = cRed>;
+		uint32 gmttablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct GMTBlock{
+			uint32 pointer<name="Pointer to GMT Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(h);
+		}gmtblock<name="GMT Block", read = GetGMTName>;
+		}
+		FSeek(i);
+	}gmttable<name="GMT Table",bgcolor = cRed>;
+	
+	
+	
+	struct MEPTable{
+		uint32 nummep<name="Number of MEP Files",bgcolor = cRed>;
+		uint32 meptablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(meptablestart);
+		
+		for( j = 0; j < nummep; j++ ){
+		struct MepBlock{
+			uint32 pointer<name="Pointer to MEP Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(h);
+		}mepblock<name="MEP Block", read = GetMepName>;
+		}
+		FSeek(i);
+	}meptable<name="MEP Table",bgcolor = cRed>;
+	
+
+	struct ActionTable{
+		uint32 numgmts<name="Number of GMT Files",bgcolor = cRed>;
+		uint32 gmttablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct ActionBlock{
+			uint32 pointer<name="Pointer to GMT Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			char pointerval2[]<name="Return 1 (For Reference, Don't Edit)", hidden=true>;
+			FSeek(h);
+		}actionblock<name="Unk Block", read = GetActionName>;
+		}
+		FSeek(i);
+	}actiontable<name="Unk Table",bgcolor = cRed>;
+
+	FSeek(fileheader.filesize);
+	FSkip(-12);
+	
+	struct DataTable2{
+		uint32 numgmts<name="Number of Unk Blocks",bgcolor = cRed>;
+		FSkip(4);
+		uint32 gmttablestart<name="Pointer to Start of Table",bgcolor = cRed>;
+		i = FTell();
+		FSeek(gmttablestart);
+		
+		for( j = 0; j < numgmts; j++ ){
+		struct DataTable2Block{
+			uint32 pointer<name="Pointer to Name",bgcolor = cRed>;
+			h = FTell();
+			FSeek(pointer);
+			uint32 numunkpointer1;
+			uint32 unkpointer1;
+			uint32 namepointer<name="Pointer to Name">;
+			m = FTell();
+			FSeek(namepointer);
+			char pointerval2[]<hidden=true>;
+			FSeek(m);
+			uint32 numunkpointer3;
+			uint32 unkpointer3;
+			k = FTell();
+			FSeek(unkpointer1);
+			for( n = 0; n < numunkpointer1; n++ )
+			struct UnkPointer1Struct{
+				uint32 pointertotable;
+				o = FTell();
+				FSeek(pointertotable);
+				uint32 tablename;
+				uint32 unkval;
+				FSeek(tablename);
+				char pointerval[];
+				FSeek(o);
+			}unkpointer1struct;
+			FSeek(h);
+		}datatable2block<name="Unk Block",read=GetDataBlockName>;
+		}
+		FSeek(i);
+	}datatable2<name="Data Table",bgcolor = cRed>;
+	
+	
+	FSeek(h);
+}file<name="property.bin",bgcolor = cRed>;
+
+
+
+
+
+
+string GetPropertyType(Property &j)
+{
+    string null = "";
+	string propertystring = "Unknown Property ";
+	string propertytypes = EnumToString(j.PropertyTypeID);
+	string propertytypesID = EnumToString(j.PropertyTypeID);
+	if (propertytypes == null)
+	{
+		return propertystring + propertytypes;
+	}
+	else
+	{
+		return propertytypes;
+	}
+};
+
+string GetString(Text& j)
+{
+    return j.StringValue;
+}
+
+string GetMepName(MepBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetActionName(ActionBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetGMTName(GMTBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetUnkName(UnknownBlock& j)
+{
+    return j.pointerval2;
+}
+
+string GetDataBlockName(DataTable2Block& j)
+{
+    return j.pointerval2;
+}
