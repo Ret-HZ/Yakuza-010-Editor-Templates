@@ -1,0 +1,54 @@
+//------------------------------------------------
+//--- 010 Editor Binary Template
+//
+//      File: bgm.bin
+//   Authors: Ono Michio
+//   Version: 1
+//   Purpose: Parse bgm.bin from sound.par
+//   Credits: Draxx182 - explained the basics of 010 .bt and made a .bt as a base for me to use and also for studying her parameter.bt, Timo654 - Studying his category.bt template
+//   History
+//   1.00    27/12/2021 
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+BigEndian();
+local int j; 
+local int stay; 
+
+struct File{
+	struct FileHeader{
+    SetRandomBackColor();
+    char Magic[4] <bgcolor = cGreen>;
+		uint16 unk <name="unk">;
+		uint16 unk <hidden=true>;
+		uint32 unk<name="Version",comment="Not fully sure if this is file version seeing as there are no different version files",bgcolor = SetRandomBackColor()>;
+		uint32 unk <hidden=true,bgcolor = cNone>;
+	}fileheader<name = "Header">;
+
+    struct PointerTable{
+        uint32 numOfFiles<name="Number of Files",bgcolor = SetRandomBackColor()>; 
+        uint32 unk;
+        uint32 unk<hidden=true,bgcolor = cNone>;
+        uint32 unk<hidden=true,bgcolor = cNone>;
+        for( j = 0; j < numOfFiles; j++ )
+        struct Pointer{
+            uint32 unk<hidden=true,bgcolor = cNone>;
+            uint32 pointer<name="Pointer to String",bgcolor = SetRandomBackColor()>; 
+            stay = FTell();
+
+            FSeek(pointer);
+            char StringValue[];
+
+            FSeek(stay);
+            uint16 unk <hidden=true,bgcolor = cNone>;
+            ubyte unk <hidden=true,bgcolor = cNone>;
+            ubyte bgm_type <comment="Links to bgm_table.bin",format=hex,bgcolor = SetRandomBackColor()>;
+            uint32 validity <name="File Validity",bgcolor = cWhite>;
+        }pointer<name="Entry",read=StringValue>;
+    }pointerT<name = "Pointer Table">;
+}file<name="bgmb structure"">;
