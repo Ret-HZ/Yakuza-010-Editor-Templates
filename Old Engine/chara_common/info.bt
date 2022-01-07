@@ -58,13 +58,11 @@ typedef struct
     
     {
         local int i;
-        struct
+        local int stay = FTell();
+        for ( i = 0; i < CharacterCount; i++ )
         {
-            for ( i = 0; i < CharacterCount; i++ )
-            {
-                struct TChara Chara;
-           }
-        } Characters<name="Characters">;
+            FSkip(0x28);
+        }
     }
 	
 	{
@@ -75,7 +73,18 @@ typedef struct
             {
                 struct TModel Model;
            }
-        } Models<name="Models">;
+        } Models<name="Model Names">;
+        
+        local int stay2 = FTell();
+        FSeek(stay);
+        struct
+        {
+            for ( i = 0; i < CharacterCount; i++ )
+            {
+                struct TChara Chara;
+            }
+        } Characters<name="Characters">;
+        FSeek(stay2);
     }
 	
 	if ( Version == 3) 
@@ -84,28 +93,26 @@ typedef struct
         local int a;
         struct Par
         {
-            local int p = 0;
+            local int p = 0; // p = Par checksum // should be 2903 in y0
             for ( a = 0; a < ModelCount; a++ )
             {
-                ubyte parNum<name="Amount of Pars in a Model">; //determines size of Par Size struct but does not affect game
+                ubyte parNum<name="Amount of Pars in a Model">; //determines length of Par Size struct but does not affect game
                 p = p + parNum;
             }
 
-            local string parSum = "Pars Sum: ";
+            local string parSum = "Total Pars Sum: ";
             local string parFun;
             SPrintf(parFun, "%d",(int)p );
             parSum = parSum + parFun;
         }par<read=parSum, name="Par Count">;
         
         local int unkC;
-        if (par.p > 0)
-        {
-            struct Size{
-                for (unkC = 0; unkC < par.p; unkC++){
-                    uint32 Size<name="Unpacked Par Size">; //only informative     
+        struct UnkTable{
+            for (unkC = 0; unkC < par.p; unkC++){
+                uint32 Size<name="Unpacked Par Size">; //only informative
             }
-            }size<name="Par Size">;
-    }
+        }unkTable<name="Par Size">;
+
     }
     }
     
@@ -149,8 +156,8 @@ typedef struct
         u8 VoiceLibrary;
         u8 TexPar;
         u8 Unk2[7];
-		u8 ModelFlags1;
-        u8 ModelFlags2;
+		u8 Flags1;
+        u8 Flags2;
 		u8 Unk3[6];
     }
 	else if ( Version == 2)
@@ -161,8 +168,8 @@ typedef struct
 	{
 		u8 Unk[14];
 	}
-    
-} TChara <read=ReadChara, name="Character Data">;
+    local string model = Models.Model[InfoID].Data;
+} TChara <read=model, name="Character Data">;
 
 typedef struct
 {
@@ -178,19 +185,6 @@ typedef struct
     Assert( newChecksum == Checksum );
 } TModel <read=ReadModel, name="Model Name">;
 
-
-string ReadChara( TChara& value )
-{
-    local string chara = "";
-    
-    SPrintf( chara, "Face: [%i] Tops: [%i]",
-        value.FaceModel,
-        value.TopsModel);
-    
-    return chara;
-    
-}
-
 string ReadModel( TModel& value )
 {
     local string model = "";
@@ -201,5 +195,6 @@ string ReadModel( TModel& value )
     return model;
     
 }
+
 
 TInfo Info<name="Info">;
