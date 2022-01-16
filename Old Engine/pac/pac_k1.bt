@@ -1,0 +1,569 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//   File: PAC
+//   Author: Kan#7925
+//   Version: 1.0
+//   Purpose: edit OE stage entities // k1 version
+//   File Mask: pac_*.bin, scenario/player_pos.bin
+//   Big thanks: Draxx182 for teaching me templates,
+//               Parallax Error for a HUGE amount of help,
+//               Timo654 for his templates I studied, & Retraso for dispose_string exporter
+//------------------------------------------------
+#include "../../Common/includes/include.h"
+#include "pac_enums_k1.bt"
+local u32 headerColor = SetRandomBackColor();
+BigEndian();
+
+struct Pac{
+    int16 NodeCount<hidden=true>;
+    int16 FileVersion<hidden=true>;
+    local int Version;
+    if (FileVersion == 16) 
+        {
+            Version = 2; //player_pos
+        }
+    else
+        {
+            Version = 1; //pac
+        }
+    if (Version == 1) //pac
+        {
+            int32 Start<hidden=true>;
+            local int i;
+            for (i = 0; i < NodeCount; i++)
+                {
+                    struct Pointers{
+                        SetRandomBackColor();
+                        PropertyType Property<format=hex>;
+                        int16 FlagsHeader1<format=hex, name="Node Flags Part 1">;
+                        ubyte FlagsHeader2<format=hex, name="Node Flags Part 2">;
+                        int32 Data1Pointer<hidden=true>;
+                        int32 Data2Pointer<hidden=true>;
+                        int16 Data1Size<hidden=true>;
+                        int16 Data2Size<hidden=true>;
+                        local int stay = FTell();
+
+                        FSeek(Data1Pointer);
+                        if(Data1Size > 0)
+                            {
+                                struct Data1{
+                                    SetRandomBackColor();
+                                    ubyte Unk20F7[3]<name="Header Unk", format=binary>;
+                                    ubyte StructureCount<hidden=true>;
+                                    int32 StructPointer<hidden=true>;
+                                    int32 AdditionalCoordPointer<hidden=true>;
+                                    int16 AdditionalCoordCount<hidden=true>;
+                                    int16 TextCount<hidden=true>;
+                                    int32 TextPointerPointer<hidden=true>;
+                                    int32 UnkMaybeUnused<hidden=true>;
+                                    local int j;
+                                    for ( j = 0; j < StructureCount; j++)
+                                        {
+                                            struct Structure{
+                                                SetRandomBackColor();
+                                                int32 ConditionPointer<hidden=true>;
+                                                int32 RefDataPointer<hidden=true>;
+                                                ubyte ConditionCount<hidden=true>;
+                                                ubyte RefDataCount<hidden=true>;
+                                                ubyte UnkFlagOrCount<name="Unk1">;
+                                                ubyte Unk32_64<name="Unk2">;
+                                                IntFlags1 Flags1<name="Interaction Parameters", format=binary>;
+                                                IntFlags2 Flags2<name="Entity Behavior", format=binary>;
+                                                FollowToggle Follow<name="Follower Toggle">; //disregard coords; load entity near player
+                                                IntFlags3 Flags3<name="Speech Bubble", format=binary>;
+                                                local int staystruc = FTell();
+                                                FSeek(Data1Pointer+ConditionPointer);
+                                                    if (ConditionCount > 0)
+                                                        {
+                                                            struct Conditions{
+                                                                local int lol;
+                                                                for ( lol = 0; lol < ConditionCount; lol++)
+                                                                    {
+                                                                        struct Condition{
+                                                                            int32 ConditionFlags<name="Condition Flags">;
+                                                                            int32 ConditionFlags<name="Condition Flags">;
+                                                                            int32 ConditionFlags<name="Condition Flags">;
+                                                                        }condition<name="Condition">;
+                                                                    }
+                                                            }conditions<name="Conditions">;
+                                                        }
+                                                FSeek(Data1Pointer+RefDataPointer);
+                                                    if (RefDataCount > 0)
+                                                        {
+                                                            local int parallax;
+                                                            for ( parallax = 0; parallax < RefDataCount; parallax++)
+                                                                {
+                                                                    struct RefData{
+                                                                        int16 TextToggle<hidden=true>; //check if always unused
+                                                                        ubyte RefStructCount<hidden=true>;
+                                                                        ubyte Unused<hidden=true>; //check if always unused
+                                                                        int32 ShitBytePointer<hidden=true>;
+                                                                        local int stayshit = FTell();
+                                                                        FSeek(Data1Pointer+ShitBytePointer);
+                                                                        if (TextToggle==0)
+                                                                            {
+                                                                                ubyte UnusedByte<hidden=true>;//can be text
+                                                                            }
+                                                                        else
+                                                                            {
+                                                                                struct RefString{
+                                                                                    char RefStr[];
+                                                                                }refstr<name="Text String",read=RefStr>;
+                                                                            }
+                                                                        FSeek(stayshit);
+                                                                        int32 RefStructPointer<hidden=true>;
+                                                                        local int stayref = FTell();
+                                                                        FSeek(Data1Pointer+RefStructPointer);
+                                                                        local int c;
+                                                                        for (c = 0; c < RefStructCount; c++)
+                                                                            {
+                                                                                struct RefStruct{
+                                                                                    RefProperty Property<format=hex>;
+                                                                                    if (Property==53559296)
+                                                                                        {
+                                                                                            int32 Unused<hidden=true>;
+                                                                                            int32 Always2<hidden=true>;
+                                                                                            int16 ACB<name="ACB",format=hex>;
+                                                                                            int16 Track<name="Track">;
+                                                                                        }
+                                                                                    else if (Property==50593792)
+                                                                                        {
+                                                                                            int32 Unused<hidden=true>;
+                                                                                            int32 Player_Pos<name="Player_Pos">;
+                                                                                            int32 Unused<hidden=true>;
+                                                                                        }
+
+                                                                                    else
+                                                                                        {
+                                                                                            int32 Unk;
+                                                                                            int32 Unk;
+                                                                                            int32 Unk;
+                                                                                        }
+
+                                                                                }refstruct<name="Ref Node",read=ReadRef>;
+                                                                            }
+                                                                        FSeek(stayref);
+                                                                    }refdata<name="Ref Data",read=RefStructCount>;
+                                                                }
+                                                        }
+                                                FSeek(staystruc);
+                                            }structure<name="Data Node">;
+                                        }
+                                    FSeek(Data1Pointer+AdditionalCoordPointer);
+                                    if (AdditionalCoordCount > 0)
+                                        {
+                                            struct AdditionalCoords{
+                                                local int b;
+                                                for ( b = 0; b < AdditionalCoordCount; b++)
+                                                    {
+                                                        struct AdditionalCoord{
+                                                            float X;
+                                                            float Y;
+                                                            float Z;
+                                                            int16 W;
+                                                            int16 Unk;
+                                                        }additionalcoord<name="Additional Coordinate">;
+                                                    }
+                                            }additionalcoords<name="Additional Coordinates", read=b>;
+                                        }
+                                    FSeek(Data1Pointer+TextPointerPointer);
+                                    if (TextCount > 0)
+                                        {
+                                            struct Text{
+                                                local int o;
+                                                for ( o = 0; o < TextCount; o++)
+                                                    {
+                                                        struct String{
+                                                            int32 TextPointer<hidden=true>;
+                                                            local int staytext = FTell();
+                                                            FSeek(Data1Pointer+TextPointer);
+                                                            char str[]<name="String">;
+                                                            FSeek(staytext);
+                                                        }strstring<name="String", read=str>;
+                                                    }
+                                            }text<name="Strings", read=o>;
+                                        }
+
+
+                                }data1<name="Data 1", read=j>;
+                            }
+
+                        FSeek(Data2Pointer);
+                        struct Data2{
+                            SetRandomBackColor();
+                            if (Property==0)
+                                {
+                                struct Character{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    DisposeID Behavior<name="Behavior">;
+                                    DisposeID Model<name="Model">;
+                                    DisposeID Animation<name="Animation">;
+                                    DisposeID Stance<name="Stance">;
+                                    int16 Unused<hidden=true>;
+                                    byte UnkFlags2<format=binary>;
+                                    ubyte Fighter<hidden=true>;
+                                    int32 Unused<hidden=true>;
+                                    ubyte Height<name="Height">;
+                                    ubyte Unk[3];
+                                    int32 Unused2[6]<hidden=true>;
+                                    DisposeID Item<name="Item/Weapon">;
+                                    int32 Unused<hidden=true>;
+                                }character<name="Character">;
+                                if (character.Fighter==0)
+                                    {
+                                        local int ff;
+                                        for (ff = 1; ff < character.ChildCountMain; ff++){
+                                            struct CharacterAlias{
+                                                SetRandomBackColor();
+                                                float X;
+                                                float Y;
+                                                float Z;
+                                                int16 W;
+                                                byte ChildCount<hidden=true>;
+                                                byte UnkFlags<format=binary>;
+                                                DisposeID Behavior<name="Behavior">;
+                                                DisposeID Model<name="Model">;
+                                                DisposeID Animation<name="Animation">;
+                                                DisposeID Stance<name="Stance">;
+                                                int16 Unused<hidden=true>;
+                                                byte UnkFlags2<format=binary>;
+                                                ubyte Fighter<hidden=true>;
+                                                int32 Unused<hidden=true>;
+                                                ubyte Height<name="Height">;
+                                                ubyte Unk[3];
+                                                int32 Unused2[6]<hidden=true>;
+                                                DisposeID Item<name="Item/Weapon">;
+                                                int32 Unused<hidden=true>;
+                                            }characteralias<name="Character">;
+                                        }
+                                     }
+                                else if (character.Fighter==128, character.ChildCountMain>1)
+                                    {
+                                        int32 Unused3[2]<hidden=true>;
+                                        local int g;
+                                        for (g = 2; g < character.ChildCountMain; g++){
+                                            struct CharacterAliasFighter{
+                                                SetRandomBackColor();
+                                                float X;
+                                                float Y;
+                                                float Z;
+                                                int16 W;
+                                                byte ChildCount<hidden=true>;
+                                                byte UnkFlags<format=binary>;
+                                                DisposeID Behavior;
+                                                DisposeID Model;
+                                                DisposeID Animation;
+                                                DisposeID Stance;
+                                                int16 Unused<hidden=true>;
+                                                byte UnkFlags2<format=binary>;
+                                                ubyte Fighter<hidden=true>;
+                                                int32 Unused<hidden=true>;
+                                                ubyte Height;
+                                                ubyte Unk[3];
+                                                int32 Unused2[6]<hidden=true>;
+                                                DisposeID Item;
+                                                int32 Unused3[3]<hidden=true>;
+                                            }characterfighter<name="Character">;
+                                        }
+                                        struct FighterData{
+                                            SetRandomBackColor();
+                                            float X;
+                                            float Y;
+                                            float Z;
+                                            int16 W;
+                                            byte ChildCount<hidden=true>;
+                                            byte UnkFlags<format=binary>;
+                                            int32 Unused4[3]<hidden=true>;
+                                            DisposeID Unk;
+                                            byte Unused5[3]<hidden=true>;
+                                            byte FighterFlags<format=binary, name="Fighter Flags">;
+                                            int32 UnkFighterFlags[6];
+                                            DisposeID NpcType<name="NPC Type">;
+                                            DisposeID Unk;
+                                            int32 UnkFighterFlags2[4];
+                                            int16 Unused<hidden=true>;
+                                            Moveset MovesetID;
+                                            byte UnkFlags<format=binary>;
+                                            int32 UnkFlags;
+                                            int32 Unused<hidden=true>;
+                                            byte CharacterFlags<format=binary, name="Character Flags">;
+                                            byte UnkFlags<format=binary>;
+                                            int16 Unused<hidden=true>;
+                                            int32 Unused<hidden=true>;
+                                            DisposeID Name<name="Name">;
+                                            DisposeID Weapon1<name="Weapon 1">;
+                                            DisposeID BattleIntro<name="Battle Intro">;
+                                            DisposeID Weapon2<name="Weapon 2">; //never managed to make it load
+                                        }fighterdata<name="Fighter Data">;
+                                    }
+
+                                }
+                            else if (Property==2)
+                                {
+                                struct RoadBlock{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    ubyte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    int32 Unk;
+                                    int32 Unk;
+                                    int32 Unk;
+                                    int32 Unk;
+                                    }roadblock<name="Road Block">;
+                                local int x;
+                                for (x=1; x < roadblock.ChildCountMain; x++)
+                                    {
+                                        struct RoadBlockAlias{
+                                            SetRandomBackColor();
+                                            float X;
+                                            float Y;
+                                            float Z;
+                                            int16 W;
+                                            ubyte ChildCount<hidden=true>;
+                                            byte UnkFlags<format=binary>;
+                                            int32 Unk;
+                                            int32 Unk;
+                                            int32 Unk;
+                                            int32 Unk;
+                                            }roadblockalias<name="Road Block">;
+                                    }
+                                 }
+                                    
+
+
+
+
+                            else if (Property==5)
+                                {
+                                struct Boss{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    DisposeID Model<name="Model">;
+                                    DisposeID Name<name="Name">;
+                                    DisposeID BattleIntro<name="Battle Intro">;
+                                    int32 BossFlag<format=hex,name="Boss Flag">; //always same as the flag in header
+                                    int16 Unused<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    byte Unused<hidden=true>;
+                                    Moveset MovesetID;
+                                    byte UnkFlags<format=binary>;
+                                    Enemy Team<name="Team">;
+                                    ubyte HP<name="HP">; //unsure
+                                    int32 Unused<hidden=true>;
+                                    int16 Unused<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    ubyte Height<name="Height">;
+                                    int32 FightFlags[2]<format=hex, name="Fight Flags">;
+                                    int32 Unused<hidden=true>;
+                                    byte CharacterFlags<format=binary, name="Character Flags">;
+                                    byte UnkFlags<format=binary>;
+                                    int16 Unused<hidden=true>;
+                                    DisposeID Weapon1<name="Weapon 1">;
+                                    DisposeID Weapon2<name="Weapon 2">;
+                                    int32 Unused<hidden=true>;
+                                }boss<name="Boss">;
+                            }
+                            else if (Property==11)
+                                {
+                                struct Item{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    char Weapon[32]<name="Item Name">;
+                                    int32 Flags[2]<name="Unk Flags">;
+                                    }item<name="Item">;
+                                }
+                            else if (Property==24)
+                                {
+                                struct Ambient{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    float Unk;
+                                    byte Unused[3]<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    int16 ACB<name="ACB",format=hex>;
+                                    int16 Track<name="Track">;
+                                    int32 Unk2;
+                                    }ambient<name="Ambient Sound (ACB)">;
+                                }
+                            else if (Property==42)
+                                {
+                                struct Fight{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    int16 UnkFlags;
+                                    int16 BossCount<hidden=true>;
+                                    int32 BossPointer<hidden=true>;
+                                    int32 Unused[3]<hidden=true>;
+                                    local int gr;
+                                    for (gr = 0; gr < BossCount; gr++)
+                                        {
+                                            int32 BossFlag<name="Boss Node Flag", format=hex>;
+                                        }
+                                    local int pf;
+                                    for (pf = BossCount*4+36; pf < Data2Size; pf+= 4) // this is cheating!!!
+                                        {
+                                            int32 Unk;// check how to count this
+                                        }
+                                    }fight<name="Fight">;
+                                }
+                            else if (Property==64)
+                                {
+                                struct HCA{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    DisposeID HCA<name="HCA">;
+                                    DisposeID HCA<name="HCA">;
+                                    DisposeID HCA<name="HCA">;
+                                    DisposeID HCA<name="HCA">;
+                                    DisposeID HCA<name="HCA">;
+                                    DisposeID HCA<name="HCA">;
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    float Unused[5]<hidden=true>;
+                                    }hca<name="Ambient sound (BGM)">;
+                                }
+                            else
+                                {
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    local int h;
+                                    for ( h = 16; h < Data2Size; h+= 4)
+                                        {
+                                            int32 Unk;
+                                        }
+                                }
+                                
+                        }data2<name="Data 2">;
+                        FSeek(stay);
+                    }pointers<read=ReadProperty, name="Node">;
+                }
+    }
+    if (Version == 2) //player_pos
+        {
+            int32 ChildCount<name="Child Count">;
+            int32 Unused[2]<hidden=true>;
+            local int32 c;
+            struct Positions{
+                for (c=0; c < ChildCount; c++)
+                    {
+                        struct Pos{
+                            SetRandomBackColor();
+                            int32 StringPointer;
+                            local int stay=FTell();
+                            FSeek(StringPointer);
+                            char str[];
+                            FSeek(stay);
+                            struct Coordinates1{
+                                float X;
+                                float Y;
+                                float Z;
+                            }coordinates1;
+                            int32 Unk;
+                            int32 Unk;
+                            struct Coordinates2{
+                                float X;
+                                float Y;
+                                float Z;
+                            }coordinates2;
+                            int32 Unk;
+                            int32 Unk;
+                            int32 Unk;
+                        }pos<read=str,name="Position">;
+                    }
+                }positions<name="Positions">;
+        }
+}pac<name="Pac">;
+
+string ReadProperty(Pointers &r)
+{
+    local string null = "";
+    if (r.Property == 0)
+    {
+        return "Character";
+    }
+    if (r.Property == 1)
+    {
+        return "Action";
+    }
+    if (r.Property == 2)
+    {
+        return "Road Block";
+    }
+    if (r.Property == 3)
+    {
+        return "Phone";
+    }
+    if (r.Property == 5)
+    {
+        return "Boss";
+    }
+    if (r.Property == 11)
+    {
+        return "Item";
+    }
+    if (r.Property == 24)
+    {
+        return "Ambient (ACB)";
+    }
+    if (r.Property == 42)
+    {
+        return "Fight";
+    }
+    if (r.Property == 64)
+    {
+        return "Ambient (BGM)";
+    }
+    else{
+        return "";
+    }
+};
+
+string ReadRef(RefStruct &r)
+{
+    local string null = "";
+    if (r.Property == 53559296)
+    {
+        return "Sound";
+    }
+    if (r.Property == 50593792)
+    {
+        return "Teleportation";
+    }
+    else
+    {
+        return "";
+    }
+};
