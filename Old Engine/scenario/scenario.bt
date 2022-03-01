@@ -1,0 +1,413 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: scenario2.bin // Old Engine // Y0, K1, Ishin, FOTNS, Y5 // maybe OOE in the future
+//   Authors: Kan#7925
+//   Version: 1.0
+//                Thanks to Parallax Error for a lot of help 
+//                Thanks to metman98uk for playing Princess League
+//  
+//              
+//
+//------------------------------------------------
+#include "../../Common/includes/include.h"
+#include "scenario2_include.bt"
+local u32 headerColor = SetRandomBackColor();
+BigEndian();
+local uint Pointer56=ReadUInt(56);
+local uint Pointer64=ReadUInt(64);
+local int Version;
+if(Pointer56==Pointer64){
+    Version=0; // 0, k1, ishin, fotns
+}
+else{Version=1;}; // y5
+
+if(Version==0,1){
+struct Scenario2{
+    struct Header{
+        int32 Unused<hidden=true>;
+        int64 VersionOrSomething<name="Version?",format=hex>;
+        int32 Unused<hidden=true>;
+        int32 Part1Count<name="Player Settings Node Count">;
+        int32 Part1Pointer<name="Player Settings Pointer">;
+        int32 Part2Count<name="Scenario Settings Node Count">;
+        int32 Part2Pointer<format=hex,name="Scenario Settings Node Pointer">;
+        int32 ScenarioCount<format=hex,name="Settings Size">;
+        int32 ScenarioPointer<format=hex,name="Settings Pointer">;
+        int32 Part4Count<name="Node Count">;
+        int32 Part4Pointer<format=hex,name="Node Pointer">;
+        int32 Part5Pointer<format=hex,name="Scenario Access Pointer">;
+        int32 Part5Count<name="Scenario Access Count">;
+        if(Version==1){ 
+            int32 Part6Pointer<format=hex,name="Scenario Branch Events Pointer">;
+            int32 Part6Count<name="Scenario Branch Events Count">;
+            int32 Part7Pointer<format=hex,name="Scenario Branch Nodes Pointer">;
+            int32 Part7Count<name="Scenario Branch Nodes Count">;}
+        else{
+            int32 StringPointer<format=hex,name="String Pointer">;
+            int32 Unused<hidden=true>;
+            int32 StringPointerRepeat<format=hex,name="String Pointer">;};
+    }header<name="Header">;
+
+    FSeek(header.Part4Pointer);
+    struct Part4{
+        local int c;
+        local uint ChapterSum=-1;
+        local uint ScenarioSum=-1;
+        for (c=0; c<header.Part4Count;c++)
+            {
+                struct Part4Node{
+                    SetRandomBackColor();
+                    type NodeType<name="Node Type">;
+                    local int stay4=FTell();
+                    if (NodeType==0)
+                        {
+                            int32 StringPointer<format=hex,name="String Pointer">;
+                            FSeek(StringPointer);
+                            struct NodeString{
+                                char String[];
+                            }str<name="String",read=String>;
+                            local char die[]=str.String;
+                            ChapterSum++;
+                            local uint ChapterIndex=ChapterSum;
+                            ScenarioSum=-1;
+                            FSeek(stay4+4);
+                            struct Inception{
+                                int32 Pointer2<format=hex>;
+                                local int RggsWhy;
+                                if(Version==1){
+                                    RggsWhy = (Pointer2 - header.Part4Pointer)/32;
+                                }
+                                else{
+                                    RggsWhy = (Pointer2 - header.Part4Pointer)/48;
+                                };
+                            }inception<name="Follows up to",read=ReadInception>;
+                            struct Inception2{
+                                int32 Pointer2<format=hex>;
+                                local int RggsWhy;
+                                if(Version==1){
+                                    RggsWhy = (Pointer2 - header.Part4Pointer)/32;
+                                }
+                                else{
+                                    RggsWhy = (Pointer2 - header.Part4Pointer)/48;
+                                };
+                            }inception2<name="Next chapter",read=ReadInception2>;
+                            int32 UnkFirst<hidden=true>;//likely unused. look for an exception.
+                            int32 NodeID<name="Node ID",format=hex>;
+                            int32 UnkSecond[2]<hidden=true>;
+                            if(Version==0){
+                                int32 Unk;
+                                int32 UnkThird[3]<hidden=true>;
+                            };
+                            
+                        }
+                    else if(NodeType==4){//y5 only
+                        u32 Part6Pointer<format=hex,name="Branch Events Structure Pointer">;
+                        struct HarukaFollow{
+                            int32 Pointer2<format=hex>;
+                            local int RggsWhy = (Pointer2 - header.Part4Pointer)/32;
+                        }harukafollow<name="Follows up to",read=ReadHarukaF>;
+                        struct HarukaChapter{
+                            int32 Pointer2<format=hex>;
+                            local int RggsWhy= (Pointer2 - header.Part4Pointer)/32;
+                        }harukachapter<name="Next normal node",read=ReadHarukaC>;
+                        struct HarukaChild{
+                                int32 ParentPointer<format=hex>;
+                                local int RggsWhy = (ParentPointer - header.Part4Pointer)/32;
+                        }harukachild<name="Node belongs to chapter",read=ReadKiryu>;
+                        u32 WorkAhead[3]<hidden=true>;
+                        local int stayunk=FTell();
+                        if(Part6Pointer>0){
+                            FSeek(Part6Pointer);
+                            struct Part6{
+                                u32 UnkPointer1<format=hex,name="Pointer to Unk String">;
+                                u32 Part7Pointer<format=hex,name="Scenario Node IDs Pointer">;
+                                u32 Part7Count<name="Scenario Node IDs Count">;
+                                u32 Unused<hidden=true>;
+                                local int stayz=FTell();
+                                if(Part7Pointer>0){
+                                    FSeek(Part7Pointer);
+                                    local int huh;
+                                    for(huh=0;huh<Part7Count;huh++){
+                                        u32 Node<name="Scenario Node ID",format=hex>;
+                                    };
+                                };
+                                FSeek(UnkPointer1);
+                                char UnkString[]<name="Unk String">;
+                                FSeek(stayz);
+                            }part6<name="Branch Events",read=UnkString>;
+                        };
+                        FSeek(stayunk);
+                        ScenarioSum++;
+                        local uint ScenarioIndex=ScenarioSum;
+                        local uint ScenarioChapIndex=ChapterSum;
+                        local char die[]=part6.UnkString;
+                        }
+                    else if(NodeType==5)
+                        {
+                            ScenarioSum++;
+                            local uint ScenarioIndex=ScenarioSum;
+                            local uint ScenarioChapIndex=ChapterSum;
+                            int32 P2Pointer<format=hex,name="Scenario Settings Pointer">;
+                            FSeek(P2Pointer);
+                            struct P2Node{
+                                int32 P1Pointer<format=hex,name="Player Settings Pointer">;
+                                int32 P1Count<name="Player Settings Versions Count">;
+                                local int P1stay=FTell();
+                                FSeek(P1Pointer);
+                                struct Part1{
+                                    local int omg;
+                                    for(omg=0;omg<P1Count;omg++){
+                                        struct P1Node{
+                                            uint32 Game_Mode<name="Game Mode">;
+                                            int32 StringPointer<format=hex,name="String Pointer">;
+                                            int32 Player_Pos<name="Player Position">;
+                                            int32 Unk2;
+                                            uint32 ScenarioLength<name="Misc Settings Size">;
+                                            int32 ScenarioPointer<format=hex,name="Misc Settings Pointer">;
+                                            local int P2stay=FTell();
+                                            FSeek(StringPointer);
+                                            struct P1String{
+                                                char P1NString[]<name="String">;
+                                            }p1str<name="String",read=P1NString>;
+
+                                            if (ScenarioLength>0){
+                                                FSeek(ScenarioPointer);
+                                                struct P1Scen{
+                                                    local int u=0;
+                                                    Setting(ScenarioPointer,ScenarioLength,u);
+                                                }p1scen<read=u,name="Misc Settings">;
+                                            }
+                                            FSeek(P2stay);
+                                        }p1node<read=p1str.P1NString,name="Player Settings">;
+                                    }
+                                }part1<read=p1node[0].p1str.P1NString,name="Player Settings">;
+
+                                FSeek(P1stay);
+                                int32 NodeID<name="Node ID",format=hex>;
+                                int32 UnkUnused<hidden=true>;//likely unused. look for an exception.
+                                struct ExtraSettings{
+                                    local int s;
+                                    local int staysettings=FTell();
+                                    for(s=0;s<8;s++){
+                                        FSeek(staysettings+s*4);
+                                        struct ExtraSettingsNode{
+                                            u32 Size<name="Extra Settings Size">;
+                                            FSkip(28);
+                                            u32 Pointer<format=hex,name="Extra Settings Pointer">;
+                                            local int u=0;
+                                            if(Pointer>0){
+                                                FSeek(Pointer);
+                                                Setting(Pointer,Size,u);
+                                            };
+                                            FSeek(staysettings+s*4+4);
+                                        }extrasettingsnode<read=u,name="Extra Settings">;
+                                    };
+                                }extrasettings<name="Extra Settings">;
+                                
+                            }p2node<name="Scenario Settings">;
+                            FSeek(stay4+4);
+                            int32 Unused<hidden=true>;
+                            struct Follow{
+                                int32 FPointer<format=hex>;
+                                if(Version==0){
+                                    local int RggsWhy = (FPointer - header.Part4Pointer)/48;
+                                }
+                                else{
+                                    local int RggsWhy = (FPointer - header.Part4Pointer)/32;
+                                };
+                            }follow<name="Follows up to",read=ReadFollow>;
+                            struct Child{
+                                int32 ParentPointer<format=hex>;
+                                if(Version==0){
+                                    local int RggsWhy = (ParentPointer - header.Part4Pointer)/48;
+                                }
+                                else{
+                                    local int RggsWhy = (ParentPointer - header.Part4Pointer)/32;
+                                }
+                            }child<name="Node belongs to chapter",read=ReadChild>;
+                            int32 NodeID<name="Node ID",format=hex>;
+                            int32 Pointer5<format=hex,name="Node access structure pointer">;
+                            int32 Count5<name="Node access structure count">;
+                            if(Version==0){
+                                int32 Unk[4]<hidden=true>; //likely unused. look for an exception.
+                            };
+                            local int stay5=FTell();
+                            FSeek(Pointer5);
+                            if(Count5>0){
+                                struct Part5{
+                                    local int jeff;
+                                    for(jeff=0;jeff<Count5;jeff++){
+                                        struct Part5Node{
+                                            int32 NodeID<format=hex,name="Node ID">;
+                                        }part5node<name="Node can be accessed from",read=NodeID>;
+                                    }
+                                }part5<read=jeff,name="Node access points">;
+                            };
+                            FSeek(stay5);
+                            local char die[]=p2node.part1.p1node[0].p1str.P1NString;
+                         }
+                }part4node<name=NameNode,read=ReadNode,comment=CommentNode>;
+            }
+    }part4<name="Scenario", read=c>;
+
+}scenario2<name="scenario2.bin",comment=CommentScenario,read=ReadScenario>;
+};
+
+string ReadInception(Inception &r)
+{
+    local string null = "";
+    SPrintf( null, "Node [%i]",
+        r.RggsWhy);
+    return null;
+};
+
+string ReadInception2(Inception2 &r)
+{
+    local string null = "";
+    if (r.Pointer2>0)
+        {
+            SPrintf( null, "Node [%i]",
+                r.RggsWhy);
+            return null;
+        }
+    else
+        {
+            return "None";
+        }
+};
+
+string ReadFollow(Follow &r)
+{
+    if (r.FPointer>0)
+        {
+            local string null = "";
+            SPrintf( null, "Node [%i]",
+                r.RggsWhy);
+            return null;
+        }
+    else
+        {
+            return "None";
+        }
+};
+string ReadHarukaF(HarukaFollow &r)
+{
+    if (r.Pointer2>0)
+        {
+            local string null = "";
+            SPrintf( null, "Node [%i]",
+                r.RggsWhy);
+            return null;
+        }
+    else
+        {
+            return "None";
+        }
+};
+
+string ReadHarukaC(HarukaChapter &r)
+{
+    local string null = "";
+    if (r.Pointer2>0)
+        {
+            SPrintf( null, "Node [%i]",
+                r.RggsWhy);
+            return null;
+        }
+    else
+        {
+            return "None";
+        }
+};
+string ReadChild(Child &r)
+{
+    local string null = "";
+    SPrintf( null, "Node [%i]",
+        r.RggsWhy);
+    return null;
+};
+string ReadKiryu(HarukaChild &r)
+{
+    local string null = "";
+    SPrintf( null, "Node [%i]",
+        r.RggsWhy);
+    return null;
+};
+
+string NameNode(Part4Node &r)
+{
+    if (r.NodeType==0){
+        local string null = "CHAPTER";
+        return null;
+    }
+    else if(r.NodeType==5){
+        local string null = "SCENARIO";
+        return null;
+    }
+    else if(r.NodeType==4){
+        local string null = "BRANCH EVENTS";
+        return null;
+    };
+};
+
+string ReadNode(Part4Node &r)
+{
+    local string null = "";
+    if (r.NodeType==0){
+        SPrintf( null, "%s",
+            r.die);
+    return null;
+    }
+    else{
+        SPrintf( null, "%s",
+            r.die);
+    return null;
+    }
+};
+
+string CommentNode(Part4Node &r)
+{
+    local string null = "";
+    if (r.NodeType==0){
+        SPrintf( null, "CHAPTER INDEX: %i",
+            r.ChapterIndex);
+    return null;
+    }
+    else{
+        SPrintf( null, "CHAPTER INDEX: %i - SCENARIO INDEX: %i",
+            r.ScenarioChapIndex,
+            r.ScenarioIndex);
+    return null;
+    }
+};
+
+string NameStringHeader(Header &r)
+{
+    if(Version==0){
+        return "String Pointer";
+    }
+    else{
+        return "Work Ahead";
+    }
+};
+
+string CommentScenario(Scenario2 &r)
+{
+    if(Version==1){
+        return "This file is encoded in Shift_JIS";
+    }
+    else{
+        return "Y0/K1/FOTNS: UTF-8 // Ishin: Shift_JIS";
+    };
+};
+
+string ReadScenario(Scenario2 &r)
+{
+    if(Version==1){
+        return "Yakuza 5";
+    }
+    else{
+        return "Old Engine";
+    };
+};
