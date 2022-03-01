@@ -1,0 +1,248 @@
+#include "../../Common/includes/include.h"
+enum<int32> type{
+Chapter = 0,
+Branch_Events = 4,
+Scenario = 5,};
+
+enum<uint16>category{
+BGM = 1,
+Caption = 3,
+Cutscene_04 = 4,
+Results = 5,
+Effects = 8,
+Cutscene_14 = 14,
+Equip = 16 ,
+Start_Auth = 19,
+State_Progress = 31,
+State_Enum_Unk = 32,
+Timer = 33,
+Follow_Up = 34,
+Cutscene_39 = 39,
+Player_Intro = 43,
+Movie_Name = 46,
+};
+
+enum<uint32>followcategory{
+
+Scenario2_Node=0,
+
+};
+
+enum<uint32>toggle{
+False=0,
+True=1,
+};
+
+void Setting(int32 Pointer, int32 Size, int u){
+    local int z;
+    for(z=FTell();z<Pointer+Size*4;z=FTell()){
+        struct Settings{
+            u++;
+            //SetRandomBackColor();
+            int16 ScenSetting<format=hex,name="Settings Node",comment="Indicates the start of a setting">;
+            category Category<name="Category">;
+            local char SetRead[];
+            switch (Category){
+                case 1:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strBGM[]<name="BGM">;
+                    SetRead=strBGM;
+                    FSeek(stay);
+                    break;
+                case 3:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strCAP[]<name="Caption Name">;
+                    SetRead=strCAP;
+                    FSeek(stay);
+                    break;
+                case 4:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strCTS[]<name="Cutscene">;
+                    SetRead=strCTS;
+                    FSeek(stay);
+                    break;
+                case 5://y5 only
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strHRK[]<name="Results">;
+                    SetRead=strHRK;
+                    FSeek(stay);
+                    break;
+                case 8:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strPTC[]<name="Effect(s) Loaded",comment="effect/ptc_arc_w64/*.par">;
+                    SetRead=strPTC;
+                    FSeek(stay);
+                    break;
+                case 14:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strCTS[]<name="Cutscene">;
+                    SetRead=strCTS;
+                    FSeek(stay);
+                    break;
+                case 16:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strWEP[]<name="Equip Name",comment="Hardcoded, ends up leading to boot/item_alias.bin">;
+                    SetRead=strWEP;
+                    FSeek(stay);
+                    break;
+                case 19:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strAUTH[]<name="Hact Name">;
+                    SetRead=strAUTH;
+                    FSeek(stay);
+                    break;
+                case 31:
+                    u16 Chapter_State_ID<name="Chapter State ID">;
+                    u16 Scenario_State_ID<name="Scenario State ID">;
+                    toggle Complete<name="Complete">;
+                    break;
+                case 32:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strSTA[]<name="Scenario State UnkString">;
+                    SetRead=strSTA;
+                    FSeek(stay);
+                    u32 Unk1;
+                    u32 Unk2;
+                    break;
+                case 33:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strSTA[]<name="Scenario State Timer">;
+                    SetRead=strSTA;
+                    FSeek(stay);
+                    u32 Unk1;
+                    u32 Unk2;
+                    break;
+                case 34:
+                    u16 Chapter_State_Cond<name="Chapter State ID",comment="Followup will trigger on condition completion">;
+                    u16 Scenario_State_Cond<name="Scenario State ID",comment="Followup will trigger on condition completion">;
+                    followcategory FollowType<name="Follow Setting Type // Probably wrong">;
+                    switch(FollowType){
+                        case 0:
+                            u32 NodeID<format=hex,name="Next Node ID">;
+                            break;
+                        default:
+                            u32 Unk<format=hex>;
+                            break;
+                    };
+                    break;
+                case 37:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strCTS[]<name="Movie Name">;
+                    SetRead=strCTS;
+                    FSeek(stay);
+                    break;
+                case 39:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strCTS[]<name="Cutscene">;
+                    SetRead=strCTS;
+                    FSeek(stay);
+                    break;
+                case 43:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strGMT[]<name="Animation Name">;
+                    SetRead=strGMT;
+                    FSeek(stay);
+                    break;
+                case 46:
+                    u32 Pointer<format=hex,name="String Pointer">;
+                    local int stay=FTell();
+                    FSeek(Pointer);
+                    char strCTS[]<name="Movie Name">;
+                    SetRead=strCTS;
+                    FSeek(stay);
+                    if(ReadUShort() == 0x8000){
+                        break; //y0
+                    };
+                    u32 Pointer2<format=hex,name="String 2 Pointer">;
+                    FSeek(Pointer2);
+                    char strCTS2[]<name="Movie Name 2">;
+                    FSeek(stay+4);
+                    u32 Unused<hidden=true>;
+                    u32 Pointer3<format=hex,name="String 3 Pointer">;
+                    FSeek(Pointer3);
+                    char strCTS3[]<name="Movie Name 3">; //k1
+                    FSeek(stay+12);
+                    SetRead=strCTS3;
+                    break;
+                default:
+                    local int i;
+                    local int t;
+                    for(i=0;i>-1;i++){
+                        t=FTell();
+                        if(ReadUShort() == 0x8000||t>header.ScenarioPointer+header.ScenarioCount*4){
+                            break;
+                        };
+                        u32 Unk;
+                    };
+            };
+        }settings<name=NameSettings,read=SetRead>;
+    };
+}
+
+string NameSettings(Settings &r)
+{
+    local string null = "";
+    switch (r.Category)
+    {
+        case 1:
+            return "BGM";
+        case 3:
+            return "Title Card";
+        case 4:
+            return "Cutscene Unk";
+        case 5:
+            return "Results"; //y5
+        case 8:
+            return "Effects";
+        case 14:
+            return "Cutscene Unk";
+        case 16:
+            return "Equipment";
+        case 19:
+            return "Dynamic Intro";
+        case 31:
+            return "Scenario State Progress";
+        case 32:
+            return "State Enums?";
+        case 33:
+            return "Timer";
+        case 34:
+            return "Node Followup Settings";
+        case 37:
+            return "Cutscene Replay Name"; //ishin
+        case 39:
+            return "Cutscene Unk";
+        case 43:
+            return "Player Intro";
+        case 46:
+            return "Cutscene Replay Name";
+        default:
+            return "";
+    }
+};

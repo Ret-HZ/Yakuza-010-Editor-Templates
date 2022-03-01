@@ -3,9 +3,9 @@
 //
 //   File: PAC
 //   Author: Kan#7925
-//   Version: 1.0
+//   Version: 1.5
 //   Purpose: edit OE stage entities // y0 version
-//   File Mask: pac_*.bin, scenario/player_pos.bin
+//   File Mask: pac_*.bin, scenario/player_pos.bin, boot.par/enemy_ai_param.bin
 //   Big thanks: Draxx182 for teaching me templates,
 //               Parallax Error for a HUGE amount of help,
 //               Timo654 for his templates I studied, & Retraso for dispose_string exporter
@@ -19,13 +19,21 @@ struct Pac{
     int16 NodeCount<hidden=true>;
     int16 FileVersion<hidden=true>;
     local int Version;
+    local string VersionName;
     if (FileVersion == 16) 
         {
-            Version = 2; //player_pos
+            Version = 2;
+            VersionName="Player Pos";
         }
-    else
+    else if(FileVersion==20546)
         {
-            Version = 1; //pac
+            Version = 3;
+            VersionName="Enemy AI Param";
+        }
+    else if(FileVersion==0)
+        {
+            Version = 1;
+            VersionName="Pac";
         }
     if (Version == 1) //pac
         {
@@ -35,9 +43,8 @@ struct Pac{
                 {
                     struct Pointers{
                         SetRandomBackColor();
-                        PropertyType Property<format=hex>;
-                        int16 FlagsHeader1<format=hex, name="Node Flags Part 1">;
-                        ubyte FlagsHeader2<format=hex, name="Node Flags Part 2">;
+                        PropertyType Property : 8<format=hex, name="Property Type">;
+                        int32 FlagsHeader : 24 <format=hex, name="Node ID">;
                         int32 Data1Pointer<hidden=true>;
                         int32 Data2Pointer<hidden=true>;
                         int16 Data1Size<hidden=true>;
@@ -68,10 +75,27 @@ struct Pac{
                                                 ubyte RefDataCount<hidden=true>;
                                                 ubyte UnkFlagOrCount<name="Unk1">;
                                                 ubyte Unk32_64<name="Unk2">;
-                                                IntFlags1 Flags1<name="Interaction Parameters", format=binary>;
-                                                IntFlags2 Flags2<name="Entity Behavior", format=binary>;
-                                                FollowToggle Follow<name="Follower Toggle">; //disregard coords; load entity near player
-                                                IntFlags3 Flags3<name="Speech Bubble", format=binary>;
+                                                struct IntParam{
+                                                    struct IntFlags1{
+                                                        Toggle Unk1 : 1<name="Unk1 Toggle">;
+                                                        Toggle InteractToggle : 1<name="Interaction Toggle">;
+                                                        Toggle ZoomToggle : 1<name="Camera Zoom">;
+                                                        Toggle Unk2 : 1<name="Unk2 Toggle">;
+                                                        InteractionDisplay Display : 4<name="Interaction Display">;
+                                                    }intflags<name="Interaction Flags 1",read=ReadInt1>;
+                                                    struct IntFlags2{
+                                                        Toggle AutoInteract : 1<name="Automatic Interaction">; // the entity interacts with you
+                                                        Toggle Unk3 : 1<name="Unk3 Toggle">;
+                                                        Toggle Unk4 : 1<name="Unk4 Toggle">;
+                                                        Toggle Turn : 1<name="Character looks at you">;
+                                                        Toggle Unk5 : 1<name="Unk5 Toggle">;
+                                                        Toggle Unk6 : 1<name="Unk6 Toggle">;
+                                                        Toggle Unk7 : 1<name="Unk7 Toggle">;
+                                                        Toggle Unk8 : 1<name="Unk8 Toggle">;
+                                                    }intflags2<name="Interaction Flags 2", read=ReadInt2>;
+                                                    Toggle Follow<name="Spawn on Player">; //disregard coords; load entity near player
+                                                    IntFlags3 Flags3<name="Speech Bubble", format=binary>;
+                                                }intparam<name="Interaction Parameters">;
                                                 local int staystruc = FTell();
                                                 FSeek(Data1Pointer+ConditionPointer);
                                                     if (ConditionCount > 0)
@@ -80,13 +104,43 @@ struct Pac{
                                                                 local int lol;
                                                                 for ( lol = 0; lol < ConditionCount; lol++)
                                                                     {
-                                                                        struct Condition{
-                                                                            int32 ConditionFlags<name="Condition Flags">;
-                                                                            int32 ConditionFlags<name="Condition Flags">;
-                                                                            int32 ConditionFlags<name="Condition Flags">;
-                                                                        }condition<name="Condition">;
+                                                                        struct ConditionNode{
+                                                                            Condition Property<name="Condition Property Type">;
+                                                                            switch (Property)
+                                                                                {
+                                                                                    case 4:
+                                                                                        StateChapter Chapter<name="Chapter State ID">; //scenario_state
+                                                                                        uint16 Scenario<name="Scenario State ID">; //scenario_state
+                                                                                        ubyte Unused[3]<hidden=true>;
+                                                                                        Toggle ScenarioState<name="Scenario Completed/Activated">;
+                                                                                        break;
+                                                                                    case 16:
+                                                                                        Toggle MapVersion1:1;
+                                                                                        Toggle MapVersion2:1;
+                                                                                        Toggle MapVersion3:1;
+                                                                                        Toggle MapVersion4:1;
+                                                                                        Toggle MapVersion5:1;
+                                                                                        Toggle Evening:1;
+                                                                                        Toggle Day:1;
+                                                                                        Toggle Night:1;
+                                                                                        byte Unused[7]<hidden=true>;
+                                                                                        break;
+                                                                                    case 32:
+                                                                                        int32 AttachNode<name="String attaches to action ID",format=hex,comment="Unsure">;
+                                                                                        int32 Unk;
+                                                                                        break;
+                                                                                    case 39:
+                                                                                        int32 AttachNode<name="String attaches to character ID",format=hex,comment="Unsure">;
+                                                                                        int32 Unk;
+                                                                                        break;
+                                                                                    default:
+                                                                                        int32 ConditionFlags<name="Condition Flags">;
+                                                                                        int32 ConditionFlags<name="Condition Flags">;
+                                                                                        break;
+                                                                                }
+                                                                        }conditionnode<name="Condition",read=ReadCondiNode>;
                                                                     }
-                                                            }conditions<name="Conditions">;
+                                                            }conditions<name="Conditions",read=lol,comment="Node will only spawn if conditions are met">;
                                                         }
                                                 FSeek(Data1Pointer+RefDataPointer);
                                                     if (RefDataCount > 0)
@@ -95,7 +149,7 @@ struct Pac{
                                                             for ( parallax = 0; parallax < RefDataCount; parallax++)
                                                                 {
                                                                     struct RefData{
-                                                                        int16 TextToggle<hidden=true>; //check if always unused
+                                                                        int16 TextToggle<hidden=true>;
                                                                         ubyte RefStructCount<hidden=true>;
                                                                         ubyte Unused<hidden=true>; //check if always unused
                                                                         int32 ShitBytePointer<hidden=true>;
@@ -119,32 +173,61 @@ struct Pac{
                                                                         for (c = 0; c < RefStructCount; c++)
                                                                             {
                                                                                 struct RefStruct{
-                                                                                    RefProperty Property<format=hex>;
-                                                                                    if (Property==53559296)
+                                                                                    RefProperty Property : 24<format=hex>;
+                                                                                    switch (Property)
                                                                                         {
-                                                                                            int32 Unused<hidden=true>;
-                                                                                            int32 Always2<hidden=true>;
-                                                                                            int16 ACB<name="ACB",format=hex>;
-                                                                                            int16 Track<name="Track">;
-                                                                                        }
-                                                                                    else if (Property==50593792)
-                                                                                        {
-                                                                                            int32 Unused<hidden=true>;
-                                                                                            int32 Player_Pos<name="Player_Pos">;
-                                                                                            int32 Unused<hidden=true>;
-                                                                                        }
+                                                                                            case 209216:
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                int32 Always2<hidden=true>;
+                                                                                                int16 ACB<name="ACB",format=hex>;
+                                                                                                int16 Track<name="Track">;
+                                                                                                break;
 
-                                                                                    else
-                                                                                        {
-                                                                                            int32 Unk;
-                                                                                            int32 Unk;
-                                                                                            int32 Unk;
+                                                                                            case 197632:
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                int32 Player_Pos<name="Player_Pos ID">;
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                break;
+
+                                                                                            case 201472:
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                int16 Animation<name="Animation String ID">;
+                                                                                                int16 Unused<hidden=true>;
+                                                                                                int32 Actor<name="Character Node ID",comment="0=Player">;
+                                                                                                break;
+
+                                                                                            case 131072:
+                                                                                                int32 ColorPart1 : 8<format=hex>;
+                                                                                                int16 ColorPart2<format=hex>;
+                                                                                                int16 Unused<hidden=true>;
+                                                                                                int16 Name<name="Name String ID">;
+                                                                                                int16 Unused<hidden=true>;
+                                                                                                int32 Speaker<name="Speaker Node ID">;
+                                                                                                break;
+                                                                                            case 66816:
+                                                                                                Toggle32 Completion:8<name="Completion",comment="Activates/Deactivates Scenario or its Completion">;
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                StateChapter Chapter_State_ID<name="Chapter State ID">;
+                                                                                                uint16 Scenario<name="Scenario State ID">;
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                break;
+                                                                                            case 197376:
+                                                                                                int32 Unused<hidden=true>;
+                                                                                                uint16 Chapter_Index<name="Scenario2 Chapter Index">;
+                                                                                                uint16 Scenario_Index<name="Scenario2 Scenario Index">;
+                                                                                                int32 Scenario2_Node_ID<name="Scenario2 Node ID",format=hex,comment="Seems to be hard to edit/change">;
+                                                                                                break;
+                                                                                            default:
+                                                                                                int32 Unk;
+                                                                                                int32 Unk;
+                                                                                                int32 Unk;
+                                                                                                break;
                                                                                         }
 
                                                                                 }refstruct<name="Ref Node",read=ReadRef>;
                                                                             }
                                                                         FSeek(stayref);
-                                                                    }refdata<name="Ref Data",read=RefStructCount>;
+                                                                    }refdata<name="Ref Data",read=RefStructCount,comment="Additional settings launched by the node">;
                                                                 }
                                                         }
                                                 FSeek(staystruc);
@@ -186,7 +269,7 @@ struct Pac{
                                         }
 
 
-                                }data1<name="Data 1", read=j>;
+                                }data1<name="Data 1", read=j,optimize=true>;
                             }
 
                         FSeek(Data2Pointer);
@@ -243,7 +326,8 @@ struct Pac{
                                             }characteralias<name="Character">;
                                         }
                                      }
-                                else if (character.Fighter==128, character.ChildCountMain>1)
+//following 2 else if's are "cheated", FIX later to remove pointers.Data2Size comparison
+                                else if (character.Fighter==128, character.ChildCountMain>1, pointers.Data2Size>=204)
                                     {
                                         int32 Unused3[2]<hidden=true>;
                                         local int g;
@@ -288,7 +372,7 @@ struct Pac{
                                             DisposeID Unk;
                                             int32 UnkFighterFlags2[4];
                                             int16 Unused<hidden=true>;
-                                            Moveset MovesetID;
+                                            Moveset MovesetID<name="Moveset">;
                                             byte UnkFlags<format=binary>;
                                             int32 UnkFlags;
                                             int32 Unused<hidden=true>;
@@ -302,7 +386,33 @@ struct Pac{
                                             DisposeID Weapon2<name="Weapon 2">; //never managed to make it load
                                         }fighterdata<name="Fighter Data">;
                                     }
-
+                                else if (character.Fighter==128, character.ChildCountMain>1, pointers.Data2Size<204)
+                                    {
+                                        int32 Unused3[2]<hidden=true>;
+                                        local int g;
+                                        for (g = 1; g < character.ChildCountMain; g++){
+                                            struct CharacterUnk{
+                                                SetRandomBackColor();
+                                                float X;
+                                                float Y;
+                                                float Z;
+                                                int16 W;
+                                                byte ChildCount<hidden=true>;
+                                                byte UnkFlags<format=binary>;
+                                                DisposeID Behavior<name="Behavior">;
+                                                DisposeID Model<name="Model">;
+                                                DisposeID Animation<name="Animation">;
+                                                DisposeID Stance<name="Stance">;
+                                                int16 Unused<hidden=true>;
+                                                byte UnkFlags2<format=binary>;
+                                                ubyte Fighter<hidden=true>;
+                                                int32 Unused<hidden=true>;
+                                                ubyte Height<name="Height">;
+                                                ubyte Unk[3];
+                                                int32 Unk2[11];
+                                            }characterunk<name="Character">;
+                                        }
+                                    }
                                 }
                             else if (Property==2)
                                 {
@@ -353,11 +463,11 @@ struct Pac{
                                     DisposeID Model<name="Model">;
                                     DisposeID Name<name="Name">;
                                     DisposeID BattleIntro<name="Battle Intro">;
-                                    int32 BossFlag<format=hex,name="Boss Flag">; //always same as the flag in header
+                                    int32 BossFlag<format=hex,name="Boss Node ID">; //always same as the id in header
                                     int16 Unused<hidden=true>;
                                     byte UnkFlags<format=binary>;
                                     byte Unused<hidden=true>;
-                                    Moveset MovesetID;
+                                    Moveset MovesetID<name="Moveset">;
                                     byte UnkFlags<format=binary>;
                                     Enemy Team<name="Team">;
                                     ubyte HP<name="HP">; //unsure
@@ -365,9 +475,18 @@ struct Pac{
                                     int16 Unused<hidden=true>;
                                     byte UnkFlags<format=binary>;
                                     ubyte Height<name="Height">;
-                                    int32 FightFlags[2]<format=hex, name="Fight Flags">;
-                                    int32 Unused<hidden=true>;
-                                    byte CharacterFlags<format=binary, name="Character Flags">;
+                                    int32 FightFlags[2]<format=hex, name="Fight Node ID">;
+                                    ubyte UnkValue[4]<comment="Related to spawn/death">;
+                                    struct BossCharFlags{
+                                        Toggle ModelOff : 1<name="Ignore PAC Model">;
+                                        Toggle Unk1 : 1<name="Unk Flag">;
+                                        Toggle Unk2: 1<name="Unk Flag">;
+                                        Toggle Unk3 : 1<name="Unk Flag">;
+                                        Toggle Unk4 : 1<name="Unk Flag">;
+                                        Toggle IntroOff : 1<name="Ignore PAC Battle Intro">;
+                                        Toggle WeaponOff : 1<name="Ignore PAC Weapon 1">;
+                                        Toggle Unk5 : 1<name="Unk Flag">;
+                                    }bosscharflags<name="Boss Flags">;
                                     byte UnkFlags<format=binary>;
                                     int16 Unused<hidden=true>;
                                     DisposeID Weapon1<name="Weapon 1">;
@@ -387,6 +506,21 @@ struct Pac{
                                     char Weapon[32]<name="Item Name">;
                                     int32 Flags[2]<name="Unk Flags">;
                                     }item<name="Item">;
+                                }
+                            else if (Property==13)
+                                {
+                                struct Tougi{
+                                    float X;
+                                    float Y;
+                                    float Z;
+                                    int16 W;
+                                    byte ChildCountMain<hidden=true>;
+                                    byte UnkFlags<format=binary>;
+                                    int32 ProbablyUnused;
+                                    DisposeID Unk;
+                                    int32 Unk2;
+                                    int32 Unk3;
+                                    }tougi<name="tougi?">;
                                 }
                             else if (Property==24)
                                 {
@@ -421,12 +555,12 @@ struct Pac{
                                     local int gr;
                                     for (gr = 0; gr < BossCount; gr++)
                                         {
-                                            int32 BossFlag<name="Boss Node Flag", format=hex>;
+                                            int32 BossFlag<name="Boss Node ID", format=hex>;
                                         }
                                     local int pf;
-                                    for (pf = BossCount*4+36; pf < Data2Size; pf+= 4) // this is cheating!!!
+                                    for (pf = 0; pf < BossCount; pf++)
                                         {
-                                            int32 Unk;// check how to count this
+                                            uint16 Unk;
                                         }
                                     }fight<name="Fight">;
                                 }
@@ -473,7 +607,7 @@ struct Pac{
     }
     if (Version == 2) //player_pos
         {
-            int32 ChildCount<name="Child Count">;
+            int32 ChildCount<name="Positions Count">;
             int32 Unused[2]<hidden=true>;
             local int32 c;
             struct Positions{
@@ -492,7 +626,7 @@ struct Pac{
                                 float Z;
                             }coordinates1;
                             int32 Unk;
-                            int32 Unk;
+                            int32 MapID<name="Map ID">;
                             struct Coordinates2{
                                 float X;
                                 float Y;
@@ -503,67 +637,172 @@ struct Pac{
                             int32 Unk;
                         }pos<read=str,name="Position">;
                     }
-                }positions<name="Positions">;
+                }positions<name="Positions",comment="This file is encoded in Shift_JIS">;
         }
-}pac<name="Pac">;
+    if (Version == 3)
+        {
+            int16 Unk1;
+            int16 Unused<hidden=true>;
+            int32 Unk2;
+            int32 Unused<hidden=true>;
+            int32 AICount<name="Moveset Count">;
+            local int i;
+            for ( i = 0; i < AICount; i++ ){
+                struct MovesetNode{
+                    SetRandomBackColor();
+                    uint32 ID<name="ID">;
+                    uint32 HP<name="HP">;
+                    uint32 UnkA[2];
+                    struct MainArts{
+                        uint16 Version1<name="Version 1">;
+                        uint16 Version2<name="Version 2">;
+                        uint16 Version3<name="Version 3">;
+                        uint16 Version4<name="Version 4">;
+                        uint16 Version5<name="Version 5">;
+                        uint16 Version6<name="Version 6">;
+                    }mainarts<name="Main Combos Inputs", read="Inputs",comment="Unsure what situation prompts which version">;
+                    uint16 DownAttackArts<name="Down Attack Inputs",comment="Still largely untested - can be wrong">;
+                    uint16 UnkArts<name="Unk Inputs">;
+                    uint16 AntiDownArts<name="AntiDown Inputs",comment="Still largely untested - can be wrong">;
+                    ubyte UnkB[14]<comment="Looks similar to some sort of probabilities">;
+                    float UnkC[4];
+                    uint16 UnkD<comment="Possibly related to weapon">;
+                    ubyte UnkE[14]<comment="Looks similar to some sort of probabilities">;
+                    ubyte UnkF[2];
+                    struct Defense{
+                        Toggle HyperArmor:1<name="Hyperarmor (without heat)">;
+                        Toggle Unk2:1<name="Unk Bit 2">;
+                        Toggle Unk3:1<name="Unk Bit 3">;
+                        Toggle QuickGetUp:1<name="Fast recovery from fall">;
+                        Toggle Unk5:1<name="Unk Bit 5">;
+                        Toggle Unk6:1<name="Unk Bit 6">;
+                        Toggle Unk7:1<name="Unk Bit 7">;
+                        Toggle Unk8:1<name="Unk Bit 8">;
+                    }defense<name="Defense Settings">;
+                    ubyte Unk8;
+                    int32 Unused<hidden=true>;
+                    char SetName[40]<name="Fighter Command Name">;
+                }moveset<read=SetName, name="Moveset">;
+            };
+        };
+}pac<name=VersionName>;
 
 string ReadProperty(Pointers &r)
 {
     local string null = "";
-    if (r.Property == 0)
+    switch (r.Property)
     {
-        return "Character";
-    }
-    if (r.Property == 1)
-    {
-        return "Action";
-    }
-    if (r.Property == 2)
-    {
-        return "Road Block";
-    }
-    if (r.Property == 3)
-    {
-        return "Phone";
-    }
-    if (r.Property == 5)
-    {
-        return "Boss";
-    }
-    if (r.Property == 11)
-    {
-        return "Item";
-    }
-    if (r.Property == 24)
-    {
-        return "Ambient (ACB)";
-    }
-    if (r.Property == 42)
-    {
-        return "Fight";
-    }
-    if (r.Property == 64)
-    {
-        return "Ambient (BGM)";
-    }
-    else{
-        return "";
+        case 0:
+            return "Character";
+        case 1:
+            return "Action";
+        case 2:
+            return "Road Block";
+        case 3:
+            return "Phone";
+        case 5:
+            return "Boss";
+        case 11:
+            return "Item";
+        case 24:
+            return "Ambient (ACB)";
+        case 42:
+            return "Fight";
+        case 64:
+            return "Ambient (BGM)";
+        default:
+            return "";
     }
 };
 
 string ReadRef(RefStruct &r)
 {
     local string null = "";
-    if (r.Property == 53559296)
+    switch (r.Property)
     {
-        return "Sound";
+        case 209216:
+            return "Sound";
+        case 197632:
+            return "Teleportation";
+        case 201472:
+            return "Animation";
+        case 131072:
+            return "Speaker";
+        case 66816:
+            return "Scenario State Progress";
+        case 197376:
+            return "Launch Scenario2 Node";
+        default:
+            return "";
     }
-    if (r.Property == 50593792)
+};
+
+string ReadInt1(IntFlags1 &r)
+{
+    local string null = "";
+    switch (r.Display)
     {
-        return "Teleportation";
+        case 0:
+            return "Enter";
+        case 1:
+            return "Exit";
+        case 2:
+            return "Look";
+        case 3:
+            return "Talk";
+        case 4:
+            return "Check";
+        case 5:
+            return "Get In";
+        case 6:
+            return "Listen";
+        case 7:
+            return "Pick Up";
+        case 8:
+            return "Collect";
+        case 9:
+            return "Setting";
+        case 10:
+            return "Harvest";
+        case 11:
+            return "Repair";
+        case 12:
+            return "Photograph";
+        case 13:
+            return "Heat Action";
+        case 14:
+            return "Jump";
+        case 15:
+            return "Stop";
     }
-    else
+};
+
+string ReadInt2(IntFlags2 &r)
+{
+    local string null = "";
+    switch (r.AutoInteract)
     {
-        return "";
+        case 1:
+            return "Auto On";
+        default:
+            return "Auto Off";
+    }
+};
+
+string ReadCondiNode(ConditionNode &r)
+{
+    local string null = "";
+    switch (r.Property)
+    {
+        case 4:
+            return "Scenario State";
+        case 16:
+            return "Time of Day/Map Version";
+        case 32:
+            return "String (Action)";
+        case 39:
+            return "String (Character)";
+        default:
+            return "";
     }
 };
