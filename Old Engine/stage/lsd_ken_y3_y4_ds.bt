@@ -1,0 +1,80 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: *.lsd
+//   Authors: Violet
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//                  Thanks to Kan for all of his help.
+//------------------------------------------------
+#include "../../Common/includes/include.h"
+local u32 headerColor = SetRandomBackColor();
+BigEndian();
+enum<u32>type{
+DLD = 0,
+LSD = 2,
+CLD = 6,
+};
+struct Lsd{
+    struct Header{
+        type Filetype<name="File Type">;
+        int32 VersionNumber<format=hex, name="File Version">; //0F in Y3, 11 in Ishin, 12 in Y0/K1, 18 in FOTNS
+        char Magic[8];
+        int32 FileCount<name="File Count", comment="Value same as number in the file name.">;  //Same as the number in file name
+        int32 PropertyCount;
+        int32 PropertyLength<format=hex>;
+    }header<name="Header">;
+    local int violet;
+    for(violet=0;violet<header.PropertyCount;violet++){
+        struct Property{
+            SetRandomBackColor();
+            float unk;  //Exe says this is pos
+            float unk;  //Exe says this is pos2
+            float unk;  //Exe says this is radius
+            u32 unk;
+            u32 unk;
+            u32 color<name="RGBA", format=hex>;
+            u32 unk; //Exe says this is active flag
+            u32 unk; //Exe says this is light id
+            u32 unk; //Exe says this is "enable?"
+            u32 color2<name="Ambient RGBA", format=hex>;
+            float reach<name="Intensity">; //Exe says this is intensity
+            float unk; //Exe says this is intensity2
+            float unk; //Exe says this is "decrease?"
+            float unk; //Exe says this is ambient_max
+            u32 unk;  //Exe says this is "PLIGHT_KIND"?
+            u32 unk;  //Exe says this is "flag"
+            u32 unk;  //Exe says this is priority
+            u32 unk;  //Exe says this is Areaflag
+            float raidus<name="Radius of light">; //Exe says this is "RAYLEIGH_DECREASE"
+            float unk;  //Exe says this is MIE_DECREASE
+            float unk;  //Exe says this is HG
+            float unk;  //Exe says this is ALBEDO
+            float unk;  //Exe says this is shadow_deep
+            float unk;  //Exe says this is spot_angle
+            float unk;  //Exe says this is rotate_y
+            float unk;  //Exe says this is anim_light_name
+            float unk;  //Exe says this is light_name
+            struct Unused{
+            u32 unk<comment="light_tag?">;  //Exe says this is light_tag
+            u32 unk<comment="user_folder?">;  //Exe says this is user_folder???
+            u32 unk<comment="PRJ_LIGHT_DIRECT_SHADOW?">;  //Exe says this is PRJ_LIGHT_DIRECT_SHADOW
+            u32 unk<comment="userdata?">;  //Exe says this is userdata??
+            u32 unk<comment="light_direct?">;  //Exe says this is light_direct??
+            u32 unk<comment="light_point?">;  //Exe says this is light_point
+            u32 unk<comment="light_capsule?">;  //Exe says this is light_capsule
+            u32 unk<comment="light_ambient?">;  //Exe says this is light_ambient
+            u32 unk<comment="light_scatter?">;  //Exe says this is light_scatter
+            u32 unk<comment="hemisphere?">;  //Exe says this is hemisphere
+            u32 unk<comment="light_hemisphere?">;  //Exe says this is light_hemisphere
+            u32 unk<comment="is anim_light?">;  //Exe says this is anim_light
+            u32 unk<comment="projection_light?">;  //Exe says this is projection_light
+            u32 padding[20];
+            }unused<name="Unused?", comment="Not sure if used, values come from exe">;
+        }property<name="Property">;
+    };
+}lsd<name="LSD">;
