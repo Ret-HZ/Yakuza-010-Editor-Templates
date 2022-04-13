@@ -1,0 +1,70 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: ene_*.bin
+//   Authors: Violet
+//   Version: 1.0
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//   Credits: Adidaskote for testing and 
+//    the original file documentation used to make this template
+//    Jhrino for testing this information with his Y3MP mod.
+//------------------------------------------------
+#include "../../Common/includes/include.h"
+#include "enemy_dispose_include.bt"
+local u32 headerColor = SetRandomBackColor();
+BigEndian();
+struct enemydispose{
+    struct Header{
+    u32 ver<name="Version Number">;
+    u32 PropertyCount;
+    u32 unk;
+    u32 PropertySize<name="Property Size", format=hex>;
+    u32 unk<comment="Flags of some sort">;
+    u32 unk<comment="Flags of some sort">;
+    u32 unk<comment="Flags of some sort">;
+    }header<name="Header">;
+    local int violet;
+    for(violet=0;violet<header.PropertyCount;violet++){
+        struct Property{
+        SetRandomBackColor();
+        float unk<comment="Not sure if used">;
+        char Name[32];
+        u32 padding0[1]<hidden=true>;
+        short Checksum<format=hex, comment="Checksum-16, not enforced">;
+        char ModelName[26]<comment="Unsetting for player node", name="Model Name">;
+        float padding<hidden=true>;
+        char Weapon[9];
+        u8 padding<hidden=true>;
+        short health;
+        short unk<comment="Possibly continuation of health?">;
+        short hidden<hidden=true>;
+        short unk;
+        u8 padding<hidden=true>;
+        u8 height;
+        u8 padding<hidden=true>;
+        u8 vb<name="Voice Bank">;
+        npc Type;
+        u8 Damage;
+        ai moveset<name="AI Preset">;
+        short padding<hidden=true>;
+        u8 padding<hidden=true>;
+        float padding1[3]<hidden=true>;
+        float coorx<name="X">;
+        float coory<name="Y">;
+        float coorz<name="Z">;
+        float coorw<name="W">;
+        ushort Rotation<name="Rotation Y">;
+        short padding<hidden=true>;
+        char batst[32]<name="Battle Start">;
+        u8 unk33;
+        u8 unk34;
+        u8 unk35;
+        u8 unk36;
+        u32 padding2[2];
+        }property<name="Node">;
+    };
+}Enemydispose<name="Enemy Dispose">;
