@@ -1,0 +1,150 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: sounding.bt
+//   Authors: Draxx182
+//   Version: 1.0
+//   Purpose: Parse sound files
+//  Category: 
+// File Mask: Multiple Sound Types
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+BigEndian();
+local int j;
+local int i;
+local int stay;
+local int stay2;
+local string type;
+
+typedef struct{
+    SetRandomBackColor();
+    uint16 ID<name="ID of Cuesheet Node">;
+    uint16 unk;
+    uint16 unk;
+    uint16 unk;
+}CNode<name="Cuesheet Node", optimize=false>;
+
+typedef struct{
+    SetRandomBackColor();
+    uint32 ptr<name="Pointer to Node">;
+    stay = FTell();
+    FSeek(ptr);
+    float unks1[20];
+    float unks2[12];
+    FSeek(stay);
+}ENode<name="Expression Node", optimize=false>;
+
+typedef struct{
+    int32 unk;
+    int32 unk;
+    int32 ptrToStr<name="Pointer to String">;
+    int32 unk;
+    stay2 = FTell();
+    FSeek(ptrToStr);
+    char stringy[]<name="String">;
+    FSeek(stay2);
+}LMeatNode<name="Label Main Node", read=stringy, optimize=false>;
+
+typedef struct{
+    SetRandomBackColor();
+    uint32 ID<name="Unk ID">;
+    uint32 ptr;
+    uint32 unk;
+    uint32 unk;
+    stay = FTell();
+    FSeek(ptr);
+    uint32 unk;
+    FSeek(stay);
+}PNode<name="Port Node", read=ID, optimize=false>;
+
+struct File{
+	struct FileHeader{
+		char filetype[4]<name="Filetype",bgcolor = cRed>;
+		uint16 Endianess<name = "Endianess ID",bgcolor = cRed>;
+		uint16 unk;
+		uint32 FileVersion<name="File Version",bgcolor = cRed>;
+		uint32 filesize<name="Filesize",bgcolor = cRed>;
+	}fileheader<name = "File Header",bgcolor = cRed>;
+
+    if (fileheader.filetype == "cshb"){ //Cuesheet
+        uint32 numOfNodes<name="Number Of Nodes">;
+        uint32 filler[3]<hidden=true>;
+        type = "cuesheet.bin";
+
+        struct CueTable{
+            for (j = 0; j < numOfNodes; j++){
+                CNode CueNode;
+            }
+        }cueTable<name="Node List">;
+    }
+
+    if (fileheader.filetype == "epbd"){ //Expression Parameter
+        uint32 numOfPtrs<name="Number Of Pointers">;
+        uint32 pointerToPtrs<name="Pointer To Pointers">;
+        uint32 filler[2]<hidden=true>;
+        type = "expression_parameter.bin";
+
+        FSeek(pointerToPtrs);
+        struct ParamTable{
+            uint32 startOfFile<name="Pointer to Start of File">;
+            uint32 startOfFile<name="Pointer to Start of File">;
+            uint32 startOfFile<name="Pointer to Start of File">;
+            for (j = 3; j < numOfPtrs; j++){
+                ENode ExpNode;
+            }
+        }paramTable<name="Node List">;
+    }
+
+    if (fileheader.filetype == "lbtb"){ //Label
+        uint32 numOfPtrs<name="Number Of Pointers">;
+        uint32 pointerToPtrs<name="Pointer To Pointers">;
+        uint32 filler[2]<hidden=true>;
+        type = "label.bin";
+
+        struct LabelTable{
+            FSeek(pointerToPtrs);
+            for (j = 0; j < numOfPtrs; j++){
+                struct LabelNode{
+                    SetRandomBackColor();
+                    local string definition = "";
+                    uint32 ptr<name="Pointer to Node">;
+                    stay = FTell();
+                    if (ptr == 0){
+                        definition = "NONE";
+                        break;
+                    }
+                    FSeek(ptr);
+                    uint32 size<name="Number of Main Nodes">;
+                    uint32 ptr2<name="Pointer Forward">;
+                    uint32 unk;
+                    
+                    for (i = 0; i < size; i++){
+                        LMeatNode LMain;
+                    }
+                    FSeek(stay);
+                }labelNode<name="Label Node",read=definition>;
+            }
+        }labelTable<name="Node List">;
+    }
+
+    if (fileheader.filetype == "sepb"){ //se_port_set
+        uint32 numOfPtrs<name="Number Of Pointers">;
+        uint32 pointerToPtrs<name="Pointer To Pointers">;
+        uint32 filler[2]<hidden=true>;
+        type = "se_port_set.bin";
+
+        FSeek(pointerToPtrs);
+        struct PortTable{
+            for (j = 0; j < numOfPtrs; j++){
+                PNode PortNode;
+            }
+        }portTable<name="Node List">;
+    }
+
+    else{ //Other
+        type = "Unsupported File";
+    }
+}file<name=type,bgcolor = cRed>;
