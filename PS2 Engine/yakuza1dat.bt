@@ -1,0 +1,58 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: yakuza1dat.bt 
+//   Authors: Violet
+//   Version: 1.0 
+//   Purpose: Parse Yakuza 1 and 2 .dat files, this is for normal dat's, the other template is for cutscene dat's.
+//  Category: 
+// File Mask: *.dat
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------ 
+#include "../Common/includes/include.h"
+local u32 headerColor = SetRandomBackColor();
+LittleEndian();
+struct enemydispose{
+    struct Header{
+    u32 PropertyCount;
+    u32 padding[3]<hidden=true>;
+    }header<name="Header">;
+    local int violet;
+    local int violet2;
+    for(violet=0;violet<header.PropertyCount;violet++){
+        struct Property{
+        SetRandomBackColor();
+        u32 pointer;
+        u32 size;
+        local int stay2 = FTell();
+            struct Description{
+                SetRandomBackColor();
+                FSeek(property.pointer);
+                u32 count;
+                char TLFD[4];
+                u32 pad[2]<hidden=true>;
+                for(violet2=0;violet2<description.count;violet2++){
+                    struct Prop{
+                        SetRandomBackColor();
+                        u32 pointer2;
+                        u32 size2;
+                        local int imdying = FTell();
+                        if (size2 != 0){
+                            struct fuck{
+                                SetRandomBackColor();
+                                FSeek(property.pointer + prop.pointer2);
+                                byte file[prop.size2];
+                            }Fuck<name="File">;
+                        FSeek(imdying);
+                            };
+                        u32 padding2[2]<hidden=true>;
+                    }prop<name="embedded TLFD">;
+                };
+                FSeek(stay2);
+            }description<name="File">;
+        u32 count;
+        char TLFD[4];
+        }property<name="TLFD">;
+    };
+}Enemydispose<name="Dat">;
