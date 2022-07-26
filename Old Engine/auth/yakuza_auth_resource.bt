@@ -1,0 +1,60 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: Resource.bin
+//   Authors: Jhrino, SutandoTsukai181
+//   Version: 
+//   Purpose: Read "Resource.bin" on auths on OOE games.
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+
+struct Header
+{
+    char Magic[4]<name = "Magic">;
+    //Credit to SutandoTsukai181 for these two variables
+    byte Endianness[2];
+    byte Padding1[2]<hidden = true>;
+    
+    byte Version<name = "Version">;
+    byte Padding3[7]<hidden = true>;
+
+    if ( Endianness[1] == 1 ) 
+        BigEndian();
+    
+    int StringTablePtr<name = "String Table Pointer">;
+    int ResourcesPtr<name = "Resources Pointer">;
+    int ResourcesCount<name = "Resources Count">;
+    int Padding2[5]<hidden = true>;
+
+
+
+    local int i;
+
+    for(i = 0; i < ResourcesCount; i++)
+    {
+        struct Resource
+        {
+            unsigned int Type<name = "Type">;
+            unsigned int Unk1<name = "Unknown 1">;
+            GUID Reference<name = "Reference">;
+            int StringPointer<name = "String Pointer">;
+            
+            //Read string from string table
+            local int curPos = FTell();
+            FSeek(StringPointer);
+            string Resource<name = "Resource String", bgcolor = cAqua>;
+            FSeek(curPos);
+
+            byte Unk3[100]<name ="Unknown 3">;
+            
+        }resource<name = "Resource", bgcolor = cPurple>;
+    }
+
+
+    
+
+}authHeader<name="Header", bgcolor = cRed>;
