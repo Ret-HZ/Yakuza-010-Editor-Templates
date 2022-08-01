@@ -1,0 +1,59 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: mate.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Contains structs for "mate" material format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_MATE
+#define KUROHYO_MATE
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert( Magic == "mate" );
+
+    u16 Count;
+    struct TMateItem Material[Count] <optimize=false>;
+} TMate;
+
+typedef struct
+{
+    u16 Flags;
+    struct TKString Name;
+    u32 ShaderHash <format=hex>;    // I have no idea if this is true
+    f32 UnkFloat[2];
+
+    struct TMateGroup Group[5] <optimize=false>;
+} TMateItem <read=ReadTMateItem>;
+
+string ReadTMateItem(TMateItem& value)
+{
+    return ReadTKString(value.Name);
+}
+
+typedef struct
+{
+    u16 TextureCount;
+    struct TMateTexture Texture[TextureCount] <optimize=false>;
+} TMateGroup;
+
+typedef struct
+{
+    u16 Flags;  // 0x405 means an actual texture from an imag
+    u32 TextureHash <format=hex>;
+} TMateTexture;
+
+#ifndef KUROHYO_MAIN
+struct TMate mate;
+#endif
+
+#endif  // KUROHYO_MATE

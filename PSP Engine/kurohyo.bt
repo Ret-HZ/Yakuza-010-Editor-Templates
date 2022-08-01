@@ -1,0 +1,98 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: kurohyo.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Parses unpacked Kurohyo files
+//  Category: 
+// File Mask: *.imag,*.pose,*.skel
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_MAIN
+#define KUROHYO_MAIN
+
+#include "common.h"
+
+#include "base.bt"
+#include "came.bt"
+#include "imag.bt"
+#include "ligh.bt"
+#include "mate.bt"
+#include "mode.bt"
+#include "pose.bt"
+#include "skel.bt"
+
+local u32 baseColor = SetRandomBackColor();
+local u32 cameColor = SetRandomBackColor();
+local u32 endColor  = SetRandomBackColor();
+local u32 imagColor = SetRandomBackColor();
+local u32 lighColor = SetRandomBackColor();
+local u32 mateColor = SetRandomBackColor();
+local u32 modeColor = SetRandomBackColor();
+local u32 poseColor = SetRandomBackColor();
+local u32 skelColor = SetRandomBackColor();
+
+bool ReadKurohyoFiles()
+{
+    LittleEndian();
+    local char magic[4];
+    do
+    {
+        magic = ReadString(FTell(), 4);
+        switch (magic)
+        {
+            case "base":
+                SetBackColor(baseColor);
+                struct TBase Base;
+                break;
+            case "came":
+                SetBackColor(cameColor);
+                struct TCame Came;
+                break;
+            case "ELPK":
+                return true;
+            case "end ":
+                SetBackColor(endColor);
+                struct TEnd End;
+                break;
+            case "imag":
+                SetBackColor(imagColor);
+                struct TImag Imag;
+                break;
+            case "ligh":
+                SetBackColor(lighColor);
+                struct TLigh Ligh;
+                break;
+            case "mate":
+                SetBackColor(mateColor);
+                struct TMate Mate;
+                break;
+            case "mode":
+                SetBackColor(modeColor);
+                struct TMode Mode;
+                break;
+            case "pose":
+                SetBackColor(poseColor);
+                struct TPose Pose;
+                break;
+            case "skel":
+                SetBackColor(skelColor);
+                struct TSkel Skel;
+                break;
+            default:
+                return false;
+        }
+    }
+    while (magic != "end ");
+
+    return false;
+}
+
+#ifndef KUROHYO_ELPK
+ReadKurohyoFiles();
+#endif
+
+#endif  // KUROHYO_MAIN
