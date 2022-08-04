@@ -1,0 +1,56 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: elpk.bt
+//   Authors: SutandoTsukai181, based on Capitan Retraso's rELPKckr
+//   Version: 1.0
+//   Purpose: Parses Kurohyo ELPK containers
+//  Category: 
+// File Mask: *
+//  ID Bytes: 45 4C 50 4B
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_ELPK
+#define KUROHYO_ELPK
+
+#include "common.h"
+#include "kurohyo.bt"
+
+local u32 elpkColor = SetRandomBackColor();
+
+typedef struct
+{
+    LittleEndian();
+    SetBackColor(elpkColor);
+
+    char Magic[4];
+    Assert(Magic == "ELPK", "Unexpected magic.");
+
+    u32 FileSize;
+    u32 Flags;
+    u32 Padding;
+
+    u32 PageCount;
+    struct TElpkPage Page[PageCount] <optimize=false>;
+} TElpk;
+
+typedef struct
+{
+    u32 PageHash <format=hex>;
+    u32 PageOffset;
+    u32 PageSize;
+
+    FPush();
+    {
+        FSeekRel(PageOffset);
+        if (ReadKurohyoFiles())
+            struct TElpk ELPK;
+    }
+    FPop();
+} TElpkPage;
+
+Assert(ReadUShort() != 0x8B1F, "File has Gzip compression. Cannot parse ELPK unless it is decompressed.");
+struct TElpk ELPK;
+
+#endif  // KUROHYO_ELPK

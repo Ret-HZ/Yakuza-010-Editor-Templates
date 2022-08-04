@@ -1,0 +1,54 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: came.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Contains structs for "came" camera settings format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_CAME
+#define KUROHYO_CAME
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert(Magic == "came", "Unexpected magic.");
+
+    u16 Count;
+    struct TCameNode Node[Count] <optimize=false>;
+} TCame;
+
+typedef struct
+{
+    u16 FormatFlags;
+    struct TKString Name;
+
+    u32 CameraFlags;
+
+    TVector3 InitialLocation;
+    TVector3 InitialFocusPoint;
+
+    f32 InitialRollDegrees;
+    f32 InitialFovDegrees;
+
+    f32 ClipStart;
+    f32 ClipEnd;
+} TCameNode <read=ReadTCameNode>;
+
+string ReadTCameNode(TCameNode& value)
+{
+    return ReadTKString(value.Name);
+}
+
+#ifndef KUROHYO_MAIN
+struct TCame came;
+#endif
+
+#endif  // KUROHYO_CAME

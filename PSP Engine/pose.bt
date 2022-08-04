@@ -1,0 +1,164 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: pose.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Contains structs for "pose" animation format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_POSE
+#define KUROHYO_POSE
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert(Magic == "pose", "Unexpected magic.");
+
+    struct TKString Name;
+
+    // 0x8001 - skeleton short
+    // 0x0002 - skeleton float
+    // 0x03 - camera
+    // 0x05 - weird 1.0 for all channels, used for billboards?
+    u16 FormatFlags;
+
+    u16 Count;
+    u32 DataSize;
+    f32 EndFrame;
+
+    struct TNode Node[Count] <optimize=false>;
+} TPose;
+
+typedef struct
+{
+    s16 X;
+    s16 Y;
+    s16 Z;
+} TKHVector3Short <read=ReadTKHVector3Short>;
+
+string ReadTKHVector3Short(TKHVector3Short& value)
+{
+    local string str = "";
+    SPrintf(str, "[%.6f, %.6f, %.6f]", (f32)value.X / 0x03FF, (f32)value.Y / 0x03FF, (f32)value.Z / 0x03FF);
+    return str;
+}
+
+typedef struct
+{
+    u16 FormatFlags;
+    struct TKString Name;
+
+    if ((parentof(this).FormatFlags & 0x8000) == 0x8000)
+    {
+        struct TKHVector3Short InitialScale;
+        struct TKHVector3Short InitialRotation;
+        struct TKHVector3Short InitialLocation;
+    }
+    else
+    {
+        TVector3 InitialScale;
+        TVector3 InitialRotation;
+        TVector3 InitialLocation;
+    }
+
+    u32 UnkFlags;
+    u16 ChannelFlags;
+
+    if ((parentof(this).FormatFlags & 0x03) == 0x03)
+    {
+        // Camera
+        if (ChannelFlags & 0x0100)
+            struct TChannel CameraRollRadian;
+        if (ChannelFlags & 0x80)
+            struct TChannel CameraFovDegrees;
+        if (ChannelFlags & 0x40)
+            struct TChannel CameraUnk;  // Might be unused
+
+        // Focus point
+        if (ChannelFlags & 0x20)
+            struct TChannel FocusX;
+        if (ChannelFlags & 0x10)
+            struct TChannel FocusY;
+        if (ChannelFlags & 0x08)
+            struct TChannel FocusZ;
+    }
+    else
+    {
+        // Skeletons
+        if (ChannelFlags & 0x0100)
+            struct TChannel ScaleX;
+        if (ChannelFlags & 0x80)
+            struct TChannel ScaleY;
+        if (ChannelFlags & 0x40)
+            struct TChannel ScaleZ;
+
+        // Rotation is radian euler angles
+        if (ChannelFlags & 0x20)
+            struct TChannel RotationX;
+        if (ChannelFlags & 0x10)
+            struct TChannel RotationY;
+        if (ChannelFlags & 0x08)
+            struct TChannel RotationZ;
+    }
+
+    if (ChannelFlags & 0x04)
+        struct TChannel LocationX;
+    if (ChannelFlags & 0x02)
+        struct TChannel LocationY;
+    if (ChannelFlags & 0x01)
+        struct TChannel LocationZ;
+} TNode <read=ReadTNode>;
+
+string ReadTNode(TNode& value)
+{
+    return ReadTKString(value.Name);
+}
+
+typedef struct
+{
+    u32 Count;
+
+    if (parentof(parentof(this)).FormatFlags & 0x8000)
+        struct TShortKeyframe Frame[Count] <optimize=false>;
+    else
+        struct TFloatKeyframe Frame[Count] <optimize=false>;
+} TChannel;
+
+typedef struct
+{
+    s16 Value;
+    u16 Frame;
+} TShortKeyframe <read=ReadTShortKeyframe>;
+
+string ReadTShortKeyframe(TShortKeyframe& value)
+{
+    local string str = "";
+    SPrintf(str, "[frame: %d, value: %.6f]", value.Frame, (f32)value.Value / 0x03FF);
+    return str;
+}
+
+typedef struct
+{
+    f32 Value;
+    f32 Frame;
+} TFloatKeyframe <read=ReadTFloatKeyframe>;
+
+string ReadTFloatKeyframe(TFloatKeyframe& value)
+{
+    local string str = "";
+    SPrintf(str, "[frame: %.1f, value: %.6f]", value.Frame, value.Value);
+    return str;
+}
+
+#ifndef KUROHYO_MAIN
+struct TPose pose;
+#endif
+
+#endif  // KUROHYO_POSE

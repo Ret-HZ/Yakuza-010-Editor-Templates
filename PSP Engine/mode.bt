@@ -1,0 +1,223 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: mode.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Contains structs for "mode" model format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_MODE
+#define KUROHYO_MODE
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert(Magic == "mode", "Unexpected magic.");
+
+    struct TModeNode RootNode;
+} TMode;
+
+typedef struct
+{
+    u16 Flags;
+    struct TKString Name;
+
+    // 0x40 is dual face (render backface)
+    // 0x0B is transparency (alpha blend)
+    u32 ModelFlags;
+
+    if ((Flags & 0x04) == 0x04)
+    {
+        // Clones an existing node into the given coordinates
+        TVector3 InstanceScale;
+        TVector3 InstanceRotation;
+        TVector3 InstanceLocation;
+        struct TKString ClonedNodeName;
+    }
+    else if ((Flags & 0x0F) > 2)
+    {
+        f32 Unk0;
+        u8  Unk1;   //Assert(Unk1 == 2);
+
+        TVector3 BoundingBoxPoint[2];
+
+        local bool isUnskinned = (Flags & 0x03) == 0x03;
+        if ((Flags & 0x08) == 0x08 && !isUnskinned)
+        {
+            u16 MeshCount;
+            struct TModeMesh Mesh(isUnskinned)[MeshCount] <optimize=false>;
+        }
+        else
+        {
+            struct TModeMesh Mesh(isUnskinned);
+        }
+
+        struct TKString MaterialName;
+    }
+
+    u16 ChildCount;
+    struct TModeNode Child[ChildCount] <optimize=false>;
+} TModeNode <read=ReadTModeNode>;
+
+typedef struct(bool isUnskinned)
+{
+    if (!isUnskinned)
+    {
+        u16 BoneCount;
+
+        // Hash performed on the bone name is FNV-0 with the prime 0x811C9DC5
+        u32 BoneHashes[BoneCount] <format=hex>;
+    }
+
+    u16 TriangleCount;
+    struct TModeTri Triangles[TriangleCount];
+
+    u32 VertexFlags <format=hex>;
+    u16 VertexCount;
+
+    struct
+    {
+        local int i;
+        for (i = 0; i < VertexCount; i++)
+        {
+            struct TModeVertex Vertex(VertexFlags);
+        }
+    } Vertices;
+
+    u16 HasStrips;
+    Assert((HasStrips == 0) || (HasStrips == 1));
+
+    if (HasStrips)
+        struct TModeStrips Strips;
+} TModeMesh;
+
+typedef struct
+{
+    u16 Indices[3];
+} TModeTri;
+
+typedef struct(u32 VertexFlags)
+{
+    // The vertex flags are not only used as "bools" for checking whether
+    // some values exist or not, because some flags completely change the functionality
+    // of other flags if they're enabled. Some flags are missing from here, as I only
+    // added support for character, weapon, and stage models, and they didn't use
+    // flags other than the ones in here.
+
+    local int weightsCount = 1;
+
+    if ((VertexFlags & 0x10000) == 0x10000)
+    {
+        weightsCount += 4;
+    }
+
+    if ((VertexFlags & 0x8000) == 0x8000)
+    {
+        weightsCount += 2;
+    }
+
+    if ((VertexFlags & 0x4000) == 0x4000)
+    {
+        ++weightsCount;
+    }
+
+    if ((VertexFlags & 0x0400) == 0x0400)
+    {
+        f32 BoneWeights[weightsCount];
+    }
+
+    if ((VertexFlags & 0x0200) == 0x0200)
+    {
+        s16 UVs[2] <read=ReadShortScaled>;
+    }
+
+    if ((VertexFlags & 0x0003) == 0x0003)
+    {
+        f32 UnkFloats[2];
+    }
+
+    if ((VertexFlags & 0x0018) == 0x0018)
+    {
+        struct TModeVertexColor VertexColor((VertexFlags & 0x000F) != 0x000F);
+    }
+
+    if ((VertexFlags & 0x0040) == 0x0040)
+    {
+         s16 Normals[3] <read=ReadShortScaled>;
+
+        if ((VertexFlags & 0x0018) == 0)
+        {
+            u16 Padding;
+        }
+    }
+
+    if ((VertexFlags & 0x0180) == 0x0180)
+    {
+         TVector3 Location;
+    }
+} TModeVertex;
+
+string ReadShortScaled(s16& value)
+{
+    local string str = "";
+    SPrintf( str, "%.6f", (f32)value / 0x7FFF );
+    return str;
+}
+
+typedef struct(bool is16bit)
+{
+    local bool isShort = is16bit;
+
+    if (isShort)
+    {
+        u16 R : 4;
+        u16 G : 4;
+        u16 B : 4;
+        u16 A : 4;
+    }
+    else
+    {
+        u8 R;
+        u8 G;
+        u8 B;
+        u8 A;
+    }
+} TModeVertexColor <read=ReadTModeVertexColor>;
+
+string ReadTModeVertexColor(TModeVertexColor& value)
+{
+    local u8 scale = value.isShort ? 0xF : 0xFF;
+    local string str = "";
+
+    SPrintf( str, "RGBA: [%f, %f, %f, %f]",
+        (f32)value.R / scale,
+        (f32)value.G / scale,
+        (f32)value.B / scale,
+        (f32)value.A / scale );
+
+    return str;
+}
+
+typedef struct
+{
+    u16 Count;
+    u16 Indices[Count];
+} TModeStrips;
+
+string ReadTModeNode(TModeNode& value)
+{
+    return ReadTKString(value.Name);
+}
+
+#ifndef KUROHYO_MAIN
+struct TMode mode;
+#endif
+
+#endif  // KUROHYO_MODE

@@ -1,0 +1,49 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: ligh.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Contains structs for "ligh" light objects format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_LIGH
+#define KUROHYO_LIGH
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert(Magic == "ligh", "Unexpected magic.");
+
+    u16 Count;
+    struct TLighItem Lights[Count] <optimize=false>;
+} TLigh;
+
+typedef struct
+{
+    u16 Flags;
+    struct TKString Name;
+
+    u32 UnkCount;
+
+    TVector3 Location;
+    u8  UnkBytes[13];
+    f32 UnkFloats[5];
+} TLighItem <read=ReadTLighItem>;
+
+string ReadTLighItem(TLighItem& value)
+{
+    return ReadTKString(value.Name);
+}
+
+#ifndef KUROHYO_MAIN
+struct TLigh ligh;
+#endif
+
+#endif  // KUROHYO_LIGH

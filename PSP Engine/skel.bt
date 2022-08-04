@@ -1,0 +1,47 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: skel.bt
+//   Authors: SutandoTsukai181, initial template by Violet
+//   Version: 1.0
+//   Purpose: Contains structs for "skel" skeleton hierarchy format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_SKEL
+#define KUROHYO_SKEL
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert(Magic == "skel", "Unexpected magic.");
+
+    struct TSkelNode RootNode;
+} TSkel;
+
+typedef struct
+{
+    u16 FormatFlags;
+    struct TKString Name;
+
+    u32 SkelFlags;
+
+    u16 ChildCount;
+    struct TSkelNode Child[ChildCount] <optimize=false>;
+} TSkelNode <read=ReadTSkelNode>;
+
+string ReadTSkelNode(TSkelNode& value)
+{
+    return ReadTKString(value.Name);
+}
+
+#ifndef KUROHYO_MAIN
+struct TSkel skel;
+#endif
+
+#endif  // KUROHYO_SKEL

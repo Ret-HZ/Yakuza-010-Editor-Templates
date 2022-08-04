@@ -1,0 +1,44 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: imag.bt
+//   Authors: SutandoTsukai181
+//   Version: 1.0
+//   Purpose: Contains structs for "imag" image reference format for Kurohyo games
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef KUROHYO_IMAG
+#define KUROHYO_IMAG
+
+#include "common.h"
+
+typedef struct
+{
+    char Magic[4];
+    Assert(Magic == "imag", "Unexpected magic.");
+
+    u16 Count;
+    struct TImagItem Texture[Count] <optimize=false>;
+} TImag;
+
+typedef struct
+{
+    u16 Flags;
+    u32 Hash <format=hex>;
+    struct TKString Name;
+} TImagItem <read=ReadTImagItem>;
+
+string ReadTImagItem(TImagItem& value)
+{
+    return ReadTKString(value.Name);
+}
+
+#ifndef KUROHYO_MAIN
+struct TImag imag;
+#endif
+
+#endif  // KUROHYO_IMAG
