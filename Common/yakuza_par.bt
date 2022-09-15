@@ -129,7 +129,7 @@ typedef struct ( u32 index )
 
     FPush();
     {
-        FSeekRel( BaseOffset );
+        FSeekRel( (u64)BaseOffset + ((u64)(ExtendedOffset & 0x00FFFFFF) << 32) );
 
         // If this file has an uncompressed PAR header, define it as a new TPar
         if ( ReadString( FTell(), 4 ) == "PARC" )
