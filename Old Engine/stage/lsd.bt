@@ -6,7 +6,7 @@
 //   Version: 
 //   Purpose: 
 //  Category: 
-// File Mask: 
+// File Mask: *.lsd
 //  ID Bytes: 
 //   History: 
 //                  Thanks to Kan for all of his help.
@@ -31,17 +31,27 @@ struct Lsd{
     local int violet;
     for(violet=0;violet<header.PropertyCount;violet++){
         struct Property{
-            SetRandomBackColor();
+            LittleEndian();
+            local int colorPos = FTell() + 0x14;
+            local int color = ReadUInt(colorPos);
+            if (color>=4278190080){
+                local int newInt = color-4278190080;
+            }
+            else{
+                local int newInt = color;
+            }
+            SetBackColor(newInt);
+            BigEndian();
             float unk;  //Exe says this is pos
-            float unk;  //Exe says this is pos2
+            float ShadowDistance<name="Shadow Distance">;  //Exe says this is pos2
             float unk;  //Exe says this is radius
-            u32 unk;
+            float unk;
             u32 unk;
             u32 color<name="RGBA", format=hex>;
             u32 unk; //Exe says this is active flag
             u32 unk; //Exe says this is light id
             u32 unk; //Exe says this is "enable?"
-            u32 color2<name="Ambient RGBA", format=hex>;
+            u32 color2<name="Ambient RGBA", format=hex,comment="probably shadow color">;
             float reach<name="Intensity">; //Exe says this is intensity
             float unk; //Exe says this is intensity2
             float unk; //Exe says this is "decrease?"
@@ -49,7 +59,7 @@ struct Lsd{
             u32 unk;  //Exe says this is "PLIGHT_KIND"?
             u32 unk;  //Exe says this is "flag"
             u32 unk;  //Exe says this is priority
-            u32 unk;  //Exe says this is Areaflag
+            float unk;  //Exe says this is Areaflag
             float raidus<name="Radius of light">; //Exe says this is "RAYLEIGH_DECREASE"
             float unk;  //Exe says this is MIE_DECREASE
             float unk;  //Exe says this is HG
@@ -59,10 +69,10 @@ struct Lsd{
             float unk;  //Exe says this is rotate_y
             float unk;  //Exe says this is anim_light_name
             float unk;  //Exe says this is light_name
-            struct Unused{
             u32 unk<comment="light_tag?">;  //Exe says this is light_tag
             u32 unk<comment="user_folder?">;  //Exe says this is user_folder???
             u32 unk<comment="PRJ_LIGHT_DIRECT_SHADOW?">;  //Exe says this is PRJ_LIGHT_DIRECT_SHADOW
+            struct Unused{
             u32 unk<comment="userdata?">;  //Exe says this is userdata??
             u32 unk<comment="light_direct?">;  //Exe says this is light_direct??
             u32 unk<comment="light_point?">;  //Exe says this is light_point
@@ -73,7 +83,7 @@ struct Lsd{
             u32 unk<comment="light_hemisphere?">;  //Exe says this is light_hemisphere
             u32 unk<comment="is anim_light?">;  //Exe says this is anim_light
             u32 unk<comment="projection_light?">;  //Exe says this is projection_light
-            u32 padding[20];
+            u32 padding[header.PropertyLength/4-40];
             }unused<name="Unused?", comment="Not sure if used, values come from exe">;
         }property<name="Property">;
     };
