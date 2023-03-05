@@ -1,0 +1,184 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: mfb.bt
+//   Authors: Timo654
+//   Version: 1.0
+//   Purpose: Parse Y5-FOTNS sound.par mfb/mfp files
+//  Category: Audio
+// File Mask: *.mfp,*.mfb
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "../../Common/includes/include.h"
+
+local u32 headerColor = SetRandomBackColor();
+
+typedef struct
+{
+    SetBackColor( headerColor );
+    char Magic[4];
+    u16 EndianCheck <format=hex>;
+    u16 Empty;
+    u32 Version <format=hex>;
+    u32 Field_0xC;
+    u32 expdCount;
+    u32 expdPtrTbl;
+    u32 expdSizeTbl;
+    u32 Field_0x1C;
+    
+    // subtitle node does not exist in Ishin :)))))))))))))))))))))))))))
+    if (expdPtrTbl != 32) { // a dumb way to figure out whether it's Ishin or Y0+
+        s32 JPSubtitlePointer;
+        s32 ENSubtitlePointer;
+        s32 Field_0x28; Assert(Field_0x28 == -1);
+        s32 Field_0x2C; Assert(Field_0x2C == -1);
+        s32 Field_0x30; Assert(Field_0x30 == -1);
+        s32 Field_0x34; Assert(Field_0x34 == -1);
+        s32 Field_0x38; Assert(Field_0x38 == -1);
+        s32 Field_0x3C; Assert(Field_0x3C == -1);
+        
+        if (JPSubtitlePointer != -1) {
+            FPush();
+            FSeek(JPSubtitlePointer);
+            struct TSub JPSubtitle;
+            FPop();
+        }
+        
+        if (ENSubtitlePointer != -1) {
+            FPush();
+            FSeek(ENSubtitlePointer);
+            struct TSub ENSubtitle;
+            FPop();
+        }
+    }
+
+    FPush();
+    FSeek(expdSizeTbl);
+    {
+        local int i;
+        struct
+        {
+            for ( i = 0; i < expdCount; i++ )
+            {
+                struct TExpdSize ExpdSize;
+            }
+        } ExpdSizes;
+    }
+    
+    FSeek(expdPtrTbl);
+    local int a;
+        struct
+        {
+            for ( a = 0; a < expdCount; a++ )
+            {
+                struct TExpdData ExdpData;
+            }
+        } Expds;
+    FPop();
+} TMfpb <optimize=false>;
+
+
+typedef struct
+{    
+    u32 expdSize;
+    
+} TExpdSize;
+
+typedef struct
+{    
+    u32 SubtitlePtr;
+    FPush();
+    FSeek(SubtitlePtr);
+    char Subtitle[0xCC];
+    FPop();
+    
+} TSub;
+
+typedef struct
+{    
+    u32 expdPointer;
+    if (expdPointer != 0) {
+        FPush();
+        FSeek(expdPointer);
+        struct TExpd Expd;
+        FPop();
+    }
+    
+} TExpdData;
+
+typedef struct
+{
+    local u32 relative_pos = FTell();
+    char Magic[4];
+    SetBackColor( headerColor );
+    u16 EndianCheck <format=hex>;
+    u16 Empty;
+    u32 Version <format=hex>;
+    u32 Field_0xC;
+    u32 Field_0x10;
+    u32 NodeCount;
+    u32 NodeTablePtr;
+    float Field_0x1C;
+    
+    FPush();
+    FSeek(relative_pos + NodeTablePtr);
+    {
+        local int e;
+        struct
+        {
+            for ( e = 0; e < NodeCount; e++ )
+            {
+                struct TNode Node;
+            }
+        } Nodes;
+    }
+    FPop();
+} TExpd <optimize=false>;
+
+
+typedef struct
+{    
+
+    SetRandomBackColor();
+    u32 NodePointer;
+    FPush();
+    FSeek(relative_pos + NodePointer);
+    u32 Field_0x0;
+    u32 DataCount;
+    u32 DataPointer;
+    u32 Field_0xC;
+    FPush();
+    FSeek(relative_pos + DataPointer);
+    if (DataCount != 0) {
+        {
+            local int o;
+            struct
+            {
+                for ( o = 0; o < DataCount; o++ )
+                {
+                    struct TData Data;
+                }
+            } Data;
+        }
+    }
+    FPop();
+    FPop();
+    
+} TNode;
+
+typedef struct
+{    
+    float Field_0x00;
+    float Field_0x04;
+} TData;
+
+BigEndian();
+if (ReadString( FTell(), 4) == "expd")
+{
+    TExpd Expd;
+}
+else {
+    TMfpb Mfpb;
+}
