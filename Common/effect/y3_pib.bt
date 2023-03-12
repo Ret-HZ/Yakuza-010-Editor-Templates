@@ -1,0 +1,200 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: Y3 Pib
+//   Authors: Jhrino
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "pib_types.bt"
+
+BigEndian();
+
+struct Header
+{
+    char magic[4]<name = "Identifier">;
+    byte unk1<hidden = true>;
+    byte endian<name = "Endian">;
+    byte unk2[2]<hidden = true>;
+    int version<name = "PIB Version">;
+    int padding<hidden = true>;
+}hdr<name = "File Information", bgcolor = cRed>;
+
+struct PibHeader
+{
+    int pibID<name = "PIB ID">;
+    int texCount<name = "Emitter Count">;
+    int pibLength<name = "PIB Duration (In Ticks)">;
+    int unk1<name="Unknown">;
+    float speed<name = "Speed?", comment = "I think it's safe to assume a float variable this close to the beginning is the speed.">;
+    float unk2<name = "Unknown">;
+    float unk3<name = "Unknown">;
+    byte unk4[4]<name = "Unknown Fields">;
+    int unk5<name = "Unknown">;
+    int unk6<name = "Unknown">;
+    
+    LittleEndian();
+    int unkFlags1<name = "Unknown Flags", comment = "Is this little endian?">;
+    BigEndian();
+
+    int unk7<name = "Unknown">;
+
+    matrix4x4 baseMtx<name = "Base Matrix">;
+    vec3f unkVec<name = "Scale?">;
+
+    byte padding[52]<hidden = true>;
+
+    local int i = 0;
+
+    //temporarily exec once
+    for(i = 0; i < texCount; i++)
+    {
+        struct Emitter
+        {   
+            uint flags<name = "Flags?", comment = "Seems to be used to determine type of emitter, Model or Billboard">;
+            byte unk1[8]<name = "Unknown">;
+            byte unkbyte<name = "Unknown">;
+            byte type<name = "Type">;
+            byte padding1[2]<hidden = true>;
+            byte unk2[36]<name = "Unknown">;
+            int unkCount<name = "Unknown Count">;
+            byte unk3[328]<name = "Unknown">;
+            int dataSize1<name = "Data Size 1">;
+            
+            //Just the header no image data
+            struct DDSHeader
+            {
+                byte header[128]<name = "Header">;
+            }ddshdr<name = "DDS Header", bgcolor = cRed>;
+            
+            LittleEndian();
+            float data1[(dataSize1 - 128) / 4]<name = "Data 1", bgcolor = cSilver>;
+            BigEndian();
+
+            byte textureCount<name = "Texture Count", bgcolor = cGreen>;
+
+            local byte emitterType = GetEmitterType(flags);
+
+            local int texI = 0;
+
+            for(texI = 0; texI < textureCount; texI++)
+            {
+                if(texI > 0)
+                  FSeek(FTell() + 1);
+
+                struct tex
+                {
+                    char name[31]<name = "TextureName">;
+                }texy<name = name, bgcolor = cGreen>;
+            }
+
+            FSeek(FTell() + 3);
+            int unkCount2<bgcolor = cDkGreen>;
+
+            switch(type)
+            {
+               default:
+                Printf("Unknown model type %i\n", type);
+                //intentionally cause a 010 editor error
+                //serving as a breakpoint
+                local int i = 0;
+                for(i; i < 2; i++)
+                    byte bogusarray[1];
+                break;
+                              
+                case 0:
+                     byte unkDat[32 * unkCount]<name = "Unknown Data">;
+                break;
+                case 1:
+                     byte unkDat[44 * unkCount]<name = "Unknown Data">;
+                case 2:
+                     byte unkDat[20 * unkCount]<name = "Unknown Data">;
+                break;
+                case 3:
+                     byte unkDat[40 * unkCount]<name = "Unknown Data">;
+                break;
+                case 4:
+                     byte unkDat[52 * unkCount]<name = "Unknown Data">;
+                break;
+                case 5:
+                     byte unkDat[28 * unkCount]<name = "Unknown Data">;
+                break;
+            }
+
+
+            if(emitterType == 0)
+            {
+                struct model
+                {
+                    local uint unkDat1Start = FTell();
+                    local uint unkDat1Size = (36 * unkCount2) * 4;
+                    byte unkDat1[unkDat1Size];
+                    local uint unkDat1End = FTell();
+
+                    local uint counter = 0;
+                  
+                }mdl<name = "Model", bgcolor = cDkGreen>;
+            }
+            else if(emitterType == 1)
+            {
+
+                struct billboard
+                {
+                    local uint unkDat1Start = FTell();
+                    local uint unkDat1Size = (32 * unkCount2) * 4;
+                    byte unkDat1[unkDat1Size];
+                    local uint unkDat1End = FTell();
+
+                    Printf("%i %i\n", unkDat1Size, FTell());
+
+                    local uint counter = 0;
+                  
+                }billb<name = "Billboard", bgcolor = cDkGreen>;
+            }
+            
+                       
+        }emitter<name = "Emitter", bgcolor = cAqua>;
+    }
+
+
+}pibInf<name = "PIB Information", bgcolor = cYellow>;
+
+
+//0 = Model
+//1 = Billboard
+byte GetEmitterType(uint flag)
+{
+    local byte typeFlag = flag >> 6;
+
+    if((typeFlag & 1) || (typeFlag & 0x40))
+        return 1;
+
+    return 0;
+}
+
+/*
+struct UnkSection1
+{
+    ushort unk1<name = "Unknown">;
+    ushort unk2<name = "Unknown">;
+
+    int unk3<name = "Unknown">;
+    int padding1<hidden = true>;
+
+    byte unk4<name = "Unknown">;
+   
+    byte endian<name = "Endian">;
+    byte padding2[2]<hidden = true>;
+    
+    int unk5[3]<hidden = true>;
+    float unkfloatArr1[6]<name = "Unknown Float Array">;
+    
+    int cursedInt <name = "Cursed Number", comment = "Same from 19 (Y3) to 27 (YLAD) what does it do!?!">;
+    int padding3[4]<hidden = true>;
+}unkSec1<name = "Unknown Section 1", bgcolor = cAqua>;
+*/

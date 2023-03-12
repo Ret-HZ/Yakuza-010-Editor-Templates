@@ -1,0 +1,22 @@
+struct vec3f
+{
+   float x<name = "x">;
+   float y<name = "y">;
+   float z<name = "z">;
+};
+
+struct vec4f
+{
+   float x<name = "x">;
+   float y<name = "y">;
+   float z<name = "z">;
+   float w<name = "w">;
+};
+
+struct matrix4x4
+{
+   vec4f m0<name = "M0">;
+   vec4f m1<name = "M1">;
+   vec4f m2<name = "M2">;
+   vec4f m3<name = "M3">;
+};

@@ -1,0 +1,215 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: YLAD Pib
+//   Authors: Jhrino
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#include "pib_types.bt"
+
+LittleEndian();
+
+struct Header
+{
+    char magic[4]<name = "Identifier">;
+    byte unk1<hidden = true>;
+    byte endian<name = "Endian">;
+    byte unk2[2]<hidden = true>;
+    int version<name = "PIB Version">;
+    int padding<hidden = true>;
+}hdr<name = "File Information", bgcolor = cRed>;
+
+struct PibHeader
+{
+    int pibID<name = "PIB ID">;
+    int texCount<name = "Emitter Count">;
+    int pibLength<name = "PIB Duration (In Ticks)">;
+    int unk1<name="Unknown">;
+    float speed<name = "Speed?", comment = "I think it's safe to assume a float variable this close to the beginning is the speed.">;
+    float unk2<name = "Unknown">;
+    float unk3<name = "Unknown">;
+    byte unk4[4]<name = "Unknown Fields">;
+    int unk5<name = "Unknown">;
+
+    float unkFloats[130]<name = "Unknown Floats">;
+
+    byte unkSpace_v29[20];
+
+    matrix4x4 baseMtx<name = "Base Matrix">;
+    vec3f unkVec<name = "Scale?">;
+
+    byte padding[36]<hidden = true>;
+
+    local int i = 0;
+
+
+    //temporarily exec once
+    for(i = 0; i < texCount; i++)
+    {
+        struct Emitter
+        {   
+            uint flags<name = "Flags?", comment = "Seems to be used to determine type of emitter, Model or Billboard">;
+            byte unk1[4]<name = "Unknown">;
+            uint unkv27_1<name = "Unknown V27">;
+            byte unknown_v52_1[4]<name = "Unknown V52 - 1">;
+            byte unknownFlag_v52_1[4]<name = "Unknown Flag V52 - 1">;
+            byte unknown_v52_2[4]<name = "Unknown V52 - 2">;
+            ushort type<name = "Type">;
+            ushort unky<name = "Unknown">;
+            byte unk2[48]<name = "Unknown">;
+            int unkCount<name = "Unknown Count">;
+            byte unk3[744]<name = "Unknown">;
+            int dataSize1<name = "Data Size 1">;
+            
+            //Just the header no image data
+            struct DDSHeader
+            {
+                byte header[128]<name = "Header">;
+            }ddshdr<name = "DDS Header", bgcolor = cRed>;
+
+
+            float data1[(dataSize1 - 128) / 4]<name = "Data 1", bgcolor = cSilver>;
+            int textureCount<name = "Texture Count", bgcolor = cGreen>;
+            int unkTextureNumbers[textureCount];
+
+            local byte emitterType = GetEmitterType(flags);
+
+
+            local int texI = 0;
+
+            for(texI = 0; texI < textureCount; texI++)
+            {
+                struct tex
+                {
+                    char name[32]<name = "TextureName">;
+                }texy<name = name, bgcolor = cGreen>;
+            }
+
+            FSeek(FTell() + 4);
+            byte unkSection_v52[36];
+            int extraTexCount<bgcolor = cGreen>;
+            local int l = 0;
+            
+            for(l = 0; l < extraTexCount; l++)
+                struct extraTex
+                {
+                    char name[32]<name = "TextureName">;
+                }texy<name = name, bgcolor = cGreen>;               
+
+            int unkCount2<bgcolor = cDkGreen>;
+
+            switch(type)
+            {
+               default:
+                Printf("Unknown model type %i\n", type);
+                //intentionally cause a 010 editor error
+                //serving as a breakpoint
+                local int i = 0;
+                for(i; i < 2; i++)
+                    byte bogusarray[1];
+                break;
+                              
+                case 0:
+                     byte unkDat[32 * unkCount]<name = "Unknown Data">;
+                break;
+                case 1:
+                     byte unkDat[44 * unkCount]<name = "Unknown Data">;
+                     break;
+                case 2:
+                     byte unkDat[20 * unkCount]<name = "Unknown Data">;
+                     break;
+                break;
+                case 3:
+                     byte unkDat[40 * unkCount]<name = "Unknown Data">;
+                break;
+                case 4:
+                     byte unkDat[52 * unkCount]<name = "Unknown Data">;
+                break;
+                case 5:
+                     byte unkDat[28 * unkCount]<name = "Unknown Data">;
+                break;
+            }
+
+
+            if(emitterType == 0)
+            {
+                struct model
+                {
+                    local uint unkDat1Start = FTell();
+                    local uint unkDat1Size = 160 * unkCount2;
+                    byte unkDat1[unkDat1Size];
+                   // int  unkDat2Size;
+                   // int  unkDat2Size2;
+                    
+                    if(type == 0)
+                        byte unkyDat_v29[144];
+                   
+                }mdl<name = "Model", bgcolor = cDkGreen>;
+            }
+            else if(emitterType == 1)
+            {
+
+                struct billboard
+                {
+                    local uint unkDat1Start = FTell();
+                    local uint unkDat1Size = 144 * unkCount2;
+                    byte unkDat1[unkDat1Size];
+                    local uint unkDat1End = FTell();
+
+                    Printf("%i %i\n", unkDat1Size, FTell());
+
+                    if(type == 0)
+                        byte unkyDat_v29[144];
+
+                    local uint counter = 0;
+                  
+                }billb<name = "Billboard", bgcolor = cDkGreen>;
+            }
+            
+                       
+        }emitter<name = "Emitter", bgcolor = cAqua>;
+    }
+
+
+}pibInf<name = "PIB Information", bgcolor = cYellow>;
+
+
+//0 = Model
+//1 = Billboard
+byte GetEmitterType(uint flag)
+{
+    local byte typeFlag = flag >> 6;
+
+    if((flag & 0x880))
+        return 1;
+
+    return 0;
+}
+
+/*
+struct UnkSection1
+{
+    ushort unk1<name = "Unknown">;
+    ushort unk2<name = "Unknown">;
+
+    int unk3<name = "Unknown">;
+    int padding1<hidden = true>;
+
+    byte unk4<name = "Unknown">;
+   
+    byte endian<name = "Endian">;
+    byte padding2[2]<hidden = true>;
+    
+    int unk5[3]<hidden = true>;
+    float unkfloatArr1[6]<name = "Unknown Float Array">;
+    
+    int cursedInt <name = "Cursed Number", comment = "Same from 19 (Y3) to 27 (YLAD) what does it do!?!">;
+    int padding3[4]<hidden = true>;
+}unkSec1<name = "Unknown Section 1", bgcolor = cAqua>;
+*/
