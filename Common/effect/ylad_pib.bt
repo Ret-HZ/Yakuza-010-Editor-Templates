@@ -92,16 +92,11 @@ struct PibHeader
             }
 
             FSeek(FTell() + 4);
-            byte unkSection_v52[36];
+            byte unkSection_v52[36 * textureCount];
+           // FSeek(FTell() + 4);
             int extraTexCount<bgcolor = cGreen>;
             local int l = 0;
             
-            for(l = 0; l < extraTexCount; l++)
-                struct extraTex
-                {
-                    char name[32]<name = "TextureName">;
-                }texy<name = name, bgcolor = cGreen>;               
-
             int unkCount2<bgcolor = cDkGreen>;
 
             switch(type)
