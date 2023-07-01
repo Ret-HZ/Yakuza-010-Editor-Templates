@@ -1,3 +1,9 @@
+struct vec2f
+{
+   float x<name = "x">;
+   float y<name = "y">;
+};
+
 struct vec3f
 {
    float x<name = "x">;
@@ -19,4 +25,12 @@ struct matrix4x4
    vec4f m1<name = "M1">;
    vec4f m2<name = "M2">;
    vec4f m3<name = "M3">;
+};
+
+struct rgba32
+{
+   ubyte r<name = "R">;
+   ubyte g<name = "G">;
+   ubyte b<name = "B">;
+   ubyte a<name = "A">;   
 };

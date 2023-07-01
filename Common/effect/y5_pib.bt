@@ -142,11 +142,14 @@ struct PibHeader
                 struct billboard
                 {
                     local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = (32 * unkCount2) * 4;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
 
-                    Printf("%i %i\n", unkDat1Size, FTell());
+                    local uint k = 0;
+
+                    for(k; k < unkCount2; k++)
+                       struct BillboardChunk
+                       {
+                            byte data[128]<name = "Data">;
+                       }billChunk<name = "Billboard Chunk">;
                    
                 }billb<name = "Billboard", bgcolor = cDkGreen>;
             }

@@ -161,41 +161,17 @@ struct PibHeader
             }
             else if(emitterType == 1)
             {
-
                 struct billboard
                 {
                     local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = (32 * unkCount2) * 4;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
 
-                    Printf("%i %i\n", unkDat1Size, FTell());
+                    local uint k = 0;
 
-                    local uint counter = 0;
-                   
-                    if(unkCount2 > 0)
-                    {
-/*
-                        if(unkCount2 >= 8)
-                        {
-                            //top 3 insane moments in japanese game formats
-                            //1) whatever this is
-                            FSeek(unkDat1Start + 0x13C);
-                            local uint start = FTell();
-        
-                            do
-                            {
-	                            counter += 8;
-                            }
-                            while(counter < unkCount2 - unkCount2 % 8);
-
-                            FSeek(unkDat1Start);
-
-                            local uint size = (counter / 8) * 1024;
-                            byte unkDat2[size];                                                    
-                        }  
-*/                 
-                    }
+                    for(k; k < unkCount2; k++)
+                       struct BillboardChunk
+                       {
+                            byte data[128]<name = "Data">;
+                       }billChunk<name = "Billboard Chunk">;                 
                 }billb<name = "Billboard", bgcolor = cDkGreen>;
             }
             
