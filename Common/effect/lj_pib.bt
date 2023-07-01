@@ -96,7 +96,7 @@ struct PibHeader
             vec3f aaBoxExtent<name = "AA Box Extent">;
             
             int geoVtxCount<name = "Geometry Vertex Count">;
-            
+
             struct Blur
             {
                 float blurVelocityScale<name = "Blur Velocity Scale">;
@@ -108,8 +108,8 @@ struct PibHeader
             }blur<name = "Blur">;
             
             float shadowRate<name = "Shadow Rate">;
-            
-            struct Metaball
+
+struct Metaball
             {
                 float metaballRate<name = "Metaball Rate">;
                 rgba32 metaballColor<name = "Metaball Color">;
@@ -137,6 +137,9 @@ struct PibHeader
             float lightRatio<name = "Light Ratio">;
             float glare<name = "Glare">;
 
+            float unknown_f1<name = "Unknown">;
+            float unknown_f2<name = "Unknown">;
+            float unknown_f3<name = "Unknown">;
             float collisionRestitution<name = "Collision Restitution">;
             float collisionFriction<name = "Collision Friction">;
             float vecScale<name = "Vec Scale">;
@@ -165,8 +168,8 @@ struct PibHeader
                 float vfLife<name = "VF Life">;
             }vf<name = "VF">;
 
-            uint padding1<hidden = true>;
-          
+            int padding2[2]<hidden = true>;
+
             struct VAT  
             {
                 double vatBboxLength<name = "VAT Bbox Length">;
@@ -179,6 +182,8 @@ struct PibHeader
             int tickWait<name = "Tick Wait">;
             float lightUi1[4]<name = "Light UI 1">;
             float lightUi2[4]<name = "Light UI 2">;
+            float unknown_f4<name = "Unknown">;
+            float unknown_f5<name = "Unknown">;
             float texA2Ratio<name = "Tex A2 Ratio">;
             float texB1Ratio<name = "Tex B1 Ratio">;
 
@@ -201,9 +206,10 @@ struct PibHeader
             }uv<name = "UV">;
 
             float rimBlendCurve<name = "Rim Blend Curve">;
-            unsigned int padding2[5]<hidden = true>;
+            unsigned int padding3[5]<hidden = true>;
 
-            byte unk3[336]<name = "Unknown">;
+
+            byte unk3[344]<name = "Unknown">;
             int dataSize1<name = "Data Size 1">;
             
             //Just the header no image data
@@ -232,26 +238,37 @@ struct PibHeader
 
             FSeek(FTell() + 4);
 
+            local int p = 0;
+            
+            for(p = 0; p < textureCount; p++)
+            {
+                struct texImportDat
+                {
+                    byte data[32]<name = "Unknown">;
+                    int resourceCount<name = "Resource Count">;
 
-            byte unkSection_v52[36 * textureCount];
+                    local int pr = 0;
+                    for(pr; pr < resourceCount; pr++)
+                       struct resourceImport
+                       {
+                           int id<name = "ID">;
+                           char name[36]<name = "Resource">;
+                       }resImp<name = name>;
+                }teximp<name = "Texture Import Data", bgcolor = cGreen>;
+            }
+
             int extraTexCount<bgcolor = cGreen>;
             local int l = 0;
             
-            for(l = 0; l < extraTexCount; l++)
-                struct extraTex
-                {
-                    char name[36]<name = "TextureName">;
-                }texy<name = name, bgcolor = cGreen>;               
-
             int unkCount2<bgcolor = cDkGreen>;
 
             switch(blend)
             {
-                default:
+               default:
                      byte unkDat[44 * geoVtxCount]<name = "Unknown Data">;
-                break;                              
-            }
+                break;
 
+            }
 
             if(emitterType == 0)
             {

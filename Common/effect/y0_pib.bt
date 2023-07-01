@@ -28,18 +28,27 @@ struct Header
 struct PibHeader
 {
     int pibID<name = "PIB ID">;
-    int texCount<name = "Emitter Count">;
+    int emitterCount<name = "Emitter Count">;
     int pibLength<name = "PIB Duration (In Ticks)">;
-    int unk1<name="Unknown">;
-    float speed<name = "Speed?", comment = "I think it's safe to assume a float variable this close to the beginning is the speed.">;
-    float unk2<name = "Unknown">;
-    float unk3<name = "Unknown">;
-    byte unk4[4]<name = "Unknown Fields">;
-    int unk5<name = "Unknown">;
+    int durationOffset<name="Duration Offset">;
+    float speed<name = "Speed">;
+    float forwardOffset<name = "Forward Offset">;
+    float maxIntensity<name = "Max Intensity">;
+    float radius<name = "Radius">;
+    float range<name = "Range">;
 
-    float unkFloats[130]<name = "Unknown Floats">;
+    struct ColAnim
+    {
+        float colAnimR[32]<name = "Color R Animation">;
+        float colAnimG[32]<name = "Color G Animation">;
+        float colAnimB[32]<name = "Color B Animation">;
+        float colAnimI[32]<name = "Intensity Animation">;
+    }colAnim<name = "Color Animation">;
 
-    int unk6<name = "Unknown">;
+    float unkf1<name = "Unknown">;
+    float unkf2<name = "Unknown">;
+
+    uint flags<name = "Flags">;
 
     matrix4x4 baseMtx<name = "Base Matrix">;
     vec3f unkVec<name = "Scale?">;
@@ -50,7 +59,7 @@ struct PibHeader
 
 
     //temporarily exec once
-    for(i = 0; i < texCount; i++)
+    for(i = 0; i < emitterCount; i++)
     {
         struct Emitter
         {   
@@ -140,15 +149,17 @@ struct PibHeader
             }
             else if(emitterType == 1)
             {
-
                 struct billboard
                 {
                     local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = (32 * unkCount2) * 4;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
 
-                    Printf("%i %i\n", unkDat1Size, FTell());
+                    local uint k = 0;
+
+                    for(k; k < unkCount2; k++)
+                       struct BillboardChunk
+                       {
+                            byte data[128]<name = "Data">;
+                       }billChunk<name = "Billboard Chunk">;
                    
                 }billb<name = "Billboard", bgcolor = cDkGreen>;
             }
@@ -172,25 +183,3 @@ byte GetEmitterType(uint flag)
 
     return 0;
 }
-
-/*
-struct UnkSection1
-{
-    ushort unk1<name = "Unknown">;
-    ushort unk2<name = "Unknown">;
-
-    int unk3<name = "Unknown">;
-    int padding1<hidden = true>;
-
-    byte unk4<name = "Unknown">;
-   
-    byte endian<name = "Endian">;
-    byte padding2[2]<hidden = true>;
-    
-    int unk5[3]<hidden = true>;
-    float unkfloatArr1[6]<name = "Unknown Float Array">;
-    
-    int cursedInt <name = "Cursed Number", comment = "Same from 19 (Y3) to 27 (YLAD) what does it do!?!">;
-    int padding3[4]<hidden = true>;
-}unkSec1<name = "Unknown Section 1", bgcolor = cAqua>;
-*/
