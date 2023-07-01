@@ -173,25 +173,3 @@ byte GetEmitterType(uint flag)
 
     return 0;
 }
-
-/*
-struct UnkSection1
-{
-    ushort unk1<name = "Unknown">;
-    ushort unk2<name = "Unknown">;
-
-    int unk3<name = "Unknown">;
-    int padding1<hidden = true>;
-
-    byte unk4<name = "Unknown">;
-   
-    byte endian<name = "Endian">;
-    byte padding2[2]<hidden = true>;
-    
-    int unk5[3]<hidden = true>;
-    float unkfloatArr1[6]<name = "Unknown Float Array">;
-    
-    int cursedInt <name = "Cursed Number", comment = "Same from 19 (Y3) to 27 (YLAD) what does it do!?!">;
-    int padding3[4]<hidden = true>;
-}unkSec1<name = "Unknown Section 1", bgcolor = cAqua>;
-*/
