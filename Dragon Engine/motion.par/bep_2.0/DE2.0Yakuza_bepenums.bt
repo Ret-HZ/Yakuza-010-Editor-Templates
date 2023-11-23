@@ -1,0 +1,415 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: Yakuza Dragon Engine 2.0 Enum List
+//   Authors: HeartlessSeph, Draxx182
+//   Version: 2.00
+//   Purpose: Enum List for DE 2.0. Template Reading.
+//   History
+//   1.00    28/12/2020  HeartlessSeph - Edited By Draxx182
+//   Used attributes from HeartlessSeph, Fronkln (Jhrino), Ret, and Jadus.
+//   Including listed attributes from BEP Documentation.
+//------------------------------------------------
+
+// Thanks to HeartlessSeph for function
+void Hitboxes() {
+    struct HitboxBones{
+	uint null: 1<name="Null">;
+    uint face: 1<name="Face">;
+    uint ude3_r: 1<name="Right Hand">;
+    uint ude3_l: 1<name="Left Hand">;
+    uint asi3_r: 1<name="Right Foot">;
+    uint asi3_l: 1<name="Left Foot">;
+    uint kosi: 1<name="Belly">;
+    uint mune: 1<name="Chest">;
+    uint sync: 1<name="Sync">;
+    uint ude1_r: 1<name="Upper Right Arm">;
+    uint ude1_l: 1<name="Upper Left Arm">;
+    uint ude2_r: 1<name="Lower Right Arm">;
+    uint ude2_l: 1<name="Lower Left Arm">;
+    uint asi1_r: 1<name="Upper Right Leg">;
+    uint asi1_l: 1<name="Upper Left Leg">;
+    uint asi2_r: 1<name="Lower Left Arm">;
+    uint asi2_l: 1<name="Lower Left Leg">;
+    uint ketu: 1<name="Hip">;
+    uint buki_r: 1<name="Right Hand Weapon">;
+    uint buki_l: 1<name="Left Hand Weapon">;
+    uint unused: 12<name="Unused">;
+    }hitboxbones<name="Locations">;
+}
+
+// Enums for names
+enum<uint32> HitboxLocations
+{
+	LeftFoot_Knee = 81952,
+	RightFoot_Knee = 40976,
+	LeftHand = 4104,
+	RightHand = 2052,
+	Head = 1538,
+	LeftElbow = 5128,
+	RightElbow = 2564,
+	Center_Maybe = 5126,
+	Chest = 138956,
+	LeftShoulder = 136394,
+	RightShoulder = 133830,
+    MiddleWeapon_Maybe = 262144,
+	HurtsSelf_and_Enemies = 254192,
+    Weapon = 40,
+    All = 1048574,
+};
+
+enum<ubyte> Bool
+{
+    False = 0,
+    True = 1,
+};
+
+//   Used attributes from HeartlessSeph, Fronkln (Jhrino), Ret, and Jadus.
+//   Including listed attributes from BEP Documentation.
+enum<uint32> PropertyTypes
+{
+	EXModeScreenFlash = 7,
+	Post_Effect_Gradation = 9,
+	PiBEmmitter = 16,
+	Particle_1 = 18,
+	p0x16_22 = 19,
+	Hyperarmor_TYPE1 = 22,
+	Battle_Element = 24,
+	Audio = 25,
+	FlowdustEmitter = 28,
+	LimbFlash = 29,
+	p0x26_38Visual = 35,
+	p0x30_48 = 45,
+	p0x31_49 = 46,
+	Controller_Rumble = 66,
+	p0x49_73Visual = 70,
+	FollowUp = 71,
+	ControlLock = 72,
+	sy1_ControlLock = 73,
+	Hitbox = 74,
+	SlideTowardTarget = 77,
+	Battle_Pickup = 80,
+	Unequip_Weapon = 81,
+	Unequip_Weapon_and_Wep_Falls = 82,
+	TrailingEffect_Asset = 83,
+	p0x57_87 = 84,
+	Camera = 85,
+	p0x59_89 = 86,
+	p0x5D_93 = 90,
+	p0x5E_94 = 91,
+	GameSpeed = 92,
+	SelfContainedHitbox = 94,
+	p0x62_98 = 95,
+	p0x68_104 = 101,
+	IK_Weight = 107,
+	p0x71_113 = 110,
+	p0x73_115 = 112,
+    Asset_Generate2 = 113,
+	p0x75_117 = 114,
+	p0x7D_125 = 122,
+    Battle_Muteki = 125,
+	p0x81_129 = 126,
+	p0x87_135 = 132,
+	p0x92_146 = 143,
+	p0x95_149 = 146,
+	p0x98_152 = 149,
+	p0x99_153 = 150,
+	HeatGain = 154,
+	p0x9F_159 = 155,
+	CharacterNodeScale = 158,
+	p0xA2_162 = 159,
+	p0xA3_163 = 160,
+	Battle_Bomb = 168,
+	p0xAC_172 = 169,
+	FacialExpressionTarget = 175,
+	p0xB3_179 = 176,
+	p0xC5_197 = 194,
+	Charge = 201,
+	Asset_Generate = 207,
+	p0xD4_212 = 209,
+	p0xD5_213 = 210,
+	SoundArmLabel = 246,
+	WeaponSounds_maybe = 247,
+	Charge_Dust = 259,
+	p0x0801_264 = 261,
+	p0x2A01_298 = 295,
+    PhysicsClothTweak = 328,
+    Battle_Skill_Effect	= 372,
+	Special_Projectile = 447,
+    Color_Correction_Mask_V2 = 457,
+};
+
+// From Fronkln's AuthEdit
+enum<uint32> PlayType{
+    Normal = 0,
+    Oneshot = 1,
+    Always = 2,
+};
+
+// Thanks to Fronkln for documenting folder conditions.
+enum<uint32> FolderConditions{
+    Attack_Hit = 3,
+    Player = 4,
+};
+
+// Thanks to Jadus, HeartlessSeph and Fronkln for documenting Attribute values.
+void HitboxAttr1() {
+    struct HitAtt1{
+    Bool Null: 1<name="Null">;
+    Bool Normal: 1<name="Regular Hit">;
+    Bool Fly: 1<name="Knockdown Ragdoll">;
+    Bool Slash: 1<name="Slash Hit">;
+    Bool Asset: 1<name="Asset Hit">;
+    Bool GuardBreak: 1<name="Guard Break">;
+    Bool Involve: 1<name="Involve Hit">;
+    Bool Sync: 1<name="Seize Hit">;
+    }hitAtt1<name="Attribute 1">;
+}
+
+void HitboxAttr2() {
+    struct HitAtt2{
+    Bool NonLethal: 1<name="Non-Lethal Hit">;
+    Bool Around: 1<name="Around Hit">;
+    Bool InstaKill: 1<name="Lethal Hit">;
+    Bool Stun: 1<name="Cause Stun">;
+    Bool Cough: 1<name="Cause Cough">;
+    Bool Burn: 1<name="Cause Burn">;
+    Bool HeavyHit: 1<name="Cause Stagger">;
+    Bool Fear: 1<name="Cause Fear", comment="May only cause stagger in certain games.">;
+    }hitAtt2<name="Attribute 2">;
+}
+
+void HitboxAttr3() {
+    struct HitAtt3{
+    Bool FlyOff: 1<name="Knockback: Bomb">;
+    Bool Sting: 1<name="Sting Hit">;
+    Bool Shock: 1<name="Cause Shock">;
+    Bool BounceFaceDown: 1<name="Apply Bounce (Down)", comment="Face Down.">;
+    Bool BounceFaceUp: 1<name="Apply Bounce (Up)", comment="Face Up.">;
+    Bool Spin: 1<name="Knockback: Spin">;
+    Bool BodyDown: 1<name="Knockback: Body Down">;
+    Bool Blind: 1<name="Cause Blindness">;
+    }hitAtt3<name="Attribute 3">;
+}
+
+void HitboxAttr4() {
+    struct HitAtt4{
+    Bool IgnoreGuard: 1<name="Ignore Guard">;
+    Bool Fatal: 1<name="Fatal Hit">;
+    Bool Guard: 1<name="Force Guard">;
+    Bool FallDown: 1<name="Knockback: Fall">;
+    Bool HGuardBreak: 1<name="Heavy Guard Break">;
+    Bool Paralysis: 1<name="Paralysis", comment="Only JRPG.">;
+    Bool Sleep: 1<name="Sleep", comment="Only JRPG.">;
+    Bool Bleed: 1<name="Gut Hit (Poison)", comment="Seems to be only active in DE 2.0">;
+    }hitAtt4<name="Attribute 4">;
+}
+
+void HitboxAttr5() {
+    struct HitAtt5{
+    Bool Burn: 1<name="Apply Burn">;
+    Bool Freeze: 1<name="Apply Freeze">;
+    Bool Silence: 1<name="Silence", comment="Only JRPG.">;
+    Bool Charm: 1<name="Charm", comment="Only JRPG.">;
+    Bool Drunk: 1<name="Drunk", comment="Only JRPG.">;
+    Bool MindControl: 1<name="Mind Control", comment="Only JRPG.">;
+    Bool Fear: 1<name="Cause Fear">;
+    Bool Anger: 1<name="Anger", comment="Only JRPG.">;
+    }hitAtt5<name="Attribute 5", comment="DE 2.0 Attribute">;
+}
+
+void HitboxAttr6() {
+    struct HitAtt6{
+    Bool Avoid: 1<name="Cause Avoid">;
+    Bool GroinHit: 1<name="Groin Hit">;
+    Bool Swarm: 1<name="Swarm">;
+    Bool Gun: 1<name="Gun Hit">;
+    Bool Stumble: 1<name="Stumble Hit">;
+    Bool Bleed: 1<name="Apply Bleed">;
+    Bool WallBound: 1<name="Knockback: Wallbound">;
+    Bool Agony: 1<name="Cause Agony">;
+    }hitAtt6<name="Attribute 6", comment="DE 2.0 Attribute">;
+}
+
+// Ret found these out from hit reaction bin
+void HitboxAttr7() {
+    struct HitAtt7{
+    Bool Middle: 1<name="Middle Hit">;
+    Bool BoxingNormal: 1<name="Boxing Hit">;
+    Bool AgonySway: 1<name="Cause Agony Sway">;
+    Bool Drill: 1<name="Drill Hit">;
+    Bool Slip: 1<name="Cause Slip">;
+    Bool Kirimomi: 1<name="Knockback: Kirimomi">;
+    Bool MortalReverse: 1<name="Mortal Reversal">;
+    Bool MortalReverseFly: 1<name="Mortal Reversal Fly">;
+    }hitAtt7<name="Attribute 7", comment="Gaiden Attribute">;
+}
+
+void HitboxAttr8() {
+    struct HitAtt8{
+    Bool Wire: 1<name="Wire Hit">;
+    Bool WireKick: 1<name="Wire Kick Hit">;
+    Bool Bind: 1<name="Cause Bind">;
+    Bool Attr8Unk1: 1<name="Null">;
+    Bool Attr8Unk2: 1<name="Null">;
+    Bool Attr8Unk3: 1<name="Null">;
+    Bool Attr8Unk4: 1<name="Null">;
+    Bool Attr8Unk5: 1<name="Null">;
+    }hitAtt8<name="Attribute 8", comment="Gaiden Attribute">;
+}
+
+enum<ubyte> Attribute1 {
+    None1 = 0,
+    Null = 1,
+    RegularHit2 = 2,
+    Ragdoll = 4,
+    Slash = 8,
+    AssetHit = 16,
+    GuardBreak = 32,
+    InvolveHit = 64,
+    SeizeHit = 128,
+    GBNull = 33,
+    GBRegularHit2 = 34,
+    GBRagdoll = 36,
+    GBSlash = 40,
+    GBAssetHit = 48,
+    GBInvolveHit = 96,
+    GBSeizeHit = 160,
+};
+
+enum<ubyte> Attribute2 {
+    None2 = 0,
+    NonLethal = 1,
+    AroundHit = 2,
+    InstantKill = 4,
+    Stun = 8,
+    Cough = 16,
+    Burn1 = 32,
+    Stagger = 64,
+    Fear1 = 128,
+};
+
+enum<ubyte> Attribute3 {
+    None3 = 0,
+    FlyAway = 1,
+    Sting = 2,
+    Shock = 4,
+    BounceFaceDown = 8,
+    BounceFaceUp = 16,
+    SpinHit = 32,
+    BodyDown = 64,
+    Blind = 128,
+};
+
+enum<ubyte> Attribute4 {
+    None4 = 0,
+    IgnoreGuard = 1,
+    FatalHit = 2,
+    MortalAttack = 3,
+    ForceGuard = 4,
+    Push = 8,
+    HeavyGuardBreak = 16,
+    HGBIgnoreGuard = 17,
+    HGBFatalHit = 18,
+    HGBPush = 24,
+    RPGParalysis = 32,
+    HGBParalysis = 48,
+    RPGSleep = 64,
+    HGBSleep = 80,
+    RPGPoisonGutHit = 144,
+};
+
+enum<ubyte> Attribute5 {
+    None5 = 0,
+    Burn2 = 1,
+    Freeze = 2,
+    RPGSilence = 4,
+    RPGCharm = 8,
+    RPGDrunk = 16,
+    RPGMindControl = 32,
+    Fear2 = 64,
+    RPGAnger = 128,
+};
+
+enum<ubyte> Attribute6 {
+    None6 = 0,
+    Avoid = 1,
+    GroinHit = 2,
+    Swarm = 4,
+    Gun = 8,
+    Stumble2 = 16,
+    Bleed = 32,
+    Wallbound = 64,
+    Agony = 128,
+};
+
+enum<ubyte> Attribute7 {
+    None7 = 0,
+    MiddleHit = 1,
+    BoxingHit = 2,
+    AgonySway = 4,
+    DrillHit = 8,
+    Slip = 16,
+    Kirimomi = 32,
+    MortalReverse = 64,
+    MortalReverseFly = 128,
+};
+
+enum<ubyte> Attribute8 {
+    None8 = 0,
+    Wire = 1,
+    WireKick = 2,
+    WireAndWireKick = 3,
+    Bind = 4,
+    BindAndWire = 5,
+    BindAndKick = 6,
+};
+
+enum<int32> KnockbackForce
+{
+	Unk0 = 0,
+	SpinOnHit = 6,
+};
+
+enum<uint16> CuesheetIDs
+{
+    ACT_COMMON = 1,
+    ACT_KIRYU = 2,
+    LJ_VOICE = 49,
+    GAIDEN_VOICE = 55,
+    GAIDEN_ACT_PLAYER = 1257,
+    LJ_ACT_PLAYER,
+};
+
+enum<int32> MutekiModes{
+    Invincible = 0,
+    Hyperarmor = 1,
+    Gaiden_Unknown_Mode = 2,
+};
+
+// Really messy way to do this, but I can't get it into a correct enum otherwise.
+enum<uint64> BoneName{
+    NullName = 0,
+    NormalSuffix = 28255,
+    CenterSuffix = 1851745119,
+    Center = 8243122710467773456,
+    Hip = 7160571075320546120,
+    Belly = 7160557877053817669,
+    Chest2 = 7160553457633264452,
+    Neck = 7160557804140036922,
+    Face = 7160553410052621086,
+    LeftShoulder2 = 7809067431362233145,
+    LeftUpperArm = 7809014590430577415,
+    LeftLowerArm = 7809015689942205192,
+    LeftHand2 = 7809016789453832969,
+    LeftThigh = 7809014607860794118,
+    LeftShin = 7809015707372421895,
+    LeftFoot = 7809016806884049672,
+    RightShoulder2 = 8241412995589800767,
+    RightUpperArm = 8241360154658145037,
+    RightLowerArm = 8241361254169772814,
+    RightHand2 = 8241362353681400591,
+    RightThigh = 8241360172088361740,
+    RightShin = 8241361271599989517,
+    RightFoot = 8241362371111617294,
+};

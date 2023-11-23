@@ -1,0 +1,232 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: Yakuza Dragon Engine 2.0 beps
+//   Authors: HeartlessSeph, Draxx182
+//   Version: 2.00
+//   Purpose: Parses bep files for easier editing
+//   History
+//   1.00    28/12/2020  HeartlessSeph - Edited By Draxx182
+//   Used attributes from HeartlessSeph, Fronkln (Jhrino), Ret, and Jadus.
+//   Including listed attributes from BEP Documentation.
+//------------------------------------------------
+
+//---------------------------------------------
+// Includes
+//---------------------------------------------
+
+#include "DE2.0Yakuza_bepenums.bt"
+
+LittleEndian();
+local int h<hidden=true>;
+local int i<hidden=true>;
+local int j<hidden=true>;
+local int numintprops<hidden=true>;
+local int result;
+local int check;
+
+check = 0;
+struct File{
+	struct FileHeader{
+		char filetype[4]<name="Magic">;
+		uint32 unk;
+		uint32 unk;
+		uint32 unk;
+	}fileheader<name="File Header", bgcolor=cWhite>;
+	
+    // Reads until end of file is reached.
+	for( j = 0; j < 999999; j++ ){
+		struct Property{
+            local string propertyName = "";
+            // GUID Section - Parent GUID is used mainly to Identify Folder Parents.
+            GUID parentHeader<name="Parent GUID", bgcolor=cRed>;
+            GUID nodeHeader<name="Property GUID", bgcolor=cRed>;
+
+            // Really messy way to do this, but I can't make it into correct enums otherwise.
+			BoneName bonename1<name="Bone Name p1">;
+            BoneName bonename2<name="Bone Name p2">;
+            char padding[16]<hidden=true>;
+            
+            // Data of the node.
+			uint16 PropertySection<name = "Property Section">;
+			uint16 PropertyType<name = "Property Type">;
+			uint32 PropertySize<name = "Property Size">;
+			numintprops = PropertySize/4;
+			int32 unkInt<name="Property Unk1">;
+			uint32 PropertyFlags<name="Property Flags", comment="Taken from AuthEdit">;
+            
+            // Property Type
+			if (PropertySection == 12){
+                propertyName = "Property";
+				PropertyTypes property<name="Controller Type? (Always equal to Property Type)">;
+				float startframe<name = "Start Frame">;
+				float endframe<name = "End Frame">;
+				uint32 propertyVersion<name="Property Version", comment="Taken from AuthEdit">;
+				uint32 elementFlag<name="Property E-Flag", comment="Taken from AuthEdit">;
+				PlayType playType<name="Property Play-Type">;
+				uint32 timingMode<name="Property Timing Mode", comment="Taken from AuthEdit">;
+				uint32 unk4<name="Property Unk2">;
+
+                //Audio
+				if (PropertyType == 25){
+                    uint32 unk1;
+                    uint16 soundID<name="Sound ID">;
+                    CuesheetIDs cueID<name="Cuesheet ID">;
+                    uint32 flag<name="Flag?">;
+                    float nDecayD<name="Near Decay Distance">;
+                    float nDecayV<name="Near Decay Volume">;
+                    float fDecayD<name="Far Decay Distance">;
+                    float fDecayV<name="Far Decay Volume">;
+					uint32 unk[numintprops-15];
+				}
+                
+                //Limflash - DB Reference Version
+                else if (PropertyType == 29){
+                    struct FlashData{
+					uint32 version<name="Version:">;
+					uint32 unk5<name="Limflash Unk1">;
+					uint32 unk6<name="Limflash Unk2">;
+					uint32 unk7<name="Limflash Unk3">;
+					float fade<name="Fade Time">;
+					float root<name="Root Value">;
+                    float unk8<name="Limflash Unk4">;
+					uint32 unk9<name="Limflash Unk5">;
+					uint32 unk10<name="Limflash Unk6">;
+					uint32 id<name="Parameter ID">;
+					uint32 unk11<name="Limflash Unk7">;
+					uint32 unk12<name="Limflash Unk8">;
+					uint32 unk13<name="Limflash Unk9">;
+                    float floatSUnk<name="Limflash Unk10">;
+                    float floatSUnk<name="Limflash Unk11">;
+					uint32 unks[numintprops-23];
+                    }flashData<name="Limflash Data">;
+				}
+				
+                //Follow Up
+				else if (PropertyType == 71){
+					uint32 skillnum<name="Skill ID Number">;
+                    uint32 unk[numintprops-9];
+				}
+
+				//Control Lock
+				else if (PropertyType == 72){
+					uint32 structnumber;
+				}
+				
+				//Hitbox
+				else if (PropertyType == 74){
+					int32 damage<name="Damage">;
+					KnockbackForce knockback<name="Knockback Force">;
+
+                    // Thanks to HeartlessSeph for Hitbox function.
+                    HitboxLocations hitboxloc<name="Hitbox Location">;
+                    FSkip(-4);
+					Hitboxes();
+
+                    // Thanks to Jadus, HeartlessSeph and Fronkln for documenting Attribute values.
+                    Attribute1 attr1<name="Attribute 1">;
+                    Attribute2 attr2<name="Attribute 2">;
+                    Attribute3 attr3<name="Attribute 3">;
+                    Attribute4 attr4<name="Attribute 4", comment="RPG - Yakuza 7.">;
+                    Attribute5 attr5<name="Attribute 5", comment="RPG - Yakuza 7.">;
+                    Attribute6 attr6<name="Attribute 6">;
+                    Attribute7 attr7<name="Attribute 7">;
+                    Attribute8 attr8<name="Attribute 8">;
+
+                    FSkip(-8);
+                    struct AttributeList{
+                        HitboxAttr1();
+                        HitboxAttr2();
+                        HitboxAttr3();
+                        HitboxAttr4();
+                        HitboxAttr5();
+                        HitboxAttr6();
+                        HitboxAttr7();
+                        HitboxAttr8();
+                    }attrList<name="Attribute Bitmask", comment="For more precise hit effect editing">;
+                    uint32 unks[numintprops-13];
+				}
+
+                // Game Speed
+                else if (PropertyType == 92){
+                    uint32 speedunk<name="Speed Unk1">;
+					float maximumSpeed<name="Maximum Speed", comment = "Everything below is taken from AuthEdit">;
+                    float minimumSpeed<name="Minimum Speed">;
+                    uint32 frameNumber<name="Frame Number">;
+                    uint32 unk[numintprops - 44];
+                    float curves[32]<name="Speed Curve">;
+				}
+				
+                // Asset Generation 2
+                else if (PropertyType == 113){
+					uint32 assetID<name="Asset ID">;
+                    uint32 flags;
+                    uint32 equipPart<name="Equip Part">;
+                    uint32 unk[numintprops-11];
+				}
+
+                //Battle Muteki
+				else if (PropertyType == 125){
+					MutekiModes mode<name = "Current Mode">;
+                    uint32 unk[numintprops-9];
+				}
+
+                //Heat Gain/Loss
+				else if (PropertyType == 154){
+					int32 heatgain<name = "Heat Gain/Loss">;
+                    uint32 unk[numintprops-9];
+				}
+
+				//Not mapped Properties
+				else{
+					if (PropertySize > 32)
+					uint32 unk[numintprops-8];
+				}
+			}
+            
+            // Folder Condition
+			if (PropertySection == 17){
+                propertyName = "Folder";
+				FolderConditions property<name="Property Type">;
+				uint32 unk[numintprops-1];
+			}
+		}property<name=propertyName, read=GetProperty, bgcolor=cBlue, comment=GetComment>;
+		
+		if (FTell()+80 == FileSize())
+		break;		
+	}	
+    ubyte endPadding[80]<name="Padding", bgcolor=cGray, hidden=true>;
+    local string fileName = FileNameGetBase(GetFileName()) + ".bep";
+}file<name=fileName>;
+
+string GetProperty(Property &j)
+{
+    // Folder Condition
+	if (j.PropertySection == 17)
+	{
+        local string folderEnum = EnumToString(j.property);
+        if (folderEnum != ""){
+            return "Folder (" + EnumToString(j.property) + ")";
+        }
+		return "Folder Condition";
+	}
+
+    // Property Type
+    if (j.PropertySection == 12)
+    {
+		return EnumToString(j.property);
+    }
+};
+
+string GetComment(Property &j){
+    // Property Type
+    if (j.PropertySection == 12)
+    {
+		if (j.PropertyType == 25){
+            local string enumStr = "Enum: " + EnumToString(j.cueID);
+            if (enumStr != "Enum: ") return enumStr;
+            return "";
+        }
+    }
+    return "";
+}
