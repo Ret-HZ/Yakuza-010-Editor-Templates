@@ -1,0 +1,589 @@
+//------------------------------------------------ 
+//--- 010 Editor v8.0 Binary Template 
+// 
+//      File: yakuza_gmd.bt 
+//   Authors: TGE, Samuel Stark 
+//   Version: 1.0 
+//   Purpose: Parse Yakuza series GMD model files 
+//  Category:  
+// File Mask: *.gmd 
+//  ID Bytes:  
+//   History:  
+//------------------------------------------------ 
+
+#include "includes/include.h"
+
+typedef struct
+{
+    u16 Checksum;
+    char Data[ 30 ];
+
+    local u16 newChecksum = 0;
+    local u32 i;
+    for ( i = 0; i < 30; ++i )
+        newChecksum += Data[i];
+
+    Assert( newChecksum == Checksum );
+} TString;
+
+string TStringToString( TString& value )
+{
+    return value.Data;
+}
+
+typedef enum <u32>
+{
+    EModelFlags_BoneMap16 = 1 << 7,
+} EModelFlags;
+
+typedef struct
+{
+    SetRandomBackColor();
+    LittleEndian();
+    char Magic[4];      // GSGM
+    u8 VertEndianness;         // 2 for big, 21 for little
+    u8 Endianness;      // 1
+    if ( Endianness == 1 ) BigEndian();
+    u16 Field06;        // 0
+    u32 Version;
+    u32 FileSize; 
+
+    SetRandomBackColor();    
+    TString Name;
+
+    local u32 nodeColor = SetRandomBackColor();
+    u32 NodeOffsets;        // offset
+    u32 NodeCount;        // count (127, 295)
+
+    local u32 geometryColor = SetRandomBackColor();
+    u32 GeometryListOffset;        // offset
+    u32 GeometryCount;        // count (A9, 169)
+
+    local u32 meshColor = SetRandomBackColor();
+    u32 MeshListOffset;        // offset
+    u32 MeshCount;        // count (B6, 182)
+
+    local u32 materialColor = SetRandomBackColor();
+    u32 MaterialOffsets;    // offset
+    u32 MaterialCount;      // count (1A, 26)
+
+    local u32 materialSharedParamsColor = SetRandomBackColor();
+    u32 MaterialSharedParamsListOffset;        // offset
+    u32 MaterialSharedParamsCount;        // count (13, 19), model looks 'wet' when set to 0
+
+    local u32 inverseBindMatricesColor = SetRandomBackColor();
+    u32 InverseBindMatrixListOffset;
+    u32 InverseBindMatrixCount; 
+
+    local u32 vertexBufferColor = SetRandomBackColor();
+    u32 VertexBufferOffsets;
+    u32 VertexBufferCount; 
+
+    local u32 vertexBufferPoolColor = SetRandomBackColor();
+    u32 VertexBufferPoolOffset;       // offset
+    u32 VertexBufferPoolSize;        // count (CA7A0)
+
+    local u32 materialNameColor = SetRandomBackColor();
+    u32 MaterialNameOffset;  // offset
+    u32 MaterialNameCount;        // count (35, 53)
+
+    local u32 shaderNameColor = SetRandomBackColor();
+    u32 ShaderNameListOffset;
+    u32 ShaderNameCount;
+
+    local u32 nodeNameColor = SetRandomBackColor();
+    u32 NodeNameTableOffset;        // offset
+    u32 NodeNameCount;        // count (127, 295)
+
+    local u32 indexBufferColor = SetRandomBackColor();
+    u32 IndexBufferOffset; // offset
+    u32 IndexBufferIndexCount;   // count (2CDAD)
+    
+    local u32 geometryMeshMapColor = SetRandomBackColor();
+    u32 GeometryMeshMapOffset;        // offset
+    u32 GeometryMeshMapSize;        // count (580, 1408)
+    
+    local u32 boneMapPoolColor = SetRandomBackColor();
+    u32 BoneMapPoolOffset;     // offset
+    u32 BoneMapPoolIndexCount; // count (2AC, 684)
+
+    SetRandomBackColor();
+    f32 FieldA0[12]; // doesn't seem too important
+
+    local u32 fieldD0Color = SetRandomBackColor();
+    u32 FieldD0;        // offset
+    u32 FieldD4;        // count (1A, 26), can be set to 0 without problems
+
+    local u32 fieldD8Color = SetRandomBackColor();
+    u32 FieldD8;        // offset
+    u32 FieldDC;        // count (AC, 172), can be set to 0 without problems
+
+    local u32 fieldE0Color = SetRandomBackColor();
+    u32 FieldE0;        // offset
+    u32 FieldE4;        // count (1A, 26), can be set to 0 without problems
+
+    u32 Padding[5];
+    EModelFlags Flags;
+
+    // Read node names first so we can assign them
+    // to the nodes when we read them.
+    if ( NodeNameTableOffset && NodeNameCount )
+    {
+        FSeekRel( NodeNameTableOffset );
+        SetBackColor( nodeNameColor );
+        TString NodeNames[ NodeNameCount ];
+    }
+
+    if ( NodeOffsets && NodeCount )
+    {
+        FSeekRel( NodeOffsets );
+        SetBackColor( nodeColor );
+        struct { struct TNode Nodes[ NodeCount ]; } Nodes;
+    }
+
+    if ( GeometryListOffset && GeometryCount )
+    {
+        FSeekRel( GeometryListOffset );
+        SetBackColor( geometryColor );
+        struct TGeometry Geometries[ GeometryCount ];
+    }
+
+    // Read vertex buffers before meshes so we can
+    // read from them in the mesh.
+    if ( VertexBufferOffsets && VertexBufferCount )
+    {
+        FSeekRel( VertexBufferOffsets );
+        SetBackColor( vertexBufferColor );
+        struct TVertexBuffer VertexBuffers[ VertexBufferCount ];
+    }
+
+    if ( MeshListOffset && MeshCount )
+    {
+        FSeekRel( MeshListOffset );
+        SetBackColor( meshColor );
+        struct TMesh Meshes[ MeshCount ];
+    }
+
+    // Read material & shader names before materials
+    // so we can assign them as we read the materials.
+    if ( MaterialNameOffset && MaterialNameCount )
+    {
+        FSeekRel( MaterialNameOffset );
+        SetBackColor( materialNameColor );
+        TString MaterialNames[ MaterialNameCount ];
+    }
+
+    if ( ShaderNameListOffset && ShaderNameCount )
+    {
+        FSeekRel( ShaderNameListOffset );
+        SetBackColor( shaderNameColor );
+        TString ShaderNames[ ShaderNameCount ];
+    }
+
+    if ( MaterialOffsets && MaterialCount )
+    {
+        FSeekRel( MaterialOffsets );
+        SetBackColor( materialColor );
+        struct TMaterial Materials[ MaterialCount ];
+    }
+
+    if ( MaterialSharedParamsListOffset && MaterialSharedParamsCount )
+    {
+        FSeekRel( MaterialSharedParamsListOffset );
+        SetBackColor( materialSharedParamsColor );
+        struct TMaterialSharedParams MaterialSharedParams[ MaterialSharedParamsCount ];
+    }
+
+    if ( InverseBindMatrixListOffset && InverseBindMatrixCount )
+    {
+        FSeekRel( InverseBindMatrixListOffset );
+        SetBackColor( inverseBindMatricesColor );
+        struct TMatrix4x4 InverseBindMatrices[ InverseBindMatrixCount ];
+    }
+
+    if ( VertexBufferPoolOffset && VertexBufferPoolSize )
+    {
+        FSeekRel( VertexBufferPoolOffset );
+        SetBackColor( vertexBufferPoolColor );
+        u8 VertexBufferPool[ VertexBufferPoolSize ]<optimize=true>;
+    }
+
+    if ( IndexBufferOffset && IndexBufferIndexCount )
+    {
+        FSeekRel( IndexBufferOffset );
+        SetBackColor( indexBufferColor );
+        u16 IndexBuffer[ IndexBufferIndexCount ] <optimize=true>;
+    }
+
+    if ( GeometryMeshMapOffset && GeometryMeshMapSize )
+    {
+        SetBackColor( geometryMeshMapColor );
+
+        FSeekRel( GeometryMeshMapOffset );
+        u8 GeometryMeshMapData[ GeometryMeshMapSize ] <optimize=true>; // seems to be an encoded table
+
+        // Parse table
+        // Number of entries == Field3C
+        FSeekRel( GeometryMeshMapOffset );
+        local u32 geometryMeshMapEnd = gBasePosition + GeometryMeshMapOffset + GeometryMeshMapSize;
+        struct
+        {
+            while ( FTell() < geometryMeshMapEnd )
+            {
+                struct TGeometryMeshMapEntry Entry;
+            }
+        } GeometryMeshMap;
+        Assert( FTell() == geometryMeshMapEnd );
+        FPop();
+    }
+
+    if ( BoneMapPoolOffset && BoneMapPoolIndexCount )
+    {
+        SetBackColor( boneMapPoolColor );
+        FSeekRel( BoneMapPoolOffset );
+        if ( Flags & EModelFlags_BoneMap16 )
+            u16 BoneMapIndices[ BoneMapPoolIndexCount ];
+        else
+            u8 BoneMapIndices[ BoneMapPoolIndexCount ];
+    }
+
+    if ( FieldD0 && FieldD4 )
+    {
+        FSeekRel( FieldD0 );
+        SetBackColor( fieldD0Color );
+        struct TFieldD0Data FieldD0Data[ FieldD4 ]; // material related (same count)
+    }
+
+    if ( FieldD8 && FieldDC )
+    {
+        FSeekRel( FieldD8 );
+        SetBackColor( fieldD8Color );
+        u16 FieldD8Data[ FieldDC ]; // node indices
+    }
+
+    if ( FieldE0 && FieldE4 )
+    {
+        FSeekRel( FieldE0 );
+        SetBackColor( fieldE0Color );
+        u16 FieldE0Data[ FieldE4 ];  // material related (same count), always 0
+    }
+} TModel;
+
+typedef struct
+{
+    u32 Index;
+    s32 ChildIndex;
+    s32 SiblingIndex;
+    s32 GeometryIndex; // can safely be set to 0
+    u32 Index2; // equal to index, can safely be set to 0
+    Assert( Index == Index2 );
+    u32 Field14; // 0, 1, 2, 3.. enum value? maybe something that classified what type of node eg branch, leaf... etc
+                 // can safely be set to 0
+    s32 NameIndex;
+    u32 Field1C; // 0 for regular nodes, 2 for geometry nodes
+                 // can safely be set to 2 for both kinds of nodes
+                 // when set to 0 for a geometry node, transform is wrong
+    TVector4 LocalPosition;
+    TVector4 LocalRotation;
+    TVector4 LocalScale;
+    TVector4 WorldPosition; // can safely set to 0
+    TVector4 BoneAxis; // can be safely set to 0
+    TVector4 Field70; // can be safely set to 0
+
+    if ( NameIndex != -1 )
+        local string name = Model.NodeNames[ NameIndex ].Data;
+
+} TNode <optimize=false, read=TNodeToString>;
+
+string TNodeToString( TNode& value )
+{
+    if ( exists( value.name ) ) return value.name;
+    return "";
+}
+
+typedef struct
+{
+    s32 Index;
+    s32 NodeIndex;
+    s32 NodeIndex2;
+    s32 MeshMapOffset;
+    TMatrix4x3 Transform; // model matrix
+    Assert( NodeIndex == NodeIndex2 );
+} TGeometry <optimize=false>;
+
+typedef struct
+{
+    s32 Index;
+    s32 MaterialIndex;
+    s32 VertexBufferIndex;
+    s32 VertexCount;
+    struct TMeshLod Lods[3];
+    s32 UsedBoneCount;
+    s32 BoneMapStartOffset;
+    s32 NodeIndex;
+    s32 GeometryIndex;
+    s32 Field38;                // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 VertexStartIndex;
+
+    FPush();
+    {
+        FSeekRel( Model.VertexBufferPoolOffset + 
+            Model.VertexBuffers[ VertexBufferIndex ].Offset +
+            ( Model.VertexBuffers[ VertexBufferIndex ].Stride * VertexStartIndex ) );
+        struct TVertex Vertices( Model.VertexBuffers[ VertexBufferIndex ].Format, Model.VertexBuffers[ VertexBufferIndex ].Stride )[ VertexCount ];
+
+        local u32 lodIndex = 0;
+        for ( lodIndex = 0; lodIndex < 3; ++lodIndex )
+        {
+            FSeekRel( Model.IndexBufferOffset + ( Lods[lodIndex].IndexStartIndex * 2 ) );
+            struct
+            {
+                u16 Indices[ Lods[lodIndex].IndexCount ];
+            } LodIndices;
+        }
+    }
+    FPop();
+} TMesh <optimize=false>;
+
+typedef struct
+{
+    s32 IndexCount;
+    s32 IndexStartIndex;
+} TMeshLod;
+
+typedef struct
+{
+    u8 X;
+    u8 Y;
+    u8 Z;
+    u8 W;
+} TNormal <read=TNormalToString>;
+
+string TNormalToString( TNormal& value )
+{
+    local string str = "";
+    SPrintf( str, "[%.6f, %.6f, %.6f, %.6f]",
+        (((f32)value.X) - 128.0f) / 128.0f,
+        (((f32)value.Y) - 128.0f) / 128.0f,
+        (((f32)value.Z) - 128.0f) / 128.0f,
+        (((f32)value.W) - 128.0f) / 128.0f );
+
+    return str;
+}
+
+typedef struct( u64 format, u32 stride )
+{
+    local u32 vertexStart = FTell();
+    local u64 formatShift;
+    
+    if ( format & 7 )
+    {
+        formatShift = ( (u8)format >> 3 ) & 1;
+        if ( formatShift )
+        {
+            if ( format & 3 )
+                TVector3Half Position;
+            else if ( format & 4 )
+                TVector4Half Position;
+        }
+        else
+        {
+            if ( format & 3 )
+                TVector3 Position;
+            else if ( format & 4 )
+                TVector4 Position;
+        }
+    }
+
+    local u8 nBones = 4;
+    formatShift = ( format >> 4 ) & 3;
+    if (formatShift == 3)
+    {
+        nBones = 8;
+    }
+
+    formatShift = ( format >> 6 ) & 1;
+    if ( formatShift )
+    {
+        formatShift = ( format >> 7 ) & 3;
+        if ( formatShift )
+        {
+            if ( formatShift == 1 )
+            {
+                f16 BoneWeights[nBones];
+            }
+            else if ( formatShift == 3 )
+            {
+                u8 BoneWeights[nBones];
+            }
+        }
+        else
+        {
+            f32 BoneWeights[nBones];
+        }
+    }
+
+    if ( format & 0x200 )
+    {
+        u8 BoneIndices[nBones];
+    }
+
+    if ( format & 0x400 )
+    {
+        formatShift = ( format >> 0xB ) & 3;
+        if ( formatShift )
+        {
+            if ( formatShift == 1 )
+            {
+                TVector4Half Normal;
+            }
+            else
+            {
+                TNormal Normal;
+            }
+        }
+        else
+        {
+            TVector3 Normal;
+        }
+    }
+
+    if ( format & 0x2000 )
+    {
+        formatShift = ( format >> 0xE ) & 3;
+        if ( formatShift )
+        {
+            if ( formatShift == 1 )
+            {
+                TVector4Half Tangent;
+            }
+            else
+            {
+                TNormal Tangent;
+            }
+        }
+        else
+        {
+            TVector3 Tangent;
+        }
+    }
+
+    if ( format & 0x10000 )
+    {
+        formatShift = ( format >> 0x11 ) & 3;
+        if ( formatShift )
+        {
+            if ( formatShift == 1 )
+            {
+                TVector4Half Unk;
+            }
+            else
+            {
+                TNormal Unk;
+            }
+        }
+        else
+        {
+            TVector3 Unk;
+        }
+    }
+
+    if ( format & 0x200000 )
+    {
+        formatShift = ( format >> 0x16 ) & 3;
+        if ( formatShift )
+        {
+            if ( formatShift == 1 )
+            {
+                f16 Diffuse[3];
+                f16 Opacity;
+            }
+            else if ( formatShift == 3 )
+            {
+                u8 Diffuse[3];
+                u8 Opacity;
+            }
+        }
+        else
+        {
+            f32 Diffuse[3];
+            f32 Opacity;
+        }
+    }
+
+    if ( format & 0x1000000 )
+    {
+        formatShift = ( format >> 0x19 ) & 3;
+        if ( formatShift )
+        {
+            if ( formatShift == 1 )
+            {
+                f16 Specular[4];
+            }
+            else if ( formatShift == 3 )
+            {
+                u8 Specular[4];
+            }
+        }
+        else
+        {
+            f32 Specular[4];
+        }
+    }
+
+    formatShift = (u32)format >> 0x1C;
+    if ( formatShift )
+    {
+        if ( format & ( 1 << 0x1B ) )
+        {
+            local int i;
+            local int k = 0;
+            local u64 localShift;
+            local u64 shift;
+            local int bitCount;
+            for ( i = 0x20; k < formatShift; i += 4 )
+            {
+                localShift = ( format >> i ) & 0xF;
+                if ( (u8)localShift == 0xF )
+                    continue;
+                ++k;
+                localShift = ( format >> ( i + 2 ) ) & 3;
+                if ( (u32)localShift > 1 || (u32)localShift < 0 )
+                {
+                    TNormal TexCoord;
+                    continue;
+                }
+                shift = ( format >> i ) & 3;
+                bitCount = ( shift + 2 ) ^ ( ( (u8)shift + 1 ) & 4 );
+                if ( localShift )
+                {
+                    if ( bitCount == 2 )
+                    {
+                        TVector2Half TexCoord;
+                    }
+                    else
+                        f16 TexCoord[bitCount];
+                }
+                else
+                {
+                    if ( bitCount == 2 )
+                    {
+                        TVector2 TexCoord;
+                    }
+                    else
+                        f32 TexCoord[bitCount];
+                }
+            }
+        }
+        else
+            u32 Unk[2 * formatShift];
+    }
+
+    Assert( ( FTell() - vertexStart ) == stride, "Unknown vertex format" );
+} TVertex <optimize=true>;
+
+typedef struct
+{
+    s32 Index;
+    s32 SharedParamsIndex; // 0=18, 1=16, 2=13, ... (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                           // shader parameters? seems to control                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
