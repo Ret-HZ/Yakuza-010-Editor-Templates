@@ -586,4 +586,171 @@ typedef struct
 {
     s32 Index;
     s32 SharedParamsIndex; // 0=18, 1=16, 2=13, ... (c_cm_kiryu_d_no_daimon_ps4.gmd) 
-                           // shader parameters? seems to control                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+                           // shader parameters? seems to control wetness
+    s16 Field08;           // can be set to 0 without immediate changes
+    s16 ShaderNameIndex;
+    s32 MeshStartIndex; // Meshes are sorted by material index, 
+                        // this is the index of the first mesh that uses this material 
+    s16 Field10; // always 0
+    s16 Field12; // 0=1, 2=5, 3=1, 22=69
+                 // crash when set to -1, diffuse map index?
+    s16 Field14; // always 0
+    s16 Field16; // 0=6, 1=8, 3=8, 4=6, ... (c_cm_kiryu_d_no_daimon_ps4.gmd)
+                 // crash when set to -1, normal map index?
+    s16 Field18; // always 1 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s16 Field1A; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s16 Field1C; // bit flags, maybe related to transparency?
+    s16 Field1E; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 Field20; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 DiffuseMapNameIndex; // -1 if not used, (0=34, 1=0, 3=5) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 Field24; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 ReflectionMapNameIndex; // -1 if not used, mostly unused (12=18, 25=18) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                 // no obvious effect if set to -1
+    s16 Field28; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 MtMapNameIndex; // -1 if not used, specular/wetness map index?
+    s16 Field2C; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 SpecularMapNameIndex; // -1 if not used, mostly unused (8=21) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                 // no obvious effect if set to -1
+    s16 Field30; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 RsMapNameIndex; // -1 if not used, mostly unused (6=23, 11=50, ...) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                 // no obvious effect if set to -1
+    s16 Field34; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 TnMapNameIndex; // -1 if not used, (0=36, 1=2, 2=7, ...) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                 // normal map index?
+    s16 Field38; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 RtMapNameIndex; // -1 if not used, mostly unused (1=3, 2=3, ...) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                 // texture map index.. when set to -1 the materials have less reflectiveness
+    s16 Field3C; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s16 TsMapNameIndex; // -1 if not used, mostly unused (1=4, 2=7, ...) (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+                 // darkness map index?
+    s32 Field40; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s32 Field44; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s32 Field48; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s32 Field4C; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd) 
+    s32 Field50; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 Field54; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 Field58; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 Field5C; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    f32 Field60; // 0=0, 1=0, 6=70, 7=40 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+                 // no immediately obvious change when set to 0
+    f32 Field64; // 0=0, 1=0, 6=70, 7=40 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+                 // no immediately obvious change when set to 0
+    f32 Field68; // 0=0, 1=0, 22=6, 23=5.5 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+                 // no immediately obvious change when set to 0
+    f32 Field6C; // 0=0, 1=0, 22=3, 23=1 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+                 // no immediately obvious change when set to 0
+    s32 Field70; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 Field74; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 Field78; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    s32 Field7C; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+
+    if ( DiffuseMapNameIndex != -1 ) local string diffuseMapName = Model.MaterialNames[ DiffuseMapNameIndex ].Data;
+    if ( ReflectionMapNameIndex != -1 ) local string reflectionMapName = Model.MaterialNames[ ReflectionMapNameIndex ].Data; // cube map
+    if ( MtMapNameIndex != -1 ) local string mtMapName = Model.MaterialNames[ MtMapNameIndex ].Data; 
+    if ( SpecularMapNameIndex != -1 ) local string specularMapName = Model.MaterialNames[ SpecularMapNameIndex ].Data; 
+    if ( RsMapNameIndex != -1 ) local string rsMapName = Model.MaterialNames[ RsMapNameIndex ].Data; // dummy_white
+    if ( TnMapNameIndex != -1 ) local string tnMapName = Model.MaterialNames[ TnMapNameIndex ].Data;
+    if ( RtMapNameIndex != -1 ) local string rtMapName = Model.MaterialNames[ RtMapNameIndex ].Data; // subsurface.. render target?
+    if ( TsMapNameIndex != -1 ) local string tsMapName = Model.MaterialNames[ TsMapNameIndex ].Data;
+} TMaterial <optimize=false, read=TMaterialToString>;
+
+string TMaterialToString( TMaterial& value )
+{
+    if ( exists( value.name ) ) return value.name;
+    return "";
+}
+
+typedef struct
+{
+    f16 Power;
+    f16 Intensity;
+    u8 Specular[3];
+    u8 Unk; // always null
+    u8 Diffuse[3];
+    u8 Opacity;
+    u8 Ambient[3];
+    u8 Emissive;
+
+} TMaterialSharedParams <optimize=true>;
+
+typedef struct
+{
+    u32 Index;
+    u32 Count;
+    u64 Format; // 41FE0FFC3, 41800FFC3, 418001FC3h
+    u32 Offset;
+    u32 Size;
+    u32 Stride;
+    u32 Field18; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+
+    FPush();
+    {
+        FSeekRel( Model.VertexBufferPoolOffset + Offset );
+        struct TVertex Vertices( Format, Stride )[ Count ];
+    }
+    FPop();
+
+    SetRandomBackColor();
+} TVertexBuffer <optimize=false>;
+
+typedef struct
+{
+    u16 MeshCount;
+    u16 Field02; // always 0 (c_cm_kiryu_d_no_daimon_ps4.gmd)
+    local u32 i;
+    for ( i = 0; i < MeshCount; ++i )
+    {
+        struct
+        {
+            u16 MaterialIndex; // Maybe material index.. bone map index?
+            u16 MeshIndex;
+            Printf("mat idx: %d, meshes_mat_index: %d\n", MaterialIndex, Model.Meshes[ MeshIndex ].MaterialIndex);
+            Assert( !exists( Model.Meshes ) || MaterialIndex == Model.Meshes[ MeshIndex ].MaterialIndex );
+        } Entry;
+    }
+} TGeometryMeshMapEntry;
+
+typedef struct
+{
+    f32 Field00;
+    f32 Field04;
+    f32 Field08;
+    f32 Field0C;
+    f32 Field10;
+    f32 Field14;
+    f32 Field18;
+    f32 Field1C;
+    f32 Field20;
+    f32 Field24;
+    f32 Field28;
+    f32 Field2C;
+    f32 Field30;
+    f32 Field34;
+    f32 Field38;
+    f32 Field3C;
+    f32 Field40;
+    f32 Field44;
+    f32 Field48;
+    f32 Field4C;
+    f32 Field50;
+    f32 Field54;
+    f32 Field58;
+    f32 Field5C;
+    f32 Field60;
+    f32 Field64;
+    f32 Field68;
+    f32 Field6C;
+    f32 Field70;
+    f32 Field74;
+    f32 Field78;
+    f32 Field7C;
+} TFieldD0Data;
+
+if ( FileNameGetBase( GetFileName() )  == "mesh.par" )
+{
+    // TODO proper PAR parsing
+    FSeek( 0x201800 );
+    FPushBase();
+}
+    
+TModel Model;
