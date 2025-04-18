@@ -24,7 +24,7 @@ typedef struct
         newChecksum += Data[i];
 
     Assert( newChecksum == Checksum );
-} TString;
+} TString<optimize=true>;
 
 string TStringToString( TString& value )
 {
@@ -36,16 +36,98 @@ typedef enum <u32>
     EModelFlags_BoneMap16 = 1 << 7,
 } EModelFlags;
 
+typedef struct {
+    u32 BlendShapeHeaderOffset;
+    u64 OriginalVertexBufferFormat;
+    u64 BlendShapeVertexBufferFormat;
+    u32 OriginalVertexBufferStride;
+    u32 BlendShapeVertexStride;
+    u32 BlendShapeVertexCount;
+    u32 BlendShapeVertexDataSize;
+    u32 BlendShapeVertexDataOffset;
+
+    if (BlendShapeHeaderOffset && BlendShapeVertexCount)
+    {
+        FSeekRel( BlendShapeHeaderOffset );
+        TString TargetObjectName;
+        FSeekRel( BlendShapeVertexDataOffset );
+        struct TVertex OffsetVertices( BlendShapeVertexBufferFormat, BlendShapeVertexStride )[ BlendShapeVertexCount ];
+    }
+} TBlendShapeSpec<optimize=false>;
+
+typedef struct {
+    // This defines an axis-aligned bounding box and a bounding sphere.
+    // Both are centred on the same point(?)
+    // The AABB extents are the displacement from the center to one corner (so the overall bounding box size = extents * 2)
+
+    TVector3 BoundingCenter;
+    f32 BoundingSphereRadius;
+
+    TVector4 Unknown;
+
+    TVector3 AxisAlignedBoundingBoxExtents;
+    f32 Padding;
+} BoundsData_Kenzan;
+
+typedef struct(bool IsGeometry) {
+    if (IsGeometry) {
+        TVector3 BoundingBoxExtents_Again;
+        f32 BoundingCenterDistanceFromOrigin;
+    } else {
+        TVector3 BoundingCenter_Again;
+        f32 BoundingSphereRadius_Again;
+    }
+
+    TVector3 BoundingCenter;
+    f32 BoundingSphereRadius;
+
+    TVector3 AxisAlignedBoundingBoxExtents;
+    f32 Padding;
+} BoundsData_Y3;
+
+typedef struct {
+    // This defines a bounding box and a bounding sphere.
+    // Both are centred on the same point(?)
+    // The BB extents are the displacement from the center to one corner (so the overall bounding box size = extents * 2)
+    // The BB can be rotated for a tighter fit.
+    
+    TVector3 BoundingCenter;
+    f32 BoundingSphereRadius;
+
+    TVector3 BoundingBoxExtents;
+    f32 Padding;
+
+    TVector4 BoundingBoxRotationQuat;
+} BoundsData_YK1;
+
+typedef struct (u16 MajorVersion, bool IsGeometry) {
+    if (MajorVersion == 1) {
+        BoundsData_Kenzan Bounds_Kenzan;
+    } else if (MajorVersion == 2) {
+        BoundsData_Y3 Bounds_Y3(IsGeometry);
+    } else {
+        BoundsData_YK1 Bounds_YK1;
+    }
+} BoundsData;
+
 typedef struct
 {
     SetRandomBackColor();
     LittleEndian();
     char Magic[4];      // GSGM
     u8 VertEndianness;         // 2 for big, 21 for little
-    u8 Endianness;      // 1
+    u8 Endianness;      // 1 for big endian, 0 for little
     if ( Endianness == 1 ) BigEndian();
-    u16 Field06;        // 0
-    u32 Version;
+    u16 LikelyPadding_0;        // 0
+    if (Endianness == 0) {
+        // Little-endian
+        u16 MinorVersion;
+        u16 MajorVersion;
+    } else {
+        // Big-endian
+        u16 MajorVersion;
+        u16 MinorVersion;
+    }
     u32 FileSize; 
 
     SetRandomBackColor();    
@@ -108,7 +190,7 @@ typedef struct
     u32 BoneMapPoolIndexCount; // count (2AC, 684)
 
     SetRandomBackColor();
-    f32 FieldA0[12]; // doesn't seem too important
+    BoundsData Bounds(MajorVersion, false);
 
     local u32 fieldD0Color = SetRandomBackColor();
     u32 FieldD0;        // offset
@@ -125,6 +207,13 @@ typedef struct
     u32 Padding[5];
     EModelFlags Flags;
 
+    if (Flags & 256)
+    {
+        local u32 blendshapeColor = SetRandomBackColor();
+        u32 BlendShapeCount;
+        TBlendShapeSpec BlendShapeSpecs[ BlendShapeCount ];
+    }
+
     // Read node names first so we can assign them
     // to the nodes when we read them.
     if ( NodeNameTableOffset && NodeNameCount )
@@ -138,14 +227,14 @@ typedef struct
     {
         FSeekRel( NodeOffsets );
         SetBackColor( nodeColor );
-        struct { struct TNode Nodes[ NodeCount ]; } Nodes;
+        struct TNode Nodes[ NodeCount ];
     }
 
     if ( GeometryListOffset && GeometryCount )
     {
         FSeekRel( GeometryListOffset );
         SetBackColor( geometryColor );
-        struct TGeometry Geometries[ GeometryCount ];
+        struct TGeometry Geometries(MajorVersion)[ GeometryCount ];
     }
 
     // Read vertex buffers before meshes so we can
@@ -269,6 +358,9 @@ typedef struct
     }
 } TModel;
 
+enum <u32> STACK_OP { POP_PUSH = 0, PUSH = 1, POP = 2, NO_OP = 3 };
+enum <u32> NODE_TYPE { MATRIX_TRANSFORM = 0, UNSKINNED = 1, SKINNED = 2, BLENDSHAPE_ROOT=4 };
+
 typedef struct
 {
     u32 Index;
@@ -276,19 +368,16 @@ typedef struct
     s32 SiblingIndex;
     s32 GeometryIndex; // can safely be set to 0
     u32 Index2; // equal to index, can safely be set to 0
-    Assert( Index == Index2 );
-    u32 Field14; // 0, 1, 2, 3.. enum value? maybe something that classified what type of node eg branch, leaf... etc
+    STACK_OP StackOp; // 0, 1, 2, 3.. enum value? maybe something that classified what type of node eg branch, leaf... etc
                  // can safely be set to 0
     s32 NameIndex;
-    u32 Field1C; // 0 for regular nodes, 2 for geometry nodes
-                 // can safely be set to 2 for both kinds of nodes
-                 // when set to 0 for a geometry node, transform is wrong
+    NODE_TYPE NodeType;
     TVector4 LocalPosition;
     TVector4 LocalRotation;
     TVector4 LocalScale;
     TVector4 WorldPosition; // can safely set to 0
     TVector4 BoneAxis; // can be safely set to 0
-    TVector4 Field70; // can be safely set to 0
+    u32 Flags[4]; // can be safely set to 0
 
     if ( NameIndex != -1 )
         local string name = Model.NodeNames[ NameIndex ].Data;
@@ -301,13 +390,13 @@ string TNodeToString( TNode& value )
     return "";
 }
 
-typedef struct
+typedef struct (u16 MajorVersion)
 {
     s32 Index;
     s32 NodeIndex;
     s32 NodeIndex2;
     s32 MeshMapOffset;
-    TMatrix4x3 Transform; // model matrix
+    BoundsData Bounds(MajorVersion, true);
     Assert( NodeIndex == NodeIndex2 );
 } TGeometry <optimize=false>;
 
