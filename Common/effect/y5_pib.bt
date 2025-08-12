@@ -31,12 +31,12 @@ struct PibHeader
     int texCount<name = "Emitter Count">;
     int pibLength<name = "PIB Duration (In Ticks)">;
     int unk1<name="Unknown">;
-    float speed<name = "Speed?", comment = "I think it's safe to assume a float variable this close to the beginning is the speed.">;
-    float unk2<name = "Unknown">;
-    float unk3<name = "Unknown">;
+    float speed<name = "Speed">;
+    float forwardOffset<name = "Forward Offset">;
+    float maxIntensity<name = "Max Intensity">;
     byte unk4[4]<name = "Unknown Fields">;
-    int unk5<name = "Unknown">;
-    int unk6<name = "Unknown">;
+    float radius<name = "Radius">;
+    float range<name = "Range">;
     
     LittleEndian();
     int unkFlags1<name = "Unknown Flags", comment = "Is this little endian?">;
@@ -45,9 +45,21 @@ struct PibHeader
     int unk7<name = "Unknown">;
 
     matrix4x4 baseMtx<name = "Base Matrix">;
-    vec3f unkVec<name = "Scale?">;
+    vec3f unkVec<name = "Scale">;
 
-    byte padding[52]<hidden = true>;
+    byte padding[24]<hidden = true>;
+
+    struct Fade
+    {
+        float farFadeDist<name = "Far Fade Distance">;
+        float farFadeOffs<name = "Far Fade Offset">;
+        float nearFadeDist<name = "Near Fade Distance">;
+        float nearFadeOffs<name = "Near Fade Offset">;
+        float nearFadeDistAll<name = "Near Fade Distance All">;
+        float nearFadeOffsAll<name = "Near Fade Offset All">;
+    }fade<name = "Fade">;
+
+    byte paddinge[4]<hidden = true>;
 
     local int i = 0;
 
@@ -56,23 +68,136 @@ struct PibHeader
     {
         struct Emitter
         {   
-            uint flags<name = "Flags?", comment = "Seems to be used to determine type of emitter, Model or Billboard">;
-            byte unk1[8]<name = "Unknown">;
+            uint flags<name = "Flags">;
+            uint flags2<name = "Flags">;
+            uint flags3<name = "Flags">;
             byte unkbyte<name = "Unknown">;
             byte type<name = "Type">;
-            byte padding1[2]<hidden = true>;
-            byte unk2[36]<name = "Unknown">;
-            int unkCount<name = "Unknown Count">;
-            byte unk3[344]<name = "Unknown">;
+            byte padding1[14]<hidden = true>;
+            
+            vec3f aaBoxCenter<name = "AA Box Center">;
+            vec3f aaBoxExtent<name = "AA Box Extent">;
+            int geoVtxCount<name = "Geometry Vertex Count">;
+            
+            struct UnkStr1
+            {
+                int unk1<name = "Unknown">;
+                float unk2<name = "Unknown">;
+                float unk3<name = "Unknown">;
+                int unk4<name = "Unknown">;                
+                byte unkibunki[4]<name = "Unknown">;
+                int unkflag4<name = "Unknown Flag">;
+            }unkstr1<name = "Unknown Structure 1">;
+            
+            struct Metaball
+            {
+                float metaballRate<name = "Metaball Rate">;
+                rgba32 metaballColor<name = "Metaball Color">;
+                float metaballNmlRange<name = "Metaball Normal Range">;
+                float unk1<name = "Unknown">;
+                float unk2<name = "Unknown">;
+                float unk3<name = "Unknown">;
+                float metaballLtShininess<name = "Metaball Light Shininess">;
+                float metaballLtIoe<name = "Metaball Light IOE">;
+            }mtball<name = "Metaball">;
+
+            float directivityH<name = "Directivity H">;
+            float directivityV<name = "Directivity V">;
+            float directivityPower<name = "Directivity Power">;
+
+            struct UnkStructure1
+            {
+                float unk[1]<name = "Unknown">;
+            }unkStr1<name = "Unknown Structure 1">;
+
+            AnimationData animData<name = "Animation Data">;
+
+            struct UnkStr3
+            {
+                float unk[10];
+            }unkStr3<name = "Unknown Structure 3">;
+
+            vec3f minSpread<name = "Min Spread">;
+            vec3f maxSpread<name = "Max Spread">;
+
+            float unk6<name = "Unknown">;
+            float unk7<name = "Unknown">;
+            float unk8<name = "Unknown">;
+            float unk9<name = "Unknown">;
+            float unk10<name = "Unknown">;
+            float unk11<name = "Unknown">;
+            
+            struct UnkStr4
+            {
+                float unk[4];
+            }unkStr4<name = "Unknown Structure 4">;
+
+            struct UnkStr5
+            {
+                float unk[4];
+            }unkStr5<name = "Unknown Structure 5">;
+
+            float unk12<name = "Unknown">;
+
+            struct UnkStr6
+            {
+                float unk[12];
+            }unkStr6<name = "Unknown Structure 6">;
+
+            struct UnkStr7
+            {
+                float unk[15];
+            }unkStr7<name = "Unknown Structure 7">;
+
             int dataSize1<name = "Data Size 1">;
             
             //Just the header no image data
-            struct DDSHeader
-            {
-                byte header[128]<name = "Header">;
-            }ddshdr<name = "DDS Header", bgcolor = cRed>;
+            DDSHeader header<name = "DDS Header", bgcolor = cRed>;
 
-            float data1[(dataSize1 - 128) / 4]<name = "Data 1", bgcolor = cSilver>;
+            local int data1Size = (dataSize1 - 128);
+            local int chunkSize = data1Size / 6;
+            local int chunkCount = data1Size / chunkSize;
+            
+            LittleEndian();
+
+            struct Data1Chunks
+            {
+                local float chunkFloats = chunkSize / 4;
+
+                struct Data1Chunkeey
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey1
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey2
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey3
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey4
+                {
+                    rgbaf32 dat[chunkFloats / 4]<name = "Data">;
+                }dat1Chnk<name = "Color Animation Curve">;
+
+                struct Data1Chunkeey5
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+            }dat1Chunks<name = "Data1 Chunks", bgcolor = cSilver>;
+            
+            BigEndian();
+            
             byte textureCount<name = "Texture Count", bgcolor = cGreen>;
 
 
@@ -91,67 +216,100 @@ struct PibHeader
             }
 
             FSeek(FTell() + 3);
-            int unkCount2<bgcolor = cDkGreen>;
-
+            int ptcCount<bgcolor = cDkGreen, name = "Particle Count">;
+        struct GeoVTX
+        {
+            local int l = 0;
+            
             switch(type)
             {
-               default:
-                Printf("Unknown model type %i\n", type);
-                //intentionally cause a 010 editor error
-                //serving as a breakpoint
-                local int i = 0;
-                for(i; i < 2; i++)
-                    byte bogusarray[1];
-                break;
-                              
                 case 0:
-                     byte unkDat[32 * unkCount]<name = "Unknown Data">;
+                     l = 0;
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat
+                             {
+                                 float val[32/4]<name = "Values">;
+                             }geoVtx<name = "Geo VTX Chunk">;
+                        }
                 break;
                 case 1:
-                     byte unkDat[44 * unkCount]<name = "Unknown Data">;
+                     l = 0;
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat2
+                             {
+                                 float val[44/4]<name = "Values">;
+                             }geoVtx2<name = "Geo VTX Chunk">;
+                        }
+                break;
                 case 2:
-                     byte unkDat[20 * unkCount]<name = "Unknown Data">;
+                     l = 0;
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat3
+                             {
+                                 float val[20/4]<name = "Values">;
+                             }geoVtx3<name = "Geo VTX Chunk">;
+                        }
                 break;
                 case 3:
-                     byte unkDat[40 * unkCount]<name = "Unknown Data">;
+                     l = 0;
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat4
+                             {
+                                 float val[40/4]<name = "Values">;
+                             }geoVtx4<name = "Geo VTX Chunk">;
+                        }
                 break;
                 case 4:
-                     byte unkDat[52 * unkCount]<name = "Unknown Data">;
+                     l = 0;
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat5
+                             {
+                                 float val[52/4]<name = "Values">;
+                             }geoVtx5<name = "Geo VTX Chunk">;
+                        }
                 break;
                 case 5:
-                     byte unkDat[28 * unkCount]<name = "Unknown Data">;
+                     l = 0;
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat6
+                             {
+                                 float val[28/4]<name = "Values">;
+                             }geoVtx6<name = "Geo VTX Chunk">;
+                        }
                 break;
             }
-
+        }geoVtx<name = "Geo VTX">;
 
             if(emitterType == 0)
             {
                 struct model
                 {
                     local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = (36 * unkCount2) * 4;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
+                    local uint k = 0;                    
 
-                    local uint counter = 0;              
-                }mdl<name = "Model", bgcolor = cDkGreen>;
+                    for(k; k < ptcCount; k++)
+                        ModelParticle modelChunk<name = "Particle">;
+            
+                }mdl<name = "Model Particles", bgcolor = cDkGreen>;
             }
             else if(emitterType == 1)
             {
-
                 struct billboard
                 {
                     local uint unkDat1Start = FTell();
 
                     local uint k = 0;
 
-                    for(k; k < unkCount2; k++)
-                       struct BillboardChunk
-                       {
-                            byte data[128]<name = "Data">;
-                       }billChunk<name = "Billboard Chunk">;
+                    for(k; k < ptcCount; k++)
+                        BillboardParticle billChunk<name = "Particle">;
                    
-                }billb<name = "Billboard", bgcolor = cDkGreen>;
+                }billb<name = "Billboard Particles", bgcolor = cDkGreen>;
             }
             
                        

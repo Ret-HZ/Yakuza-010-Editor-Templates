@@ -1,3 +1,13 @@
+struct DDSHeader
+{
+    char Magic[4];
+    int dwSize;
+    int dwFlags;
+    int textureFormat<name = "Texture Format">;
+    int textureFormat2<name = "Texture Format 2">;
+    byte unk1[108];
+};
+
 struct vec2f
 {
    float x<name = "x">;
@@ -33,4 +43,292 @@ struct rgba32
    ubyte g<name = "G">;
    ubyte b<name = "B">;
    ubyte a<name = "A">;   
+};
+
+struct rgbaf32
+{
+    float r<name = "R">;
+    float g<name = "G">;
+    float b<name = "B">;
+    float a<name = "A">;
+};
+
+struct v45EmitterFlag0
+{
+byte GLOBAL_AXIS : 1<name="GLOBAL_AXIS">;
+byte  EMITTER_COLOR_ANIM : 1<name="EMITTER_COLOR_ANIM">;
+byte  PTC_SRC_ANIM : 1<name="PTC_SRC_ANIM">;
+byte  COLOR_ANIM : 1<name="COLOR_ANIM">;
+byte  UV_ANIM : 1<name="UV_ANIM">;
+byte  AXIS_ANIM : 1<name="AXIS_ANIM">;
+byte  BILLBOARD : 1<name="BILLBOARD">;
+byte  MESH_VAT : 1<name="MESH_VAT">;
+byte  LOOP : 1<name="LOOP">;
+byte  USE_NORMAL : 1<name="USE_NORMAL">;
+byte  X_AXIS_NBB : 1<name="X_AXIS_NBB">;
+byte  GLARE : 1<name="GLARE">;
+byte  SOFT_PTC : 1<name="SOFT_PTC">;
+byte  SHELTER : 1<name="SHELTER">;
+byte  POINT_LIGHT : 1<name="POINT_LIGHT">;
+byte  WRITE_Z : 1<name="WRITE_Z">;
+byte  TRIANGLE_LIST : 1<name="TRIANGLE_LIST">;
+byte  METABALL : 1<name="METABALL">;
+byte  METABALL_B : 1<name="METABALL_B">;
+byte  METABALL_R : 1<name="METABALL_R">;
+byte  METABALL_E : 1<name="METABALL_E">;
+byte  METABALL_A_THRESHOLD_01 : 1<name="METABALL_A_THRESHOLD_01">;
+byte  METABALL_WORK_X4 : 1<name="METABALL_WORK_X4">;
+byte  METABALL_HEIGHT_FLAT_USE : 1<name="METABALL_HEIGHT_FLAT_USE">;
+byte  METABALL_TEX_FORMAT_L8 : 1<name="METABALL_TEX_FORMAT_L8">;
+byte  PTC_BB : 1<name="PTC_BB">;
+byte  PTC_BB_Y : 1<name="PTC_BB_Y">;
+byte  NO_EXTRA_COLOR : 1<name="NO_EXTRA_COLOR">;
+byte  SMALL_BUF : 1<name="SMALL_BUF">;
+byte  ALWAYS : 1<name="ALWAYS">;
+byte  COLOR_ANIM_MULTIPLE : 1<name="COLOR_ANIM_MULTIPLE">;
+byte  unk : 1<name="ALWAYS">;
+};
+
+
+
+struct v52EmitterFlag0
+{
+byte GLOBAL_AXIS : 1<name="GLOBAL_AXIS">;
+byte  EMITTER_ANIM : 1<name="EMITTER_ANIM">;
+byte  EMITTER_COLOR_ANIM : 1<name="EMITTER_COLOR_ANIM">;
+byte  PTC_SRC_ANIM : 1<name="PTC_SRC_ANIM">;
+byte  COLOR_ANIM : 1<name="COLOR_ANIM">;
+byte  UV_ANIM : 1<name="UV_ANIM">;
+byte  AXIS_ANIM : 1<name="AXIS_ANIM">;
+byte  BILLBOARD : 1<name="BILLBOARD">;
+byte  MESH_VAT : 1<name="MESH_VAT">;
+byte  LOOP : 1<name="LOOP">;
+byte  USE_NORMAL : 1<name="USE_NORMAL">;
+byte  X_AXIS_NBB : 1<name="X_AXIS_NBB">;
+byte  GLARE : 1<name="GLARE">;
+byte  SOFT_PTC : 1<name="SOFT_PTC">;
+byte  SHELTER : 1<name="SHELTER">;
+byte  POINT_LIGHT : 1<name="POINT_LIGHT">;
+byte  WRITE_Z : 1<name="WRITE_Z">;
+byte  TRIANGLE_LIST : 1<name="TRIANGLE_LIST">;
+byte  METABALL : 1<name="METABALL">;
+byte  METABALL_B : 1<name="METABALL_B">;
+byte  METABALL_R : 1<name="METABALL_R">;
+byte  METABALL_E : 1<name="METABALL_E">;
+byte  METABALL_A_THRESHOLD_01 : 1<name="METABALL_A_THRESHOLD_01">;
+byte  METABALL_WORK_X4 : 1<name="METABALL_WORK_X4">;
+byte  METABALL_HEIGHT_FLAT_USE : 1<name="METABALL_HEIGHT_FLAT_USE">;
+byte  METABALL_TEX_FORMAT_L8 : 1<name="METABALL_TEX_FORMAT_L8">;
+byte  PTC_BB : 1<name="PTC_BB">;
+byte  PTC_BB_Y : 1<name="PTC_BB_Y">;
+byte  NO_EXTRA_COLOR : 1<name="NO_EXTRA_COLOR">;
+byte  SMALL_BUF : 1<name="SMALL_BUF">;
+byte  ALWAYS : 1<name="ALWAYS">;
+byte  COLOR_ANIM_MULTIPLE : 1<name="COLOR_ANIM_MULTIPLE">;
+byte  PROJECITON : 1<name="PROJECITON">;
+byte  MESH : 1<name="MESH">;
+short undef1<hidden = true>;
+byte undef2<hidden = true>;
+};
+enum <uint64> v52EmitterFlag1
+{
+  eFLG_FLOW = 1 << 0x0,
+  eFLG_DRAW_SHADOW = 1 << 0x1,
+  eFLG_METABALL_HIGH_LIGHT = 1 << 0x2,
+  eFLG_FIX_AXIS = 1 << 0x3,
+  eFLG_ALPHA_THRESHOLD = 1 <<  0x4,
+  eFLG_SHADOW = 1 << 0x5,
+  eFLG_NEAR_FADE = 1 <<  0x6,
+  eFLG_VTX_QUAD = 1 <<  0x7,
+  eFLG_COLOR_BLEND_MULTIPLE = 1 << 0x8,
+  eFLG_SORT = 1 <<  0x9,
+  eFLG_BLUR = 1 <<  0xA,
+  eFLG_ATTENUATION_SPEED = 1 << 0xB,
+  eFLG_ATTENUATION_SPEED_MINUS = 1 << 0xC,
+  eFLG_COLLISION = 1 << 0xD,
+  eFLG_SCALE_ANIM_MULTIPLE = 1 << 0xE,
+  eFLG_CHECK_DRAW_MASK = 1 << 0xF,
+  eFLG_BLUR_MULTI = 1 << 0x10,
+  eFLG_VECTOR_FIELD = 1 << 0x11,
+  eFLG_VECTOR_FIELD_ANIM = 1 << 0x12,
+  eFLG_VECTOR_FIELD_LIFE = 1 << 0x13,
+  eFLG_RIBON = 1 << 0x14,
+  eFLG_TRACK = 1 << 0x15,
+  eFLG_TRACK_CROSS = 1 << 0x16,
+  eFLG_TRACK_OVERWRITE = 1 << 0x17,
+  eFLG_TRACK_NOISE = 1 << 0x18,
+  eFLG_CURL_NOISE = 1 << 0x19,
+  eFLG_TIME_FADE = 1 << 0x1A,
+  eFLG_GATHER = 1 << 0x1B,
+};
+
+
+
+enum <uint64> v52EmitterFlag2
+{
+  eFLG_LIGHTING_ONESHOT = 1 << 0x0,
+  eFLG_LIGHTING_G_BUFFER = 1 << 0x1,
+  eFLG_LIGHTING_COLOR = 1 << 0x2,
+  eFLG_LIGHTING_COLOR_ALL = 1 << 0x3,
+  eFLG_LIGHTING_COLOR6 = 1 << 0x4,
+  eFLG_LIGHTING_COLOR6_ALL = 1 << 0x5,
+  eFLG_LIGHTING_PIXEL = 1 << 0x6,
+  eFLG_LIGHTING_VOLUME = 1 <<  0x7,
+  eFLG_LIGHTING_UI = 1 << 0x8,
+  eFLG_LIGHTING_GLASS = 1 << 0x9,
+  eFLG_LIGHTING_EMISSIVE_CURVE_RGB = 1 << 0xA,
+  eFLG_LIGHTING_EMISSIVE_CURVE_A = 1 << 0xB,
+  eFLG_LIGHTING_EMISSIVE_TEX_A  = 1 << 0xC,
+  eFLG_TEX_B_MODULATE = 1 << 0xD,
+  eFLG_TEX_B_ADD = 1 << 0xE,
+  eFLG_TEX_B_NORMAL_LIGHT = 1 << 0xF,
+  eFLG_TEX_B_NORMAL_REFRACTION = 1 << 0x10,
+  eFLG_TEX_A2_MODULATE = 1 << 0x11,
+  eFLG_TEX_A2_ADD = 1 <<  0x12,
+  eFLG_TEX_A2_NORMAL_LIGHT =1 << 0x13,
+  eFLG_TEX_A2_MULTI_STAGE = 1 << 0x14,
+  eFLG_TEX_A2_MULTI_CHARA = 1 << 0x15,
+  eFLG_TEX_A2_FLOW = 1 <<  0x16,
+  eFLG_TEX_REFLECTION = 1 <<  0x17,
+  eFLG_STAGE_REFLECTION = 1 <<  0x18,
+  eFLG_TEX_A1_WRAP_CLAMP = 1 << 0x19,
+  eFLG_TEX_B1_WRAP_CLAMP = 1 << 0x1A,
+  eFLG_TEX_A2_WRAP_CLAMP = 1 <<  0x1B,
+  eFLG_TEX_A_PATTERN_BLEND = 1 << 0x1C,
+  eFLG_TEX_B_PATTERN_BLEND = 1 << 0x1D,
+  eFLG_TEX_A2_PATTERN_BLEND = 1 << 0x1E,
+  eFLG_VAT_TYPE_FLUID = 1 <<  0x1F,
+  eFLG_VAT_TYPE_SOFT = 1 <<  0x20,
+  eFLG_VAT_FRAME_LOOP = 8589934592,
+  eFLG_BILLBOARD_AXIS_X = 17179869184,
+  eFLG_BILLBOARD_AXIS_Y = 34359738368,
+  eFLG_BILLBOARD_AXIS_Z = 68719476736,
+  eFLG_TEX_A_PATTERN_ONESHOT = 137438953472,
+  eFLG_TEX_B_PATTERN_ONESHOT = 274877906944,
+  eFLG_TEX_A2_PATTERN_ONESHOT = 549755813888,
+  eFLG_RIM_BLEND = 1099511627776,
+};
+
+struct BillboardParticle
+{
+    vec3f offset<name = "Offset">;
+    float start<name = "Start (Ticks)">;
+    vec3f movedir<name = "Movement">;
+    rgba32 color<name = "Color">;
+    float dat2[12/4]<name = "Unknown Data">;
+    float lifetime<name = "Lifetime (Ticks)">;
+    float dat3[28/4]<name = "Unknown Data">;
+    float timeScale<name = "Time Scale", comment = "The frequency at which the particle updates itself">;
+    float dat6[16/4]<name = "Unknown Data">;
+    vec2f Scale<name = "Scale">;
+    float dat4[8/4]<name = "Unknown Data">;
+    vec2f unknown<name = "Unknown">;
+    float dat5[8/4]<name = "Unknown Data">;
+};
+
+struct BillboardParticleV29Demo
+{
+    vec3f offset<name = "Offset">;
+    float start<name = "Start (Ticks)">;
+    vec3f movedir<name = "Movement">;
+    rgba32 color<name = "Color">;
+    byte dat2[12]<name = "Unknown Data">;
+    float lifetime<name = "Lifetime (Ticks)">;
+    byte dat3[28]<name = "Unknown Data">;
+    float timeScale<name = "Time Scale", comment = "The frequency at which the particle updates itself">;
+    byte dat6[24]<name = "Unknown Data">;
+    byte dat4[8]<name = "Unknown Data">;
+    vec2f scale<name = "Scale">;
+    byte dat5[8]<name = "Unknown Data">;
+    vec2f unknown<name = "Unknown">;
+    byte dat7[8]<name = "Unknown Data">;
+};
+
+struct BillboardParticleV29
+{
+    vec3f offset<name = "Offset">;
+    float start<name = "Start (Ticks)">;
+    vec3f movedir<name = "Movement">;
+    rgba32 color<name = "Color">;
+    byte dat2[12]<name = "Unknown Data">;
+    float lifetime<name = "Lifetime (Ticks)">;
+    float dat3[12/4]<name = "Unknown Data">;
+    float unkTimescale<name = "Unknown Timescale Value">;
+    float dat8[3]<name = "Unknown Data">;
+    float timeScale<name = "Time Scale", comment = "The frequency at which the particle updates itself">;
+    byte dat4[16]<name = "Unknown Data">;
+    byte dat5[16]<name = "Unknown Data">;
+    vec2f Scale<name = "Scale">;
+    byte dat6[8]<name = "Unknown Data">;
+    vec2f unknown<name = "Unknown">;
+    byte dat7[8]<name = "Unknown Data">;
+};
+
+struct ModelParticle
+{
+    vec4f unkVec;
+    vec3f unkField;
+    rgba32 color<name = "Color">;
+    byte dat2[12]<name = "Unknown Data">;
+    float lifetime<name = "Lifetime (Ticks)">;
+    byte dat3[28]<name = "Unknown Data">;
+    float dat4[5]<name = "Unknown Data">;
+    vec3f Scale<name = "Scale">;
+    float dat6[20/4]<name = "Unknown Data">;
+    float unk[16/4];
+};
+
+
+struct ModelParticleV29
+{
+    vec4f unkVec;
+    vec3f unkField;
+    rgba32 color<name = "Color">;
+    byte dat2[12]<name = "Unknown Data">;
+    float lifetime<name = "Lifetime (Ticks)">;
+    byte dat3[28]<name = "Unknown Data">;
+    float dat4[9]<name = "Unknown Data">;
+    vec3f scale<name = "Scale">;
+    float dat6[20/4]<name = "Unknown Data">;
+    vec3f unknown<name = "Unknown">;    
+    byte pad[4]<name = "Padding">;
+};
+
+struct Data1Chunk
+{
+    float data[64];
+};
+
+struct GeoVtxDE
+{
+    float data[11];
+};
+
+struct AnimationData
+{
+    float tickRelated1<name = "Unknown Tick Looping Related?">;
+    float tickRelated2<name = "Unknown Tick Looping Related?">;
+    float unk1<name = "Unknown Frame Related?">;
+    float unk2<name = "Unknown Frame Related?">;    
+    float textureFrames[2]<name = "Texture Frames">;
+    float textureWidths[2]<name = "Texture Widths">; 
+    
+    float unkX<name = "Unknown X">;  
+    float unkY<name = "Unknown Y">;
+};
+
+struct AnimationDataDE
+{
+    float tickRelated1<name = "Unknown Tick Looping Related?">;
+    float tickRelated2<name = "Unknown Tick Looping Related?">;
+    float unk1<name = "Unknown Frame Related?">;
+    float unk2<name = "Unknown Frame Related?">;
+    
+    float unk3[4]<name = "Texture Unknowns">;  
+    
+    float textureFrames[4]<name = "Texture Frames">;
+    float textureWidths[4]<name = "Texture Widths">;      
+    float unk4[4]<name = "Texture Unknowns">;
+    float unkX<name = "Unknown X">;  
+    float unkY<name = "Unknown Y">;      
 };

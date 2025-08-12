@@ -208,18 +208,112 @@ struct Metaball
             float rimBlendCurve<name = "Rim Blend Curve">;
             unsigned int padding3[5]<hidden = true>;
 
+            float unknown_f6[2]<name = "Unknown">;
 
-            byte unk3[344]<name = "Unknown">;
+            AnimationDataDE animData<name = "Animation Data">;
+
+            struct UnkStr2
+            {
+                float dat[17]<name = "Unknown">;
+            }unkstr2<name = "Unknown Structure 2">;
+            
+            struct UnkStr3
+            {
+                float dat[12]<name = "Unknown">;
+            }unkStr3<name = "Unknown Structure 3 (Updated)">;
+
+            struct UnkStr4
+            {
+                float dat[5]<name = "Unknown">;
+            }unkStr4<name = "Unknown Structure 4">;
+
+            float unk3<name = "Unknown">;
+            float unk4<name = "Unknown">;
+            float unk5<name = "Unknown">;
+            float unk6<name = "Unknown">;
+
+            struct UnkStr5
+            {
+                float dat[24]<name = "Unknown">;
+            }unkStr5<name = "Unknown Structure 5">;
+
             int dataSize1<name = "Data Size 1">;
             
             //Just the header no image data
-            struct DDSHeader
+            DDSHeader ddshdr<name = "DDS Header", bgcolor = cRed>;
+
+            local int data1Size = (dataSize1 - 128);
+            local int chunkSize = data1Size / 12;
+            local int chunkCount = data1Size / chunkSize;
+    
+            struct Data1Chunks
             {
-                byte header[128]<name = "Header">;
-            }ddshdr<name = "DDS Header", bgcolor = cRed>;
 
+                local float chunkFloats = chunkSize / 4;
 
-            float data1[(dataSize1 - 128) / 4]<name = "Data 1", bgcolor = cSilver>;
+                struct Data1Chunkeey
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey1
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey2
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey3
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey4
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey5
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey6
+                {
+                    rgbaf32 dat[chunkFloats / 4]<name = "Data">;
+                }dat1Chnk<name = "Color Animation Curve">;
+
+                struct Data1Chunkeey7
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey8
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey9
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey10
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey11
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+            }dat1Chunks<name = "Data1 Chunks", bgcolor = cSilver>;
+
+            //Data1Chunk data1[data1ChunkCount]<name = "Data 1", bgcolor = cSilver>;
             int textureCount<name = "Texture Count", bgcolor = cGreen>;
             int unkTextureNumbers[textureCount];
 
@@ -262,13 +356,18 @@ struct Metaball
             
             int unkCount2<bgcolor = cDkGreen>;
 
-            switch(blend)
+            struct GeoVTX
             {
-               default:
-                     byte unkDat[44 * geoVtxCount]<name = "Unknown Data">;
-                break;
+                switch(blend)
+                {
+                    default:
+                    local int i = 0;
 
+                    for(i; i < geoVtxCount; i++)
+                        GeoVtxDE geoVtx<name = "Geo VTX Chunk">;
+                    break;
             }
+            }geoVtx<name = "Geo VTX">;
 
             if(emitterType == 0)
             {
@@ -292,12 +391,8 @@ struct Metaball
                 {
                     local uint unkDat1Start = FTell();
                     local uint unkDat1Size = 144 * unkCount2;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
 
-                    if(blend == 0)
-                        byte unkyDat_v29[144];
-
+                    BillboardParticleV29 BillboardParticles[unkCount2]<name = "Particles">;
                     local uint counter = 0;
                   
                 }billb<name = "Billboard", bgcolor = cDkGreen>;

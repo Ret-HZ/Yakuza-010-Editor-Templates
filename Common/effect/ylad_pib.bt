@@ -74,9 +74,9 @@ struct PibHeader
     {
         struct Emitter
         {   
-            uint64 flags<name = "Flags">;
-            uint64 flags2<name = "Flags">;
-            uint64 flags3<name = "Flags">;
+            v52EmitterFlag0 flags<name = "Flags">;
+            v52EmitterFlag1 flags2<name = "Flags">;
+            v52EmitterFlag2 flags3<name = "Flags">;
             byte blend<name = "Blend">;
             byte geoVertex<name = "Geometry Vtx">;
             byte insVtx<name = "Ins Vtx">;            
@@ -203,21 +203,103 @@ struct PibHeader
             float rimBlendCurve<name = "Rim Blend Curve">;
             unsigned int padding2[5]<hidden = true>;
 
-            byte unk3[336]<name = "Unknown">;
+            AnimationDataDE animData<name = "Animation Data">;
+
+            struct UnkStr2
+            {
+                float dat[10]<name = "Unknown">;
+            }unkstr2<name = "Unknown Structure 2">;
+
+            vec3f minSpread<name = "Min Spread">;
+            vec3f maxSpread<name = "Max Spread">;
+            
+            float unk1<name = "Unknown">;
+            
+            struct UnkStr3
+            {
+                float dat[12]<name = "Unknown">;
+            }unkStr3<name = "Unknown Structure 3 (Updated)">;
+
+            struct UnkStr4
+            {
+                float dat[5]<name = "Unknown">;
+            }unkStr4<name = "Unknown Structure 4">;
+
+            float unk3<name = "Unknown">;
+            float unk4<name = "Unknown">;
+            float unk5<name = "Unknown">;
+            float unk6<name = "Unknown">;
+
+            struct UnkStr5
+            {
+                float dat[24]<name = "Unknown">;
+            }unkStr5<name = "Unknown Structure 5">;
+
             int dataSize1<name = "Data Size 1">;
             
             //Just the header no image data
-            struct DDSHeader
+            DDSHeader ddshdr<name = "DDS Header", bgcolor = cRed>;
+
+
+            local int data1Size = (dataSize1 - 128);
+            local int chunkSize = data1Size / 8;
+            local int chunkCount = data1Size / chunkSize;
+    
+            struct Data1Chunks
             {
-                byte header[128]<name = "Header">;
-            }ddshdr<name = "DDS Header", bgcolor = cRed>;
+                local float chunkFloats = chunkSize / 4;
+
+                struct Data1Chunkeey
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey1
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey2
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey3
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+
+                struct Data1Chunkeey4
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+                
+                struct Data1Chunkeey5
+                {
+                    float dat[chunkFloats]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+               
+                 struct Data1Chunkeey6
+                {
+                    rgbaf32 dat[chunkFloats / 4]<name = "Data">;
+                }dat1Chnk<name = "Color Animation Curve">;
+
+                struct Data1Chunkeey7
+                {
+                    rgbaf32 dat[chunkFloats / 4]<name = "Data">;
+                }dat1Chnk<name = "Chunk">;
+            }dat1Chunks<name = "Data1 Chunks", bgcolor = cSilver>;
 
 
-            float data1[(dataSize1 - 128) / 4]<name = "Data 1", bgcolor = cSilver>;
             int textureCount<name = "Texture Count", bgcolor = cGreen>;
             int unkTextureNumbers[textureCount];
 
-            local byte emitterType = GetEmitterType(flags);
+            local byte emitterType;
+
+            if(flags.BILLBOARD != 1)
+                emitterType = 0;
+            else
+                emitterType = 1;
 
 
             local int texI = 0;
@@ -230,7 +312,7 @@ struct PibHeader
                 }texy<name = name, bgcolor = cGreen>;
             }
 
-            FSeek(FTell() + 4);
+            FSeek(FTell());
 
 
             byte unkSection_v52[36 * textureCount];
@@ -242,13 +324,24 @@ struct PibHeader
                 {
                     char name[36]<name = "TextureName">;
                 }texy<name = name, bgcolor = cGreen>;               
-
-            int unkCount2<bgcolor = cDkGreen>;
+    
+            FSeek(FTell()+4);
+            int ptcCount<bgcolor = cDkGreen>;
 
             switch(blend)
             {
                 default:
-                     byte unkDat[44 * geoVtxCount]<name = "Unknown Data">;
+                     l = 0;
+                     struct GeoVTX
+                     {
+                        for(l = 0; l < geoVtxCount; l++)
+                        {
+                             struct geoVtxDat
+                             {
+                                 float val[44 /4]<name = "Values">;
+                             }geoVtx<name = "Geo VTX Chunk">;
+                        }
+                     }geoVtxHold<name = "Geo VTX">;
                 break;                              
             }
 
@@ -257,33 +350,25 @@ struct PibHeader
             {
                 struct model
                 {
-                    local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = 160 * unkCount2;
-                    byte unkDat1[unkDat1Size];
-                   // int  unkDat2Size;
-                   // int  unkDat2Size2;
-                    
-                    if(blend == 0)
-                        byte unkyDat_v29[144];
+                    local uint k = 0;
+
+                    for(k; k < ptcCount; k++)
+                        ModelParticleV29 modelChunk<name = "Particle">;
                    
                 }mdl<name = "Model", bgcolor = cDkGreen>;
             }
             else if(emitterType == 1)
             {
-
                 struct billboard
                 {
                     local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = 144 * unkCount2;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
 
-                    if(blend == 0)
-                        byte unkyDat_v29[144];
+                    local uint k = 0;
 
-                    local uint counter = 0;
-                  
-                }billb<name = "Billboard", bgcolor = cDkGreen>;
+                    for(k; k < ptcCount; k++)
+                        BillboardParticleV29 billChunk<name = "Particle">;
+                   
+                }billb<name = "Billboard Particles", bgcolor = cDkGreen>;
             }
             
                        

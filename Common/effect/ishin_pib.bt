@@ -28,18 +28,27 @@ struct Header
 struct PibHeader
 {
     int pibID<name = "PIB ID">;
-    int texCount<name = "Emitter Count">;
+    int emitterCount<name = "Emitter Count">;
     int pibLength<name = "PIB Duration (In Ticks)">;
-    int unk1<name="Unknown">;
-    float speed<name = "Speed?", comment = "I think it's safe to assume a float variable this close to the beginning is the speed.">;
-    float unk2<name = "Unknown">;
-    float unk3<name = "Unknown">;
-    byte unk4[4]<name = "Unknown Fields">;
-    int unk5<name = "Unknown">;
+    int durationOffset<name="Duration Offset">;
+    float speed<name = "Speed">;
+    float forwardOffset<name = "Forward Offset">;
+    float maxIntensity<name = "Max Intensity">;
+    float radius<name = "Radius">;
+    float range<name = "Range">;
 
-    float unkFloats[130]<name = "Unknown Floats">;
+    struct ColAnim
+    {
+        float colAnimR[32]<name = "Color R Animation">;
+        float colAnimG[32]<name = "Color G Animation">;
+        float colAnimB[32]<name = "Color B Animation">;
+        float colAnimI[32]<name = "Intensity Animation">;
+    }colAnim<name = "Color Animation">;
 
-    int unk6<name = "Unknown">;
+    float unkf1<name = "Unknown">;
+    float unkf2<name = "Unknown">;
+
+    uint flags<name = "Flags">;
 
     matrix4x4 baseMtx<name = "Base Matrix">;
     vec3f unkVec<name = "Scale?">;
@@ -50,18 +59,80 @@ struct PibHeader
 
 
     //temporarily exec once
-    for(i = 0; i < texCount; i++)
+    for(i = 0; i < emitterCount; i++)
     {
         struct Emitter
         {   
-            uint flags<name = "Flags?", comment = "Seems to be used to determine type of emitter, Model or Billboard">;
-            byte unk1[8]<name = "Unknown">;
+            uint flags<name = "Flags">;
+            uint flags2<name = "Flags">;
+            uint flags3<name = "Flags">;
             byte unkbyte<name = "Unknown">;
             byte type<name = "Type">;
-            byte padding1[2]<hidden = true>;
-            byte unk2[36]<name = "Unknown">;
-            int unkCount<name = "Unknown Count">;
-            byte unk3[344]<name = "Unknown">;
+            byte padding1[14]<hidden = true>;
+            
+            vec3f aaBoxCenter<name = "AA Box Center">;
+            vec3f aaBoxExtent<name = "AA Box Extent">;
+            int geoVtxCount<name = "Geometry Vertex Count">;
+
+            byte unkibunki[24]<name = "Unknown">;
+
+            struct Metaball
+            {
+                float metaballRate<name = "Metaball Rate">;
+                rgba32 metaballColor<name = "Metaball Color">;
+                float metaballNmlRange<name = "Metaball Normal Range">;
+                float unk1<name = "Unknown">;
+                float unk2<name = "Unknown">;
+                float unk3<name = "Unknown">;
+                float metaballLtShininess<name = "Metaball Light Shininess">;
+                float metaballLtIoe<name = "Metaball Light IOE">;
+            }mtball<name = "Metaball">;
+
+            float directivityH<name = "Directivity H">;
+            float directivityV<name = "Directivity V">;
+            float directivityPower<name = "Directivity Power">;
+
+            unsigned int culling<name = "Culling">;
+
+            AnimationData animData<name = "Animation Data">;
+
+            struct UnkStr3
+            {
+                float unk[10];
+            }unkStr3<name = "Unknown Structure 3">;
+
+            vec3f minSpread<name = "Min Spread">;
+            vec3f maxSpread<name = "Max Spread">;
+
+            float unk6<name = "Unknown">;
+            float unk7<name = "Unknown">;
+            float unk8<name = "Unknown">;
+            float unk9<name = "Unknown">;
+            float unk10<name = "Unknown">;
+            float unk11<name = "Unknown">;
+
+            struct UnkStr4
+            {
+                float unk[4];
+            }unkStr4<name = "Unknown Structure 4">;
+
+            struct UnkStr5
+            {
+                float unk[4];
+            }unkStr5<name = "Unknown Structure 5">;
+
+            float unk12<name = "Unknown">;
+
+            struct UnkStr6
+            {
+                float unk[12];
+            }unkStr6<name = "Unknown Structure 6">;
+
+            struct UnkStr7
+            {
+                float unk[15];
+            }unkStr7<name = "Unknown Structure 7">;
+
             int dataSize1<name = "Data Size 1">;
             
             //Just the header no image data
@@ -90,8 +161,22 @@ struct PibHeader
                 }texy<name = name, bgcolor = cGreen>;
             }
 
-            FSeek(FTell() + 8);
-            int unkCount2<bgcolor = cDkGreen>;
+            int extraTexCount<name = "Extra Texture Count">;
+
+            texI = 0;
+
+            for(texI = 0; texI < extraTexCount; texI++)
+            {
+                struct tex2
+                {
+                    char name[32]<name = "TextureName">;
+                }texy2<name = name, bgcolor = cGreen>;
+            }
+
+
+            FSeek(FTell() + 4);
+
+            int ptcCount<bgcolor = cDkGreen, name = "Particle Count">;
 
             switch(type)
             {
@@ -105,21 +190,21 @@ struct PibHeader
                 break;
                               
                 case 0:
-                     byte unkDat[32 * unkCount]<name = "Unknown Data">;
+                     byte unkDat[32 * geoVtxCount]<name = "Unknown Data">;
                 break;
                 case 1:
-                     byte unkDat[44 * unkCount]<name = "Unknown Data">;
+                     byte unkDat[44 * geoVtxCount]<name = "Unknown Data">;
                 case 2:
-                     byte unkDat[20 * unkCount]<name = "Unknown Data">;
+                     byte unkDat[20 * geoVtxCount]<name = "Unknown Data">;
                 break;
                 case 3:
-                     byte unkDat[40 * unkCount]<name = "Unknown Data">;
+                     byte unkDat[40 * geoVtxCount]<name = "Unknown Data">;
                 break;
                 case 4:
-                     byte unkDat[52 * unkCount]<name = "Unknown Data">;
+                     byte unkDat[52 * geoVtxCount]<name = "Unknown Data">;
                 break;
                 case 5:
-                     byte unkDat[28 * unkCount]<name = "Unknown Data">;
+                     byte unkDat[28 * geoVtxCount]<name = "Unknown Data">;
                 break;
             }
 
@@ -129,35 +214,11 @@ struct PibHeader
                 struct model
                 {
                     local uint unkDat1Start = FTell();
-                    local uint unkDat1Size = (36 * unkCount2) * 4;
-                    byte unkDat1[unkDat1Size];
-                    local uint unkDat1End = FTell();
-
-                    local uint counter = 0;
-                   
-                    if(unkCount2 > 0)
-                    {
-                        if(unkCount2 >= 8)
-                        {
-                            //top 3 insane moments in japanese game formats
-                            //1) whatever this is
-                            FSeek(unkDat1Start + 0x13C);
-                            local uint start = FTell();
-        
-                            do
-                            {
-	                            counter += 8;
-                            }
-                            while(counter < unkCount2 - unkCount2 % 8);
-
-
-                            local uint size = (counter / 8) * 1152;
-                            byte unkDat2[size];
-
-                            FSeek(unkDat1End);                                                    
-                        }                   
-                    }
-                }mdl<name = "Model", bgcolor = cDkGreen>;
+                    
+                    for(k; k < ptcCount; k++)
+                        ModelParticle modelChunk<name = "Particle">;
+            
+                }mdl<name = "Model Particles", bgcolor = cDkGreen>;
             }
             else if(emitterType == 1)
             {
@@ -167,12 +228,10 @@ struct PibHeader
 
                     local uint k = 0;
 
-                    for(k; k < unkCount2; k++)
-                       struct BillboardChunk
-                       {
-                            byte data[128]<name = "Data">;
-                       }billChunk<name = "Billboard Chunk">;                 
-                }billb<name = "Billboard", bgcolor = cDkGreen>;
+                    for(k; k < ptcCount; k++)
+                        BillboardParticle billChunk<name = "Particle">;
+                   
+                }billb<name = "Billboard Particles", bgcolor = cDkGreen>;
             }
             
                        
