@@ -1,0 +1,95 @@
+//------------------------------------------------
+//--- 010 Editor v15.0.1 Binary Template
+//
+//      File: votb
+//   Authors: Jhrino
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct Header
+{
+    LittleEndian();
+    char magic[4]<name = "Magic">;
+    int endian<name = "Endian">;
+    int unknown<name = "Unknown">;
+    int padding<name = "Padding">;
+        BigEndian();
+    int soundCategoryCount<name = "Sound Category Count">;
+    int voicerCount<name = "Voicer Count">;
+    int padding2[2]<name = "Padding">;
+    
+    struct Categories
+    {
+        local int i = 0;
+        
+        for(i; i < soundCategoryCount; i++)
+        {
+            struct SoundCategory
+            {
+                int pointer<name = "Pointer">;
+                local int pos = FTell();
+                FSeek(pointer);
+                int soundCount<name = "Sound Count">;
+                int headerUnknown[3]<name = "Unknown Header">;
+                
+                struct Test
+                {
+                    int thing;
+                    int thing2;
+                };
+                
+                if(soundCount <= 0)
+                {
+                    byte dummyData[4 * voicerCount]<name = "Dummy Data">;
+                    FSeek(pos);
+                    return;
+                }
+                
+                
+                Test hmm[soundCount]<name = "Unknown">;
+                
+                
+                
+                local int k = 0;
+                local int pos2 = 0;
+              
+                for(k; k < voicerCount; k++)
+                {
+                    struct Voicer
+                    {
+                        int soundIDPointer<name = "Sound ID Pointer">;
+                        
+                        if(soundIDPointer <= 0)
+                            return;
+                            
+                        pos2 = FTell();
+                        
+                        FSeek(soundIDPointer);
+                        struct Sounds
+                        {
+                            local int j=0;
+                            
+                            for(j; j < soundCount; j++)
+                            {      
+                                struct Sound
+                                {
+                                    short soundID<name = "Sound ID", format=hex>;
+                                    short soundUnk<name = "Sound Unknown">;
+                                }sounds<name = Str("Sound %x ID %i", soundID, soundUnk)>;
+                            }
+                        }sounds<name = "Sound Table">;
+                        
+                        FSeek(pos2);
+                    }voicer <name = "Voicer">;
+                    
+                }
+
+                FSeek(pos);
+            }scategory<name = "Sound Category", bgcolor=cGreen>;
+        }
+    }categories<name = "Sound Categories", bgcolor=cGreen>;
+}hdr<name = "Header", bgcolor=cRed>;

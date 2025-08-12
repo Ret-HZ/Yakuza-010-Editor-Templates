@@ -1,0 +1,73 @@
+//------------------------------------------------
+//--- 010 Editor v15.0.1 Binary Template
+//
+//      File: VCRB
+//   Authors: Jhrino
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct header
+{
+    char magic[4]<name = "Magic">;
+    int endian<name = "Endian">;
+    int unknown<name = "Unknown">;
+    int padding<name = "Padding">;
+    
+    int voicersCount<name = "Voicers Count">;
+    int unk1Ptr<name = "Voicer Setting Pointer?">;
+    int unk2Ptr<name = "Unknown Region Pointer">;
+    int voicerNamesPtr<name = "Voicer Names Pointer">;
+    
+    FSeek(voicerNamesPtr);
+    
+    struct VoicerNames
+    {
+        local int i = 0;
+        for(i; i < voicersCount; i++)
+        {
+            struct VoicerName
+            {
+                int ptr<name = "Pointer">;
+                local int pos = FTell();
+                FSeek(ptr);
+                string name;
+                FSeek(pos);
+            }vcrName<name = name>;
+        }
+    }voicerNames<name = "Voicer Names", bgcolor=cYellow>;
+    
+    struct UnknownRegion
+    {
+        local int i = 0;
+        
+        for(i; i < voicersCount; i++)
+        {
+            struct UnkData
+            {
+                local string name = voicerNames.vcrName[i].name;
+                int unknownValue<name = "Unknown Value">;
+            }unkData<name = name, bgcolor =cGreen>;
+        }
+        
+    }unkReg<name = "Unknown Region", comment="All zeroes">;
+    
+    FSeek(unk1Ptr);
+    
+    struct VoicerSettings
+    {
+        local int i = 0;
+        
+        for(i; i < voicersCount; i++)
+        {
+            struct VoicerSetting
+            {
+                local string name = voicerNames.vcrName[i].name;
+                byte data[80];
+            }vcrSetting<name = name, bgcolor=cSilver>;
+        }
+    }unk1<name = "Voicer Settings?">;
+}hdr<name = "Header", bgcolor=cRed>;
