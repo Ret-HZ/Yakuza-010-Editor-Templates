@@ -54,3 +54,9 @@ enum<int> LocationID
     Destination_Set = 6,
     Eatery_Unused = 7,
 };
+
+enum<int> StageID
+{
+    ST_KAMURO = 0,
+    ST_OSAKA = 1,
+};

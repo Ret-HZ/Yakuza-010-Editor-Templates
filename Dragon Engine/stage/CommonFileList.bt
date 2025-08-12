@@ -2,14 +2,15 @@
 //--- 010 Editor v11.0.1 Binary Template
 //
 //      File: common_file_list.dat
-//   Authors: Capitán Retraso
-//   Version: 1.00
+//   Author: Capitán Retraso
+//   Version: 2.00
 //   Purpose: Parse SCFL files
 //  Category: File Format
 // File Mask: *.dat
 //  ID Bytes: 53 43 46 4C
 //   History
 //   1.00     2020-12-06  Capitán Retraso - Start 
+//   2.00     2021-12-29      OnoMichio - Support for Dragon Engine 2.0 (Y7/LJ) Magics
 //------------------------------------------------
 
 LittleEndian();
@@ -101,7 +102,7 @@ struct MDSM {
 
 struct MDAE {
     char magic[4] <name="Magic">;
-    uint32 num <name="Amount of ?? files">;
+    uint32 num <name="Amount of animated model (.gmd) files">;
     uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
     if (num > 0){
         LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x1e0060>;
@@ -111,7 +112,7 @@ struct MDAE {
 
 struct MDAM {
     char magic[4] <name="Magic">;
-    uint32 num <name="Amount of ?? files">;
+    uint32 num <name="Amount of .gmt files">;
     uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
     if (num > 0){
         LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x32a87f>;
@@ -131,7 +132,7 @@ struct MDMR {
 
 struct MDTR {
     char magic[4] <name="Magic">;
-    uint32 num <name="Amount of ?? files">;
+    uint32 num <name="Amount of .gmd files">;
     uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
     if (num > 0){
         LIST_ENTRIES entries(num) <name="Entries", bgcolor=0xa86d32>;
@@ -189,6 +190,46 @@ struct MGDM{
 };
 
 
+struct MAES{
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x143cdb>;
+    };
+};
+
+
+struct MAMS{
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of ?? files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x143cdb>;
+    };
+};
+
+
+struct PRAC{
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of tex_archive_*_auto_cv_*.par files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x143cdb>;
+    };
+};
+
+
+struct PAOL{
+    char magic[4] <name="Magic">;
+    uint32 num <name="Amount of archive_ocl.par files">;
+    uint32 ptr <name="Pointer to list start", comment="pointer = First Entry - 0x10">;
+    if (num > 0){
+        LIST_ENTRIES entries(num) <name="Entries", bgcolor=0x143cdb>;
+    };
+};
+
+
 struct MAIN_TABLE {
     uchar revision <name="Revision">;
     FSkip(1);
@@ -198,15 +239,19 @@ struct MAIN_TABLE {
     DECL decl <name="DECL (.gct files)", comment="Collisions">;
     TXAL txal <name="TXAL (?? files)", comment="Unknown">;
     MDSY mdsy <name="MDSY (.gmd files)", comment="Background Models">;
-    OCCL occl <name="OCCL (.ocl files)", comment="Unknown">;
+    OCCL occl <name="OCCL (.ocl files)", comment="Occlusion file">;
     MDSM mdsm <name="MDSM (.gmd files)", comment="ShadowMap Models (_sdm suffix)">;
-    MDAE mdae <name="MDAE (?? files)", comment="Unknown">;
-    MDAM mdam <name="MDAM (?? files)", comment="Unknown">;
+    MDAE mdae <name="MDAE (.gmd files)", comment="ANiMated Models (_anm suffix)">;
+    MDAM mdam <name="MDAM (.gmt files)", comment="Motion files loaded in conjuction with MDAE (_anm suffix)">;
     MDMR mdmr <name="MDMR (?? files)", comment="Unknown">;
-    MDTR mdtr <name="MDTR (?? files)", comment="Unknown">;
-    MDSW mdsw <name="MDSW (.swt files)", comment="Unknown">;
-    PACL pacl <name="PACL (sct.par files)", comment="sct.par (This file is needed for the map to load)">;
+    MDTR mdtr <name="MDTR (.gmd files)", comment="Tree models (?) - _tre suffix">;
+    MDSW mdsw <name="MDSW (.swt files)", comment="Settings for MDTR (? - suffixed with _tre)">;
+    PACL pacl <name="PACL (sct.par files)", comment="sct.par (or archive_*_sct.par in 2.0. This file is needed for the map to load)">;
     PAAT paat <name="PAAT (.par files)", comment="Texture .par files">;
     MGDS mgds <name="MGDS (?? files)", comment="Unknown">;
     MGDM mgdm <name="MGDM (?? files)", comment="Unknown">;
+    MAES maes <name="MAES (?? files)", comment="Unknown">;
+    MAMS mams <name="MAMS (?? files)", comment="Unknown">;
+    PRAC prac <name="PRAC (.par files)", comment="Tex Auto CV .par files">;
+    PAOL paol <name="PAOL (.par files)", comment="Occlusion Archive - stores all OCCL files into one par - generally only used on more larger stages">;
 } main_table <name="Main Table", bgcolor=cLtYellow>;

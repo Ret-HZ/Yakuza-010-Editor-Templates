@@ -26,14 +26,11 @@ int ptrExtraData <name="Pointer to Extra Data", comment="TO DO", bgcolor=0x00ced
 int ptrTaxiData <name="Pointer to Taxi Data", bgcolor=0x00fbff>;
 int ptrText_Header <name="Pointer to Text (Header)", bgcolor=0x3ba0ff>;
 int ptrText_Body <name="Pointer to Text (Body)", bgcolor=0x004dde>;
-int unknown3 <name="Unknown", bgcolor=0xa3a3a3>;
+StageID stageID <name="Stage", bgcolor=0xa3a3a3>;
 int unknown4 <name="Unknown", bgcolor=0xa3a3a3>;
 LocationID locationid <name="Location ID", comment="Only used if Icon ID = Location", bgcolor=0xd10092>;
 int unknown5 <name="Unknown", bgcolor=0xa3a3a3>;
-byte unknown6 <name="Unknown", bgcolor=0xa3a3a3>;
-byte unknown7 <name="Unknown", bgcolor=0xa3a3a3>;
-byte unknown8 <name="Unknown", bgcolor=0xa3a3a3>;
-byte unknown9 <name="Unknown", bgcolor=0xa3a3a3>;
+int hexInName <name="UID Value", bgcolor=0xa3a3a3, format=hex, comment="Hex value in file name">;
 int unknown5 <name="Unknown", bgcolor=0xa3a3a3>;
 int ptrTexture_Name <name="Pointer to Texture Name", bgcolor=0x73ff00>;
 

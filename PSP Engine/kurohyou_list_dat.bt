@@ -1,0 +1,210 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.2 Binary Template
+//
+//      File: kurohyou_list_dat.bt
+//   Authors: SutandoTsukai181
+//   Version: v1.1
+//   Purpose: Parse style LIST.dat files from Kurohyou 1 and 2
+//  Category: 
+// File Mask: LIST*.dat
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+// Struct definitions
+
+// ----------------- Kurohyou 1 structs ----------------- //
+
+typedef struct
+{
+    char Stance[12] <bgcolor=cBlue>;
+    char Block[12] <bgcolor=cRed>;
+
+    FSkip(0x90);
+    char Taunt[12] <bgcolor=cDkPurple>;
+} TDatKH1Base;
+
+typedef struct
+{
+    struct
+    {
+        char HighCombo1[12];
+        char HighCombo2[12];
+        char HighCombo3[12];
+        char HighCombo4[12];
+        char HighCombo5[12];
+    } HighCombo <bgcolor=cBlue>;
+
+    struct
+    {
+        char LowCombo1[12];
+        char LowCombo2[12];
+        char LowCombo3[12];
+        char LowCombo4[12];
+        char LowCombo5[12];
+    } LowCombo <bgcolor=cRed>;
+
+    char ForwardATK[12] <bgcolor=cDkPurple>;
+    char BackATK[12] <bgcolor=cGreen>;
+    char KneelingATK[12] <bgcolor=cYellow>;
+    char RunningATK0[12] <bgcolor=cAqua>;
+    char RunningATK1[12] <bgcolor=cAqua>;
+
+    FSkip(0x30);
+    char GetUpATK[12] <bgcolor=cSilver>;
+    
+    char DownedATK[12] <bgcolor=cPurple>;
+} TDatKH1PunchKick;
+
+typedef struct
+{
+    char Square_A[12] <bgcolor=cBlue>;
+    char Square_B[12] <bgcolor=cDkBlue>;
+
+    char Triangle_A[12] <bgcolor=cRed>;
+    char Triangle_B[12] <bgcolor=cDkRed>;
+
+    char Circle_A[12] <bgcolor=cPurple>;
+    char Circle_B[12] <bgcolor=cDkPurple>;
+
+    FSkip(0xA8);
+    char KickCounter_A[12] <bgcolor=cGreen>;
+    char KickCounter_B[12] <bgcolor=cDkGreen>;
+
+    char Chokehold_A[12] <bgcolor=cYellow>;
+    char Chokehold_B[12] <bgcolor=cDkYellow>;
+} TDatKH1Grapple;
+
+typedef struct
+{
+    char Animation_A[12];
+    char Animation_B[12];
+    char Camera[12];
+} TDatKH1HeatHact;
+
+typedef struct
+{
+    struct TDatKH1HeatHact BlueHact <bgcolor=cBlue, name="Blue Heat">;
+
+    FSkip(0x48);
+    struct TDatKH1HeatHact RedHact <bgcolor=cRed, name="Red Heat">;
+} TDatKH1Heat;
+
+typedef struct
+{
+    struct TDatKH1Base Base <name="Base">;
+
+    FSeek(0xF0);
+    struct TDatKH1PunchKick Punches <name="Punches">;
+    
+    FSeek(0x21C);
+    struct TDatKH1PunchKick Kicks <name="Kicks">;
+    
+    FSeek(0x348);
+    struct TDatKH1Grapple Grapple <name="Grapple">;
+    
+    FSeek(0x528);
+    struct TDatKH1Heat Heat <name="Heat">;
+} TDatKH1;
+
+
+// ----------------- Kurohyou 2 structs ----------------- //
+
+typedef struct
+{
+    int Stance <bgcolor=cBlue>;
+    int Block <bgcolor=cRed>;
+
+    int Unk08[12] <hidden=true>;
+
+    int Taunt <bgcolor=cDkPurple>;
+
+    int Unk3C[5] <hidden=true>;
+} TDatBase;
+
+typedef struct
+{
+    int HighCombo[20] <bgcolor=cBlue>;
+    int LowCombo[20] <bgcolor=cRed>;
+
+    int ForwardATK <bgcolor=cDkPurple>;
+    int BackATK <bgcolor=cGreen>;
+    int KneelingATK <bgcolor=cYellow>;
+    int RunningATK <bgcolor=cAqua>;
+    int RunningATK <bgcolor=cAqua>;
+
+    int UnkB4[4] <hidden=true>;
+
+    int GetUpATK <bgcolor=cSilver>;
+    int DownedATK <bgcolor=cPurple>;
+
+    int UnkCC[4] <hidden=true>;
+} TDatPunchKick;
+
+typedef struct
+{
+    int Square_A <bgcolor=cBlue>;
+    int Square_B <bgcolor=cDkBlue>;
+
+    int Triangle_A <bgcolor=cRed>;
+    int Triangle_B <bgcolor=cDkRed>;
+
+    int Circle_A <bgcolor=cPurple>;
+    int Circle_B <bgcolor=cDkPurple>;
+
+    int Unk18[14] <hidden=true>;
+
+    int KickCounter_A <bgcolor=cGreen>;
+    int KickCounter_B <bgcolor=cDkGreen>;
+
+    int Chokehold_A <bgcolor=cYellow>;
+    int Chokehold_B <bgcolor=cDkYellow>;
+
+    int Unk60[16] <hidden=true>;
+} TDatGrapple;
+
+typedef struct
+{
+    int Animation_A;
+    int Animation_B;
+    int Camera;
+} TDatHeatHact;
+
+typedef struct
+{
+    struct TDatHeatHact BlueHact <bgcolor=cBlue, name="Blue Heat">;
+    struct TDatHeatHact Unk0C[2] <hidden=true>;
+
+    struct TDatHeatHact RedHact <bgcolor=cRed, name="Red Heat">;
+    struct TDatHeatHact Unk30[13] <hidden=true>;
+
+    struct TDatHeatHact FrontWallHact <bgcolor=cDkPurple, name="Front Wall Heat">;
+    struct TDatHeatHact BackWallHact <bgcolor=cGreen, name="Back Wall Heat">;
+    struct TDatHeatHact UnkE4[6] <hidden=true>;
+} TDatHeat;
+
+// Read hashes as they are displayed in the file, for easier editing
+DisplayFormatHex();
+BigEndian();
+
+switch (FileSize())
+{
+    case 0x50:
+        struct TDatBase DAT <name="Base">;
+        break;
+    case 0xA0:
+        struct TDatGrapple DAT <name="Grapple">;
+        break;
+    case 0xDC:
+        struct TDatPunchKick DAT <name="Punch/Kick">;
+        break;
+    case 0x134:
+        struct TDatHeat DAT <name="Heat">;
+        break;
+    case 0x78C:
+        struct TDatKH1 DAT <name="Style">;
+        break;
+    default:
+        Assert(false, "Not a Kurohyou style DAT!");
+        break;
+}
