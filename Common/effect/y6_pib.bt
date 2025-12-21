@@ -137,25 +137,27 @@ struct PibHeader
 
             byte padding2[12]<hidden = true>;
 
+            AnimationDataDE animData<name = "Animation Data">;
+
             struct UnkStr1
             {
                 float unk[8];
             }unkstr1<name = "Unknown Structure 1">;
 
-            AnimationDataDE animData<name = "Animation Data">;
-
             struct UnkStr2
             {
-                float dat[8]<name = "Unknown">;
+                float dat[6]<name = "Unknown">;
             }unkstr2<name = "Unknown Structure 2">;
 
-            struct UnkStr3
-            {
-                float dat[2]<name = "Unknown">;
-            }unkStr3<name = "Unknown Structure 3">;
+            vec3f posOffset<name = "Position Offset">;
+            float posUnknown<name = "Position Unknown">;
 
-            vec3f minSpread<name = "Min Spread">;
-            vec3f maxSpread<name = "Max Spread">;
+            float minSpread<name = "Min Spread">;
+            float unk_spread_reg1<name ="Unknown">;
+            float unk_spread_reg2<name ="Unknown">;
+            float maxSpread<name = "Max Spread">;
+            float unk_spread_reg3<name = "Unknown">;
+            float gravity<name ="Gravity">;
 
             float unk1<name = "Unknown">;
 
@@ -213,7 +215,7 @@ struct PibHeader
                     float dat[chunkFloats]<name = "Data">;
                 }dat1Chnk<name = "Chunk">;
 
-            }dat1Chunks<name = "Data1 Chunks", bgcolor = cSilver>;
+            }dat1Chunks<name = "Animation Curves", bgcolor = cSilver>;
 
 
             int textureCount<name = "Texture Count", bgcolor = cGreen>;
