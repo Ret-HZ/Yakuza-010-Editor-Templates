@@ -114,9 +114,12 @@ struct PibHeader
 
             struct UnkStr3
             {
-                float unk[10];
+                float unk[6];
             }unkStr3<name = "Unknown Structure 3">;
-
+            
+            vec3f posOffset<name = "Position Offset">;
+            float posUnknown<name = "Position Unknown">;
+            
             vec3f minSpread<name = "Min Spread">;
             vec3f maxSpread<name = "Max Spread">;
 

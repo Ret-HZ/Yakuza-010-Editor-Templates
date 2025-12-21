@@ -205,21 +205,29 @@ struct PibHeader
 
             AnimationDataDE animData<name = "Animation Data">;
 
+            struct UnkStr1
+            {
+                float unk[8];
+            }unkstr1<name = "Unknown Structure 1">;
+
             struct UnkStr2
             {
-                float dat[10]<name = "Unknown">;
+                float dat[6]<name = "Unknown">;
             }unkstr2<name = "Unknown Structure 2">;
 
-            vec3f minSpread<name = "Min Spread">;
-            vec3f maxSpread<name = "Max Spread">;
-            
+            vec3f posOffset<name = "Position Offset">;
+            int pibCount2<name = "Particle Count 2">;
+
+            float minSpread<name = "Min Spread">;
+            float unk_spread_reg1<name ="Unknown">;
+            float unk_spread_reg2<name ="Unknown">;
+            float maxSpread<name = "Max Spread">;
+            float unk52[4];
+            float unk_spread_reg3<name = "Unknown">;
+            float gravity<name ="Gravity">;
+
             float unk1<name = "Unknown">;
             
-            struct UnkStr3
-            {
-                float dat[12]<name = "Unknown">;
-            }unkStr3<name = "Unknown Structure 3 (Updated)">;
-
             struct UnkStr4
             {
                 float dat[5]<name = "Unknown">;
@@ -229,11 +237,12 @@ struct PibHeader
             float unk4<name = "Unknown">;
             float unk5<name = "Unknown">;
             float unk6<name = "Unknown">;
-
+            
             struct UnkStr5
             {
                 float dat[24]<name = "Unknown">;
             }unkStr5<name = "Unknown Structure 5">;
+
 
             int dataSize1<name = "Data Size 1">;
             
